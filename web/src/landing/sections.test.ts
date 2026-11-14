@@ -8,7 +8,8 @@ describe('landing story contract', () => {
     for (const heading of ['HOW IT WORKS', 'THE PRODUCT', 'VALIDATION', 'TEAM', 'PRIMARY RESOURCES']) {
       expect(source).toContain(heading);
     }
-    expect(source).toContain('Open the navigator');
+    expect(source).toContain('Compare landing sites');
+    expect(source.match(/Compare landing sites/g)).toHaveLength(1);
     expect(source).toContain('synthetic');
     expect(source).toContain('JPL Horizons');
   });
