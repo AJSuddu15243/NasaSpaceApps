@@ -4,11 +4,22 @@ import AxeBuilder from '@axe-core/playwright';
 test('hero is immediately useful and hands off to the workspace', async ({ page }) => {
   const started = Date.now();
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'A landing date changes the view.' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Open the navigator' })).toBeVisible();
+  const hero = page.locator('.landing-hero');
+  await expect(hero.getByRole('heading', { name: 'A landing date changes the view.' })).toBeVisible();
+  const heroCta = hero.getByRole('button', { name: 'Open the navigator' });
+  await expect(heroCta).toBeVisible();
   expect(Date.now() - started).toBeLessThan(2500);
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
-  await page.getByRole('button', { name: 'Open the navigator' }).click();
+  await heroCta.click();
+  await expect(page).toHaveURL(/\/app/);
+});
+
+test('final section hands off to the workspace', async ({ page }) => {
+  await page.goto('/');
+  const finalCta = page.locator('.landing-final').getByRole('button', { name: 'Open the navigator' });
+  await finalCta.scrollIntoViewIfNeeded();
+  await expect(finalCta).toBeVisible();
+  await finalCta.click();
   await expect(page).toHaveURL(/\/app/);
 });
 
