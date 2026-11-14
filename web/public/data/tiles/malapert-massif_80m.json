@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T20:36:25Z",
+  "source_urls": [
+    "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+    "https://pgda.gsfc.nasa.gov/products/90",
+    "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+  ],
+  "region": "malapert-massif",
+  "crs": "polar-stereo-south",
+  "crs_params": {
+    "lat_0": -90,
+    "lon_0": 0,
+    "radius_m": 1737400.0
+  },
+  "x0": -10440.0,
+  "y0": 111560.0,
+  "cell_m": 80,
+  "nx": 250,
+  "ny": 250,
+  "dtype": "float32",
+  "units": "m",
+  "nodata": null,
+  "height_reference_radius_m": 1737400.0
+}

@@ -61,6 +61,13 @@ for an extent?
 in `terrain/pgda.py`), prints its metadata and runs physics checks; a second run only re-hashes.
 The pin is trust-on-first-use: PGDA publishes no checksum. Facts and gotchas: `notes/pipe-3.md`.
 
+`make tiles` (PIPE-4) cuts the DEM per config region into float32 tiles (contract `tile`; rows grow
+with +y, so the DEM is flipped; cells are block means snapped to DEM pixel edges):
+- far field ±`max_distance_km` at `far_field_m` → `pipeline/data/tiles/{region}_240m.bin` (pipeline-only:
+  ~6 MB each, mask-builder input);
+- near field ±10 km at `near_field_m` → `web/public/data/tiles/{region}_80m.bin` (shipped, 250 KB each).
+`coords.to_xy` / `to_latlon` convert lat/lon ↔ south polar stereographic metres (R = 1737.4 km).
+
 ## Shared interfaces
 
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;
