@@ -1,6 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
 import { LunarScene, type CameraMode } from '../../scene';
-import { TerrainShadingControls } from '../../scene/shaders';
 import type { Scenario, View } from '../scenario';
 import type { DemoData } from '../data';
 import { Badge, Button } from '../ui';
@@ -47,7 +46,10 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     </Suspense> : isThreeD ? <>
       <div className="terrain-scene-toolbar">
         <p className="hint">Drag to orbit. Double-click the canvas or use the button to fly to the south pole.</p>
-        <TerrainShadingControls contoursEnabled={contoursEnabled} onContoursEnabledChange={setContoursEnabled} />
+        <label>
+          <input type="checkbox" checked={contoursEnabled} onChange={event => setContoursEnabled(event.currentTarget.checked)} />
+          Contour lines
+        </label>
         <Button
           variant="outline"
           onClick={() => setCameraMode(mode => mode === 'orbit' ? 'south-pole' : 'orbit')}
