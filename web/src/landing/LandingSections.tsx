@@ -62,6 +62,6 @@ export function LandingSections({ onOpen }: { onOpen: () => void }) {
       </div>
     </section>
 
-    <section className="landing-final" aria-labelledby="final-title"><p>THE SAME CONTEXT, READY TO SHARE</p><h2 id="final-title">Choose a site. Move the date. See what changes.</h2><button type="button" onClick={onOpen}>Open the navigator <span aria-hidden="true">↗</span></button><small>Synthetic demonstration data is labelled throughout.</small></section>
+    <section className="landing-final" aria-labelledby="final-title"><p>THE SAME CONTEXT, READY TO SHARE</p><h2 id="final-title">Choose a site. Move the date. See what changes.</h2><button type="button" onClick={onOpen}>Compare landing sites <span aria-hidden="true">↗</span></button><small>Synthetic demonstration data is labelled throughout.</small></section>
   </>;
 }

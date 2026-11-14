@@ -16,7 +16,7 @@ test('hero is immediately useful and hands off to the workspace', async ({ page 
 
 test('final section hands off to the workspace', async ({ page }) => {
   await page.goto('/');
-  const finalCta = page.locator('.landing-final').getByRole('button', { name: 'Open the navigator' });
+  const finalCta = page.locator('.landing-final').getByRole('button', { name: 'Compare landing sites' });
   await finalCta.scrollIntoViewIfNeeded();
   await expect(finalCta).toBeVisible();
   await finalCta.click();

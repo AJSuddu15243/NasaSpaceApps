@@ -14,3 +14,4 @@
 .landing-final button:hover{transform:translateY(-1px);box-shadow:0 10px 30px #0004}
 .landing-final button:active{transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){.method-flow li,.workspace-preview,.validation-grid article,.team-grid article,.resource-list a,.resource-list b,.landing-final button{transition:none!important;transform:none!important}}
+@media(prefers-reduced-motion:no-preference){@supports(animation-timeline:view()){.method-flow li,.workspace-preview,.validation-grid article,.team-grid article{animation:landing-rise linear both;animation-timeline:view();animation-range:entry 4% cover 24%}}}@keyframes landing-rise{from{opacity:.35;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}

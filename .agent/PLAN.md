@@ -7,7 +7,7 @@
 ## Active Work
 
 - **Owner:** Ananth (this user), since 2026-11-14
-- **Status:** in progress — ENG-1 crate scaffold merged (#69); ENG-2..9 open. Engine guide: [`engine/AGENTS.md`](../engine/AGENTS.md)
+- **Status:** in progress — ENG-1 crate scaffold merged (#69); ENG-6 pure cell scoring (`score_cells`) in review, `grid_scores` wiring waits on ENG-4 + PIPE-5; ENG-7 next after ENG-6; ENG-2..5, 8, 9 open. Decisions: [`GREEDY.md`](GREEDY.md). Engine guide: [`engine/AGENTS.md`](../engine/AGENTS.md)
 - **Scope:** the Rust simulator core and the native/WASM interface. UI, rendering, and data work are not claimed.
 - **Overlap rule:** other agents should coordinate with Ananth before implementing a duplicate simulator or
   modifying the simulation core / native-WASM interface.
@@ -41,7 +41,7 @@ no server, and no waiting for predictions.
 time slider ──► ephemeris(t) ──► sunDir, earthDir ─┬─► three.js DirectionalLight (visual only)
                                                    └─► WASM sim (numbers) [Web Worker]
                                                           │
-                                   Float32Array score grid (shared WASM memory, no copy)
+                                   Float32Array score grid (one copy out of WASM, GREEDY.md decision 9)
                                                           │
                                    THREE.DataTexture ──► heatmap overlay on moon mesh
 ```
