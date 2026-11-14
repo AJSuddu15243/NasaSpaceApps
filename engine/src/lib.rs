@@ -3,6 +3,7 @@
 
 pub mod constants;
 pub mod contracts;
+pub mod geometry;
 pub mod score;
 
 pub use contracts::{Area, Metrics, Params, Weights};
