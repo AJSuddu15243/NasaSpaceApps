@@ -9,10 +9,6 @@ export function DesignPage() {
   const [notice, setNotice] = useState('Ready to preview a control.');
   const [name, setName] = useState('');
   return <>
-    <a className="skip-link" href="#main">Skip to content</a>
-    <header className="border-b border-border"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-      <a href="/design" className="text-sm font-medium tracking-wide">LUNAR LANDING SITE NAVIGATOR</a><Badge>Design reference · v0.1</Badge>
-    </div></header>
     <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-6 py-12">
       <div className="mb-12 grid gap-6 md:grid-cols-[2fr_1fr]">
         <div><p className="mb-3 font-mono text-xs text-muted-foreground">WEB-2 / INTERFACE FOUNDATIONS</p>
