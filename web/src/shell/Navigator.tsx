@@ -25,6 +25,8 @@ export default function Navigator() {
   const rightRef = useRef<ImperativePanelHandle>(null);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [scrubHour, setScrubHour] = useState<number | null>(null);
+  const scrub = { hour: scrubHour, set: setScrubHour };
 
   useEffect(() => { void syncRemoteScenarios(); }, []);
 
@@ -40,8 +42,8 @@ export default function Navigator() {
     {scenario.sites.some(id => !load.data.sites.some(site => site.id === id)) && <div className="ws-notices"><p role="status" className="notice">Some linked sites are unavailable in this demo catalogue. Choose available sites or restore the demo scenario.</p></div>}
     {narrow ? <div className="workspace-stack">
       <ScenarioPanel scenario={scenario} data={load.data} change={setScenario} />
-      <ViewPanel scenario={scenario} data={load.data} change={setScenario} />
-      <ResultsPanel scenario={scenario} data={load.data} />
+      <ViewPanel scenario={scenario} data={load.data} change={setScenario} scrub={scrub} />
+      <ResultsPanel scenario={scenario} data={load.data} scrub={scrub} />
     </div> : <div className="workspace-panels">
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel className="workspace-panel" ref={leftRef} defaultSize={20} minSize={15} maxSize={28} collapsible collapsedSize={0}
@@ -50,12 +52,12 @@ export default function Navigator() {
         </ResizablePanel>
         <ResizableHandle withHandle aria-label="Resize sites panel" />
         <ResizablePanel className="workspace-panel" defaultSize={60} minSize={42}>
-          <ViewPanel scenario={scenario} data={load.data} change={setScenario} />
+          <ViewPanel scenario={scenario} data={load.data} change={setScenario} scrub={scrub} />
         </ResizablePanel>
         <ResizableHandle withHandle aria-label="Resize comparison panel" />
         <ResizablePanel className="workspace-panel" ref={rightRef} defaultSize={20} minSize={15} maxSize={30} collapsible collapsedSize={0}
           onCollapse={() => setRightCollapsed(true)} onExpand={() => setRightCollapsed(false)}>
-          <ResultsPanel scenario={scenario} data={load.data} onCollapse={() => rightRef.current?.collapse()} />
+          <ResultsPanel scenario={scenario} data={load.data} scrub={scrub} onCollapse={() => rightRef.current?.collapse()} />
         </ResizablePanel>
       </ResizablePanelGroup>
       {leftCollapsed && <button type="button" className="panel-expand panel-expand-left" onClick={() => leftRef.current?.expand()} aria-label="Show sites panel"><PanelLeft size={15} aria-hidden="true" /><span>Sites</span></button>}

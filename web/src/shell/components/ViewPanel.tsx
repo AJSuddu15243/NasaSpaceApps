@@ -7,7 +7,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../
 import { polarPoint } from '../viewGeometry';
 import { parseCustomSite } from '../../features/sites/sites';
 import { ephemAt } from '../../features/globe/ephem';
+import { ephemCoverage } from '../../features/compare/timeline';
 import type { GlobeMarker } from '../../features/globe/MoonGlobeView';
+
+export interface ScrubState { hour: number | null; set: (hour: number | null) => void }
 
 const MoonGlobeView = lazy(() => import('../../features/globe/MoonGlobeView').then(m => ({ default: m.MoonGlobeView })));
 
@@ -18,7 +21,7 @@ const views: { id: View; label: string; icon: typeof Globe }[] = [
   { id: 'panorama', label: 'Panorama', icon: Mountain },
 ];
 
-export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void }) {
+export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void; scrub?: ScrubState }) {
   const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
   const [contoursEnabled, setContoursEnabled] = useState(false);
   const isThreeD = scenario.view === '3d';
@@ -27,7 +30,12 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     const coords = site ?? parseCustomSite(id);
     return coords ? [{ ...polarPoint(coords.lat, coords.lon), name: site?.name ?? 'Custom point', index }] : [];
   });
-  const ephem = ephemAt(data.table, scenario.date);
+  const coverage = ephemCoverage(data.table);
+  const scrubIso = scrub?.hour != null ? new Date(Date.parse(scenario.date) + scrub.hour * 3_600_000).toISOString() : scenario.date;
+  const scrubInRange = !coverage || (Date.parse(scrubIso) >= Date.parse(coverage.start) && Date.parse(scrubIso) <= Date.parse(coverage.end));
+  const ephemTime = scrubInRange ? scrubIso : scenario.date;
+  const ephem = ephemAt(data.table, ephemTime);
+  const scrubActive = scrub?.hour != null;
   const globeMarkers: GlobeMarker[] = [
     ...scenario.sites.flatMap((id, index) => {
       const site = data.sites.find(item => item.id === id);
@@ -52,7 +60,7 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     </div>
     <div className="vw-stage">
       {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="viewport-meta"><span>LOADING</span></div><div className="empty-caption"><h3>Loading the Moon…</h3></div></div>}>
-        <MoonGlobeView markers={globeMarkers} timeLabel={scenario.date.slice(0, 16).replace('T', ' ') + ' UTC'} />
+        <MoonGlobeView markers={globeMarkers} timeLabel={ephemTime.slice(0, 16).replace('T', ' ') + ' UTC'} />
       </Suspense> : isThreeD ? <div className="terrain-scene-wrap">
         <div className="terrain-scene">
           <LunarScene
@@ -86,6 +94,17 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
         <div className="empty-caption"><p>Visual orientation only. Real LOLA terrain, horizon masks, and ephemeris vectors are not connected in this preview.</p></div>
       </div>}
     </div>
+    {scrub && (isGlobe || isThreeD) && <div className="vw-scrub">
+      <div className="vw-scrub-row">
+        <span className="vw-scrub-time">{scrubActive ? `T+${scrub.hour} h · ${ephemTime.slice(0, 16).replace('T', ' ')} UTC` : 'Mission start'}</span>
+        <button type="button" className="vw-scrub-live" onClick={() => scrub.set(null)} disabled={!scrubActive}>Live</button>
+      </div>
+      <input type="range" min={0} max={scenario.hours} step={1} value={scrub.hour ?? 0}
+        aria-label="Scrub mission timeline" aria-valuetext={scrubActive ? `Hour ${scrub.hour} of ${scenario.hours}` : `Hour 0 of ${scenario.hours}`}
+        onChange={event => scrub.set(Number(event.target.value))} />
+      <div className="vw-scrub-scale"><span>0 h</span><span>{scenario.hours} h</span></div>
+      {!scrubInRange && <p className="vw-scrub-note" role="status">Scrubbed time is outside the ephemeris table — markers hold the scenario start.</p>}
+    </div>}
     <div className="vw-footer"><span><i className="legend-dot sun"/> Sun / power</span><span><i className="legend-dot earth"/> Earth / communications</span></div>
     <details className="method-note"><summary>How to read this</summary><p>At the lunar south pole, nearby terrain can block the Sun or Earth. Compare sites over the same time window before drawing conclusions.</p></details>
     {isGlobe && <p className="vw-caption"><span className="eyebrow">LUNAR SURFACE</span>LROC colour mosaic and LOLA elevation, NASA SVS. Numbered pins are scenario sites; S/E mark sub-solar and sub-Earth points at the scenario time.</p>}

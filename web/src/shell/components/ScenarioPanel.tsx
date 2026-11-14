@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Check, ChevronDown, ChevronLeft, Save } from 'lucide-react';
 import type { DemoData } from '../data';
-import { DEFAULT_SCENARIO, MAX_SITES, validUtc, type Scenario } from '../scenario';
+import { DEFAULT_SCENARIO, MAX_SITES, validUtc, type MissionWeights, type Scenario } from '../scenario';
 import { scenarioShareUrl, saveScenario } from '../../scenarios/store';
 import { Button, Input, Label } from '../ui';
 import { SitePicker } from '../../features/sites/SitePicker';
@@ -14,6 +14,7 @@ export function ScenarioPanel({ scenario, data, change, onCollapse }: { scenario
     </div>
     <SitePicker sites={data.sites} selected={scenario.sites} onChange={sites => change({ sites: sites.slice(0, MAX_SITES) })} />
     <DateWindow key={`${scenario.date}/${scenario.hours}`} scenario={scenario} change={change} />
+    <MissionWeightsPanel scenario={scenario} change={change} />
     {scenario.mode === 'planner' && <details className="sc-advanced">
       <summary><ChevronDown size={13} aria-hidden="true" /> Advanced · comparison weights</summary>
       <div className="ws-scroll" style={{ flex: '0 1 auto', maxHeight: '46vh' }}>
@@ -51,6 +52,27 @@ function SaveScenario({ scenario }: { scenario: Scenario }) {
     <Button type="button" variant="ghost" onClick={() => { setOpen(false); setStatus(''); }}>Cancel</Button>
     {status && <p className="sc-hint" role="status">{status}</p>}
   </form>;
+}
+
+const mwLabels: { key: keyof MissionWeights; label: string; tip: string }[] = [
+  { key: 'lit', label: 'Sunlit window', tip: 'Weight on share of the window in sunlight (solar power).' },
+  { key: 'earth', label: 'Earth contact', tip: 'Weight on share of the window with a clear view of Earth (comms).' },
+  { key: 'dark', label: 'Max darkness', tip: 'Weight on minimizing the longest unbroken darkness stretch.' },
+  { key: 'blackout', label: 'Max blackout', tip: 'Weight on minimizing the longest stretch with neither Sun nor Earth visible.' },
+];
+
+function MissionWeightsPanel({ scenario, change }: { scenario: Scenario; change: (patch: Partial<Scenario>, replace?: boolean) => void }) {
+  const mw = scenario.missionWeights;
+  const total = mw.lit + mw.earth + mw.dark + mw.blackout;
+  const share = (v: number) => (total > 0 ? Math.round((v / total) * 100) : 0);
+  return <div className="sc-mw">
+    <p className="sc-mw-title">Mission priorities <span className="sc-hint">normalized to {total > 0 ? '100%' : '—'}</span></p>
+    {mwLabels.map(({ key, label, tip }) => <div key={key} className="sc-weight">
+      <Label htmlFor={`mw-${key}`} title={tip}>{label} <output htmlFor={`mw-${key}`}>{mw[key]} · {share(mw[key])}%</output></Label>
+      <input id={`mw-${key}`} type="range" min="0" max="100" step="1" value={mw[key]} aria-label={label} onChange={event => change({ missionWeights: { ...mw, [key]: Number(event.target.value) } }, true)} />
+    </div>)}
+    <p className="sc-hint">Drives the readiness score in Compare. Saved in your link as <code>mw</code>.</p>
+  </div>;
 }
 
 function DateWindow({ scenario, change }: { scenario: Scenario; change: (patch: Partial<Scenario>) => void }) {

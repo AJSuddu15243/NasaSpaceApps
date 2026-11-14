@@ -1,9 +1,12 @@
+import type { ReactNode } from 'react';
 import { site_metrics, MOCK_PARAMS, UnavailableScenario } from '../../engine';
 import type { DemoData } from '../data';
 import type { Scenario } from '../scenario';
 import type { Metrics } from '../../contracts/engine-api';
 import { bestValues, countdown, DEFAULT_THRESHOLDS, metricValue, siteStatus, type MetricKey } from '../../features/compare/metrics';
+import { readinessScore, siteTimeline, TL_BOTH, TL_DARK, TL_EARTH, TL_SUN } from '../../features/compare/timeline';
 import { parseCustomSite } from '../../features/sites/sites';
+import type { ScrubState } from './ViewPanel';
 import { ChevronRight } from 'lucide-react';
 import { Badge } from '../ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../design';
@@ -13,6 +16,8 @@ interface SiteResult {
   name: string;
   metrics: Metrics | null;
   message: string | null;
+  timeline: Uint8Array | null;
+  readiness: number | null;
 }
 
 const statusTone = { green: 'success', yellow: 'warning', red: 'danger' } as const;
@@ -25,15 +30,20 @@ const rows: { key: MetricKey; label: string; short: string; text: (m: Metrics) =
   { key: 'longestBlackoutHours', label: 'Longest blackout', short: 'Blackout', text: m => `${m.longest_blackout_h} h`, tip: 'Longest stretch with neither Sun nor Earth visible — the worst-case comms gap.' },
 ];
 
-export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; scenario: Scenario; onCollapse?: () => void }) {
+export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: DemoData; scenario: Scenario; onCollapse?: () => void; scrub?: ScrubState }) {
   const results: SiteResult[] = scenario.sites.map(id => {
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
-    if (!site) return { id, name, metrics: null, message: 'Custom coordinates are plotted in the view. Terrain metrics need a horizon mask, and none exists for this point yet.' };
+    const coords = site ?? parseCustomSite(id);
+    const mask = data.masks.get(id);
+    const horizonDeg = mask ? mask.mask_deg.reduce((a, b) => a + b, 0) / mask.mask_deg.length : 0;
+    const timeline = coords ? siteTimeline(data.table, coords.lat, coords.lon, scenario.date, scenario.hours, horizonDeg) : null;
+    if (!site) return { id, name, metrics: null, message: 'Custom coordinates are plotted in the view. Terrain metrics need a horizon mask, and none exists for this point yet.', timeline, readiness: null };
     try {
-      return { id, name, metrics: site_metrics(data.masks.get(site.id)!, data.table, scenario.date, scenario.hours, MOCK_PARAMS), message: null };
+      const metrics = site_metrics(mask!, data.table, scenario.date, scenario.hours, MOCK_PARAMS);
+      return { id, name, metrics, message: null, timeline, readiness: readinessScore(metrics, scenario.missionWeights, scenario.hours) };
     } catch (error) {
-      return { id, name, metrics: null, message: error instanceof UnavailableScenario ? error.message : 'Example results are unavailable.' };
+      return { id, name, metrics: null, message: error instanceof UnavailableScenario ? error.message : 'Example results are unavailable.', timeline, readiness: null };
     }
   });
   const computed = results.map(result => result.metrics).filter((metrics): metrics is Metrics => metrics !== null);
@@ -53,7 +63,7 @@ export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; s
           const value = result.metrics ? metricValue(result.metrics, row.key) : null;
           const isBest = value !== null && value === best[row.key];
           return <td key={result.id} className={isBest ? 'rs-best' : undefined}>{result.metrics ? row.text(result.metrics) : '—'}</td>;
-        })}</tr>)}<tr><th scope="row">Temp range</th>{results.map(result => <td key={result.id}>{result.metrics ? `${result.metrics.t_min_k}–${result.metrics.t_max_k} K` : '—'}</td>)}</tr></tbody>
+        })}</tr>)}<tr><th scope="row">Temp range</th>{results.map(result => <td key={result.id}>{result.metrics ? `${result.metrics.t_min_k}–${result.metrics.t_max_k} K` : '—'}</td>)}</tr><tr><th scope="row"><TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><span className="rs-th-tip">Readiness</span></TooltipTrigger><TooltipContent>Weighted 0–100 heuristic from your mission priorities — not an engine score.</TooltipContent></Tooltip></TooltipProvider></th>{results.map(result => <td key={result.id} className={result.readiness !== null ? 'rs-best' : undefined}>{result.readiness !== null ? result.readiness : '—'}</td>)}</tr></tbody>
       </table></div>}
       {showTable && <p className="rs-units">● best in row · temps in kelvin · times in hours</p>}
 
@@ -61,10 +71,10 @@ export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; s
         ? <p className="rs-empty">Choose a demo site to inspect an example card.</p>
         : <div className="rs-sites">{results.map((result, index) => {
           const { metrics } = result;
-          if (!metrics) return <div key={result.id} className="rs-card"><h3>{result.name}</h3><p className="rs-reason">{result.message}</p></div>;
+          if (!metrics) return <div key={result.id} className="rs-card"><h3>{result.name}</h3>{result.timeline && <TimelineBar timeline={result.timeline} scrubHour={scrub?.hour ?? null} />}<p className="rs-reason">{result.message}</p></div>;
           const status = siteStatus(metrics, DEFAULT_THRESHOLDS);
           return <div key={result.id} className="rs-card">
-            <div className="rs-card-head"><div><span className="rs-idx">SITE {String(index + 1).padStart(2, '0')}</span><h3>{result.name}</h3></div><Badge tone={statusTone[status.status]} title={status.reason}>{statusLabel[status.status]}</Badge></div>
+            <div className="rs-card-head"><div><span className="rs-idx">SITE {String(index + 1).padStart(2, '0')}</span><h3>{result.name}</h3></div><div className="rs-head-right"><Badge tone={statusTone[status.status]} title={status.reason}>{statusLabel[status.status]}</Badge>{result.readiness !== null && <span className="rs-score" title="Weighted readiness heuristic">{result.readiness}<span className="rs-score-unit">/100</span></span>}</div></div>
             <div className="rs-solar"><span className="rs-big">{metrics.mean_sun_el_deg.toFixed(1)}<span>°</span></span><span className="rs-label">mean solar elevation</span></div>
             <dl className="rs-facts">
               {!showTable && <><div><dt>Sunlit</dt><dd>{metrics.pct_lit}%</dd></div><div><dt>Earth contact</dt><dd>{metrics.pct_earth_visible}%</dd></div></>}
@@ -73,6 +83,7 @@ export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; s
               <div><dt>Peak sun elev.</dt><dd>{metrics.max_sun_el_deg.toFixed(1)}°</dd></div>
             </dl>
             <div className="rs-countdowns"><span>Sunset in <b>{countdown(metrics.h_to_first_sunset)}</b></span><span>Earthset in <b>{countdown(metrics.h_to_first_earthset)}</b></span></div>
+            {result.timeline && <TimelineBar timeline={result.timeline} scrubHour={scrub?.hour ?? null} />}
             <p className="rs-reason">{status.reason}</p>
           </div>;
         })}</div>}
@@ -80,6 +91,25 @@ export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; s
       <details className="rs-assumptions"><summary>Assumptions &amp; thresholds</summary><p>Status uses demo thresholds: ≥70% sunlit, ≥60% Earth contact, ≤48 h darkness, ≤24 h blackout. Temperature model: simplified, no thermal inertia. Earth contact assumes a DSN station can see the Moon; no relay coverage.</p></details>
     </div>
   </aside>;
+}
+
+const tlState = { [TL_DARK]: 'tl-dark', [TL_SUN]: 'tl-sun', [TL_EARTH]: 'tl-earth', [TL_BOTH]: 'tl-both' } as const;
+
+function TimelineBar({ timeline, scrubHour }: { timeline: Uint8Array; scrubHour: number | null }) {
+  const hours = timeline.length;
+  const stride = Math.max(1, Math.ceil(hours / 480));
+  const bars: ReactNode[] = [];
+  for (let h = 0; h < hours; h += stride) {
+    const span = Math.min(stride, hours - h);
+    const dominant = (span === 1 ? timeline[h] : (() => { const counts = [0, 0, 0, 0]; for (let i = h; i < h + span; i++) counts[timeline[i]]++; return counts.indexOf(Math.max(...counts)); })()) as 0 | 1 | 2 | 3;
+    bars.push(<rect key={h} x={h / hours} y={0} width={span / hours} height={1} className={tlState[dominant]} />);
+  }
+  return <div className="rs-timeline" role="img" aria-label={`Hour-by-hour Sun and Earth visibility over ${hours} hours`}>
+    <svg viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true">{bars}
+      {scrubHour !== null && scrubHour >= 0 && scrubHour < hours && <rect x={scrubHour / hours} y={-0.06} width={1 / hours} height={1.12} className="tl-playhead" />}
+    </svg>
+    <div className="rs-timeline-key"><span><i className="tl-key tl-sun"/>Sun</span><span><i className="tl-key tl-earth"/>Earth</span><span><i className="tl-key tl-both"/>Both</span><span><i className="tl-key tl-dark"/>Neither</span></div>
+  </div>;
 }
 
 function shortName(name: string): string {

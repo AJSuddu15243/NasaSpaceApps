@@ -1,12 +1,15 @@
 import type { Weights } from '../contracts/engine-api';
 export type View = '3d' | 'panorama' | 'map' | 'globe';
 export type Mode = 'planner' | 'explorer';
-export interface Scenario { sites: string[]; date: string; hours: number; weights: Weights; mode: Mode; view: View }
+export interface MissionWeights { lit: number; earth: number; dark: number; blackout: number }
+export interface Scenario { sites: string[]; date: string; hours: number; weights: Weights; missionWeights: MissionWeights; mode: Mode; view: View }
 export const DEFAULT_SCENARIO: Scenario = {
   sites: ['demo-ridge-a', 'demo-ridge-b'], date: '2026-11-14T12:00:00.000Z', hours: 336,
-  weights: { sun: 50, earth: 35, slope: 10, crater: 5, rock: 0, thermal: 0 }, mode: 'planner', view: '3d',
+  weights: { sun: 50, earth: 35, slope: 10, crater: 5, rock: 0, thermal: 0 },
+  missionWeights: { lit: 40, earth: 30, dark: 15, blackout: 15 }, mode: 'planner', view: '3d',
 };
 const keys = ['sun', 'earth', 'slope', 'crater'] as const;
+const mwKeys = ['lit', 'earth', 'dark', 'blackout'] as const;
 export const MAX_SITES = 4;
 export function validUtc(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value)) return false;
@@ -19,7 +22,7 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
   if (search.length > 4096) return { scenario, warnings: ['The scenario link is too long. Defaults were restored.'] };
   const q = new URLSearchParams(search);
   if (q.has('v') && q.get('v') !== '1') return { scenario, warnings: ['This link uses an unsupported version. Defaults were restored.'] };
-  for (const key of ['sites', 'date', 'hours', 'weights', 'mode', 'view', 'v']) {
+  for (const key of ['sites', 'date', 'hours', 'weights', 'mw', 'mode', 'view', 'v']) {
     if (q.getAll(key).length > 1) warnings.push(`Duplicate ${key} field: the first value was used.`);
   }
   if (q.has('sites')) {
@@ -43,6 +46,12 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
       keys.forEach((key, i) => { scenario.weights[key] = Number(values[i]); });
     } else warnings.push('Invalid weights: defaults were restored.');
   }
+  if (q.has('mw')) {
+    const values = q.get('mw')!.split(',');
+    if (values.length === 4 && values.every(v => /^\d+(\.\d{1,2})?$/.test(v) && Number(v) <= 100)) {
+      mwKeys.forEach((key, i) => { scenario.missionWeights[key] = Number(values[i]); });
+    } else warnings.push('Invalid mission weights: defaults were restored.');
+  }
   if (q.has('mode')) {
     const mode = q.get('mode');
     if (mode === 'planner' || mode === 'explorer') scenario.mode = mode;
@@ -57,6 +66,7 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
 }
 export function writeScenario(scenario: Scenario): string {
   const q = new URLSearchParams({ v: '1', sites: scenario.sites.join(','), date: scenario.date,
-    hours: String(scenario.hours), weights: keys.map(key => scenario.weights[key]).join(','), mode: scenario.mode, view: scenario.view });
+    hours: String(scenario.hours), weights: keys.map(key => scenario.weights[key]).join(','),
+    mw: mwKeys.map(key => scenario.missionWeights[key]).join(','), mode: scenario.mode, view: scenario.view });
   return `?${q.toString()}`;
 }
