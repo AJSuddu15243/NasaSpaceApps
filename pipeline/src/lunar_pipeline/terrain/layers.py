@@ -63,14 +63,25 @@ def aspect_deg(gx, gy, x, y):
 
 
 def local_relief(z, cell_m, radius_m):
-    """max - min of z within a disk of radius_m; output loses ceil(radius / cell) px per side."""
+    """Detrended relief: max - min, within a disk of radius_m, of z minus its least-squares plane.
+
+    Removing the plane keeps regional slope out of crater depth (a tilted plane gives 0).
+    Output loses ceil(radius / cell) px per side.
+    """
     r = int(np.ceil(radius_m / cell_m))
     off = np.arange(-r, r + 1) * cell_m
-    disk = np.hypot(off[:, None], off[None, :]) <= radius_m
-    win = sliding_window_view(z, (2 * r + 1, 2 * r + 1))
-    lo = np.where(disk, win, np.inf).min(axis=(2, 3))
-    hi = np.where(disk, win, -np.inf).max(axis=(2, 3))
-    return hi - lo
+    dy, dx = np.meshgrid(off, off, indexing="ij")  # window axis 0 is rows (+y), axis 1 cols (+x)
+    disk = np.hypot(dx, dy) <= radius_m
+    dx, dy = dx[disk], dy[disk]
+    vals = sliding_window_view(z, (2 * r + 1, 2 * r + 1))[..., disk]
+    # The disk is symmetric, so the plane fit decouples: mean, then one slope per axis.
+    resid = (
+        vals
+        - vals.mean(axis=-1, keepdims=True)
+        - (vals @ dx / (dx @ dx))[..., None] * dx
+        - (vals @ dy / (dy @ dy))[..., None] * dy
+    )
+    return resid.max(axis=-1) - resid.min(axis=-1)
 
 
 def window_std(a, n):

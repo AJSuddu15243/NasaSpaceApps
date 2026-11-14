@@ -64,7 +64,7 @@ explanations for students and the public).
 - **DTE radio visibility:** Earth centre above the mask + antenna margin; % contact, longest blackout, time to
   Earthset. Stated assumption: a DSN station can see the Moon; no relays.
 - **Terrain factors:** slope (hard limit, default 10°; a 160 m grid cell takes the max of its 80 m slopes), aspect
-  (downhill direction, for the thermal surface normal), crater depth (local relief within 500 m) and roughness
+  (downhill direction, for the thermal surface normal), crater depth (detrended local relief within 500 m) and roughness
   (std-dev of slope over 5 × 5 cells of 80 m) from the DEM. **Rock distribution:** layer
   from Diviner rock abundance or LROC boulder maps; W1 confirms polar coverage first. Until a source is
   confirmed, its weight defaults to 0 and the UI shows "no data".

@@ -41,12 +41,15 @@ def test_roughness_is_zero_on_a_plane_and_positive_on_bumps():
 
 
 def test_local_relief_on_plane_and_bowl():
-    relief = layers.local_relief(plane(0.1, 0.0), CELL, 500.0)
+    relief = layers.local_relief(plane(0.1, -0.07), CELL, 500.0)
     assert relief.shape == (40 - 14, 40 - 14)
-    np.testing.assert_allclose(relief, 2 * 0.1 * 480)  # farthest disk offsets are +-6 cells
+    np.testing.assert_allclose(relief, 0, atol=1e-9)  # slope is not crater depth
     r = np.hypot(*np.meshgrid(CELL * (np.arange(41) - 20), CELL * (np.arange(41) - 20)))
     bowl = np.where(r < 300, -200.0, 0.0)
-    assert layers.local_relief(bowl, CELL, 500.0)[13, 13] == 200.0
+    assert layers.local_relief(bowl, CELL, 500.0)[13, 13] == pytest.approx(200.0)
+    # The same bowl on a 5.7 deg tilt keeps its depth.
+    tilted = bowl + plane(0.1, 0.0, 41)
+    assert layers.local_relief(tilted, CELL, 500.0)[13, 13] == pytest.approx(200.0)
 
 
 @pytest.mark.parametrize(

@@ -72,7 +72,8 @@ with +y, so the DEM is flipped; cells are block means snapped to DEM pixel edges
 160 m (125 × 125, 312 KB per region), float32 layers `slope_deg, aspect_deg, elev_m, crater_depth_m,
 roughness_deg`, computed at 80 m with a 640 m margin, then 2 × 2 aggregated. Slope uses Horn's method and
 the **max** of the 2 × 2 (conservative for the hard slope limit); aspect is the downhill direction clockwise
-from local north (0 on flat cells); crater depth is max − min within 500 m; roughness is the std-dev of
+from local north (0 on flat cells); crater depth is max − min within 500 m after removing the
+least-squares plane (so regional slope isn't counted as depth); roughness is the std-dev of
 slope over 5 × 5. The mask layer is added by PIPE-8.
 
 ## Shared interfaces
