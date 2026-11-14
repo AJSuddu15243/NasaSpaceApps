@@ -91,6 +91,9 @@ area) · Chandrayaan-3 · Chang'e-7 target area · Apollo 11 and 17 (equatorial 
 
 ## Workstreams (one Conductor workspace each; no folder overlap)
 
+Issue-level breakdown (58 GitHub issues, owners, milestones, challenge coverage): [`docs/TASKS.md`](docs/TASKS.md).
+Pipeline layout and rules: [`pipeline/AGENTS.md`](pipeline/AGENTS.md).
+
 Models assume Claude Pro + ChatGPT Pro. Claude seats (Fable, Opus) share one 5-hour window, so the volume work runs on Codex; if Claude runs low, move W3 to GPT-6.1 Sol.
 
 | # | Folder | Task | Model | Start |
