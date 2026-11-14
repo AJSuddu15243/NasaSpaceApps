@@ -73,13 +73,25 @@ explanations for students and the public).
   shown in the UI.
 
 ## File contracts (agree first; build on mocks until real data lands)
-- `web/public/data/sites.json`: `[{ id, name, lat, lon, category: "artemis3"|"clps"|"intl"|"apollo", note, source_url }]`
-- `web/public/data/masks/{site_id}.json`: `{ id, lat, lon, elev_m, slope_deg, bins: 360, mask_deg: number[] }`
-- `web/public/data/ephem.bin` + `ephem.json`: `{ t0_iso, step_hours: 1, n, fields: ["sun_lat","sun_lon","sun_dist_km","earth_lat","earth_lon","earth_dist_km"], dtype: "float32" }`
-- `web/public/data/grid/{region}.bin` + `.json`: `{ region, crs: "polar-stereo-south", x0, y0, cell_m, nx, ny, bins: 64, layers: ["mask","slope_deg","elev_m","crater_depth_m","rock"] }`
-- `web/public/data/mock/`: same formats, fake values (owned by W3).
-- `web/src/ephem/`: `sunEarthAt(date) -> { sun_lat, sun_lon, sun_dist_km, earth_lat, earth_lon, earth_dist_km }` (Astronomy Engine, quantized).
-- Engine API (`engine/`, wrapped by `web/src/engine/index.ts`; `mock.ts` until the WASM lands):
+The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per kind in `contracts/schemas/`
+(fields, units, frames, byte layout), generated TypeScript types in `web/src/contracts/`, and
+`pnpm validate-data` to check real and mock files. Paths below are under `web/public/data/`.
+
+| Path | Schema |
+|---|---|
+| `sites.json` | `sites` |
+| `masks/{site_id}.json` | `site-mask` |
+| `ephem.bin` + `ephem.json` | `ephem` |
+| `grid/{region}.bin` + `.json` | `grid` |
+| `tiles/{region}_{res}m.bin` + `.json` | `tile` |
+| `validation/{site_id}.json` | `validation` |
+| `manifest.json` | `manifest` |
+
+- `mock/`: same layout and schemas, fake values (owned by W3).
+- `web/src/ephem/`: `sunEarthAt(date)` returns one row of the `ephem` fields (Astronomy Engine, quantized).
+- Engine API (`engine/`, wrapped by `web/src/engine/index.ts`; `mock.ts` until the WASM lands), with `Params`,
+  `Weights`, `Metrics` and `Area` defined in the `engine-api` schema (proposed until the engine and web owners
+  sign off):
   `site_metrics(mask, ephem, t_start, hours, params) -> Metrics` (solar, thermal, DTE),
   `grid_scores(grid, ephem, t_start, hours, weights) -> Float32Array`,
   `top_areas(scores, window_cells, n) -> Area[]`, `output_hash(...) -> string`.

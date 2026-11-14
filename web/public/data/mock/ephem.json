@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+  ],
+  "t0_iso": "2026-11-14T12:00:00.000Z",
+  "step_hours": 1,
+  "n": 337,
+  "fields": [
+    "sun_lat",
+    "sun_lon",
+    "sun_dist_km",
+    "earth_lat",
+    "earth_lon",
+    "earth_dist_km"
+  ],
+  "dtype": "float32"
+}

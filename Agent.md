@@ -11,10 +11,18 @@ deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a
 - **Read [`SPEC.md`](SPEC.md) first.** It is the build spec: features, stack, guardrails, simulation model,
   file contracts and workstreams. Stay inside your workstream's folder.
 - Official challenge text: [`docs/CHALLENGE.md`](docs/CHALLENGE.md).
-- Folder guides: [`pipeline/AGENTS.md`](pipeline/AGENTS.md). Task board and team roles: [`docs/TASKS.md`](docs/TASKS.md). Quality bar for every PR: [`docs/QUALITY.md`](docs/QUALITY.md).
+- Folder guides: [`pipeline/AGENTS.md`](pipeline/AGENTS.md), [`engine/AGENTS.md`](engine/AGENTS.md). Task board and team roles: [`docs/TASKS.md`](docs/TASKS.md). Quality bar for every PR: [`docs/QUALITY.md`](docs/QUALITY.md).
 - Draft plan and stack review this spec builds on: [`.agent/PLAN.md`](.agent/PLAN.md),
-  [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md).
+  [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md). Scoring + greedy design: [`.agent/GREEDY.md`](.agent/GREEDY.md).
 - Older ADC terrain grids and links: [`LunarLandingSiteNavigation/`](LunarLandingSiteNavigation/) (high-res local terrain only).
+
+## Active Work
+
+Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress** (ENG-1 merged). Scope and details are in
+the [Active Work section of `.agent/PLAN.md`](.agent/PLAN.md#active-work).
+
+Other agents: coordinate with Ananth before implementing a duplicate simulator or modifying the simulation
+core / native-WASM interface. This ownership note does not claim UI, rendering, or data work.
 
 ## Skills in use
 
@@ -57,6 +65,8 @@ Skills currently installed in our Claude Code setup. Use the one that fits the t
 
 ## Repo rules
 
+- Check GitHub with `gh` before starting or resuming work: current `main`, relevant issues/comments, and linked PRs. Do not assume the local checkout is current; treat unmerged PRs as proposals and preserve local changes when syncing.
+- Keep Ananth in the decision loop, but he is the bottleneck: batch a task's decisions into one ask, each with options, a recommended default, and the factors that affect it; pick conventional defaults yourself. Wait for Ananth's answers before finalizing algorithms, interfaces, thresholds, or scope, and get explicit approval before implementation.
 - Raw data stays out of git (see `.gitignore`). Download it with the links in `RESOURCES.md`.
 - Keep coordinates in the form NASA ships them (polar stereographic grid). Convert only at the edges.
 - Every new algorithm (pathfinding, slope cost, parsers) gets one small test or an assert-based self-check.

@@ -1,0 +1,11 @@
+{
+  "name": "Lunar Window",
+  "descriptor": "Lunar Landing Site Navigator",
+  "tagline": "Compare sites. Find your window.",
+  "summary": "Compare lunar landing sites and dates by sunlight, terrain and Earth contact.",
+  "assets": {
+    "mark": "assets/mark.svg",
+    "monochromeMark": "assets/mark-mono.svg",
+    "favicon": "assets/favicon.svg"
+  }
+}

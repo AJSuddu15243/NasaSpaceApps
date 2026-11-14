@@ -1,0 +1,174 @@
+{
+  "sites.unknown-category.json": {
+    "rule": "enum",
+    "path": "/0/category"
+  },
+  "sites.lon-180-not-wrapped.json": {
+    "rule": "exclusiveMaximum",
+    "path": "/0/lon"
+  },
+  "sites.extra-field.json": {
+    "rule": "additionalProperties",
+    "path": "/1"
+  },
+  "sites.id-not-a-slug.json": {
+    "rule": "pattern",
+    "path": "/0/id"
+  },
+  "sites.duplicate-id.json": {
+    "rule": "sites.unique_id",
+    "path": "/1/id"
+  },
+  "site-mask.wrong-bin-count.json": {
+    "rule": "minItems",
+    "path": "/mask_deg"
+  },
+  "site-mask.bins-not-360.json": {
+    "rule": "const",
+    "path": "/bins"
+  },
+  "site-mask.missing-max-distance-km.json": {
+    "rule": "required",
+    "path": ""
+  },
+  "site-mask.mask-above-90-deg.json": {
+    "rule": "maximum",
+    "path": "/mask_deg/7"
+  },
+  "site-mask.missing-schema-version.json": {
+    "rule": "required",
+    "path": ""
+  },
+  "ephem.wrong-field-order.json": {
+    "rule": "const",
+    "path": "/fields"
+  },
+  "ephem.dtype-not-float32.json": {
+    "rule": "const",
+    "path": "/dtype"
+  },
+  "ephem.t0-not-utc-z.json": {
+    "rule": "pattern",
+    "path": "/t0_iso"
+  },
+  "ephem.schema-version-not-1.json": {
+    "rule": "const",
+    "path": "/schema_version"
+  },
+  "grid.wrong-crs.json": {
+    "rule": "const",
+    "path": "/crs"
+  },
+  "grid.wrong-radius.json": {
+    "rule": "const",
+    "path": "/crs_params/radius_m"
+  },
+  "grid.duplicate-layer.json": {
+    "rule": "uniqueItems",
+    "path": "/layers"
+  },
+  "grid.mask-not-int16.json": {
+    "rule": "const",
+    "path": "/layer_info/mask/dtype"
+  },
+  "grid.layer-info-missing-layer.json": {
+    "rule": "grid.layer_info_keys",
+    "path": "/layer_info"
+  },
+  "grid.mask-components-not-bins.json": {
+    "rule": "grid.mask_components",
+    "path": "/layer_info/mask/components"
+  },
+  "grid.byte-length-mismatch.json": {
+    "rule": "grid.byte_length",
+    "path": "/layer_info/elev_m/byte_length"
+  },
+  "grid.byte-offset-gap.json": {
+    "rule": "grid.byte_offset",
+    "path": "/layer_info/slope_deg/byte_offset"
+  },
+  "tile.dtype-not-float32.json": {
+    "rule": "const",
+    "path": "/dtype"
+  },
+  "tile.zero-cell-size.json": {
+    "rule": "exclusiveMinimum",
+    "path": "/cell_m"
+  },
+  "tile.missing-nodata.json": {
+    "rule": "required",
+    "path": ""
+  },
+  "validation.azimuth-360-not-wrapped.json": {
+    "rule": "exclusiveMaximum",
+    "path": "/samples/0/sun_az"
+  },
+  "validation.time-local-offset-not-utc-z.json": {
+    "rule": "pattern",
+    "path": "/samples/1/t_iso"
+  },
+  "validation.no-samples.json": {
+    "rule": "minItems",
+    "path": "/samples"
+  },
+  "manifest.sha256-not-hex64.json": {
+    "rule": "pattern",
+    "path": "/files/0/sha256"
+  },
+  "manifest.absolute-path.json": {
+    "rule": "pattern",
+    "path": "/files/1/path"
+  },
+  "manifest.no-source-urls.json": {
+    "rule": "minItems",
+    "path": "/files/0/source_urls"
+  },
+  "engine-api.sunset-omitted-not-null.json": {
+    "rule": "required",
+    "path": "/metrics"
+  },
+  "engine-api.negative-weight.json": {
+    "rule": "minimum",
+    "path": "/weights/rock"
+  },
+  "engine-api.pct-lit-over-100.json": {
+    "rule": "maximum",
+    "path": "/metrics/pct_lit"
+  },
+  "engine-api.area-missing-radius.json": {
+    "rule": "required",
+    "path": "/areas/0"
+  },
+  "grid.slope_deg-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/slope_deg/units"
+  },
+  "grid.slope_deg-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/slope_deg/components"
+  },
+  "grid.elev_m-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/elev_m/units"
+  },
+  "grid.elev_m-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/elev_m/components"
+  },
+  "grid.crater_depth_m-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/crater_depth_m/units"
+  },
+  "grid.crater_depth_m-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/crater_depth_m/components"
+  },
+  "grid.rock-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/rock/units"
+  },
+  "grid.rock-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/rock/components"
+  }
+}

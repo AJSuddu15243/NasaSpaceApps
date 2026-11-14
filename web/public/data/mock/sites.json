@@ -1,0 +1,29 @@
+[
+  {
+    "id": "demo-ridge-a",
+    "name": "Demo ridge A",
+    "lat": -89.5,
+    "lon": 30,
+    "category": "artemis3",
+    "note": "Synthetic site for interface testing; not an Artemis candidate.",
+    "source_url": "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+  },
+  {
+    "id": "demo-ridge-b",
+    "name": "Demo ridge B",
+    "lat": -88.8,
+    "lon": 45,
+    "category": "artemis3",
+    "note": "Synthetic site for interface testing; not an Artemis candidate.",
+    "source_url": "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+  },
+  {
+    "id": "demo-basin-c",
+    "name": "Demo basin C",
+    "lat": -89.1,
+    "lon": -20,
+    "category": "artemis3",
+    "note": "Synthetic site for interface testing; not an Artemis candidate.",
+    "source_url": "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+  }
+]

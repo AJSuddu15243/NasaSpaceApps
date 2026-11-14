@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF"
+  ],
+  "region": "demo",
+  "crs": "polar-stereo-north",
+  "crs_params": {
+    "lat_0": -90,
+    "lon_0": 0,
+    "radius_m": 1737400
+  },
+  "x0": -240,
+  "y0": 14880,
+  "cell_m": 240,
+  "nx": 2,
+  "ny": 2,
+  "bins": 64,
+  "layers": [
+    "mask",
+    "slope_deg",
+    "elev_m"
+  ],
+  "layer_info": {
+    "mask": {
+      "dtype": "int16",
+      "scale": 0.01,
+      "offset": 0,
+      "units": "deg",
+      "components": 64,
+      "nodata": -32768,
+      "byte_offset": 0,
+      "byte_length": 512
+    },
+    "slope_deg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "deg",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 512,
+      "byte_length": 16
+    },
+    "elev_m": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "m",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 528,
+      "byte_length": 16
+    }
+  }
+}

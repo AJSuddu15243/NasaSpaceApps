@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://ssd.jpl.nasa.gov/api/horizons.api"
+  ],
+  "t0_iso": "2026-01-01T00:00:00Z",
+  "step_hours": 1,
+  "n": 2,
+  "fields": [
+    "sun_lat",
+    "sun_lon",
+    "sun_dist_km",
+    "earth_lat",
+    "earth_lon",
+    "earth_dist_km"
+  ],
+  "dtype": "float32"
+}

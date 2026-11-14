@@ -1,0 +1,37 @@
+# MOON_ME; latitude degrees north, longitude degrees east in [-180, 180].
+moon_radius_m: 1737400
+ephemeris:
+  start: "2026-01-01T00:00Z"
+  end: "2030-12-31T23:00Z"
+  step_hours: 1
+terrain:
+  far_field_m: 240
+  near_field_m: 80
+  heatmap_cell_m: 160
+  max_distance_km: 150
+masks:
+  site_bins: 360
+  grid_bins: 64
+data_budget_mb: 25
+# Relative to repository root, independent of working directory.
+paths:
+  raw: pipeline/data/raw
+  cache: pipeline/data/cache
+  out: web/public/data
+# NASA M2M-30044, Table A2.1-1, p. 75: original polygon centres.
+regions:
+  connecting-ridge:
+    lat: -89.4632
+    lon: -137.49
+    source_url: https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf
+    confirmed: false
+  haworth:
+    lat: -86.7639
+    lon: -22.777
+    source_url: https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf
+    confirmed: false
+  malapert-massif:
+    lat: -85.9948
+    lon: -0.23578
+    source_url: https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf
+    confirmed: false

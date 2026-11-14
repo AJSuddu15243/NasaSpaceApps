@@ -1,0 +1,20 @@
+[
+  {
+    "id": "example-polar-site",
+    "name": "Example polar site",
+    "lat": -89.5,
+    "lon": 180,
+    "category": "artemis3",
+    "note": "Example only; DATA-1 supplies verified coordinates.",
+    "source_url": "https://www.nasa.gov/news-release/nasa-provides-update-on-artemis-iii-moon-landing-regions/"
+  },
+  {
+    "id": "example-equatorial-site",
+    "name": "Example equatorial site",
+    "lat": 0.674,
+    "lon": 23.473,
+    "category": "apollo",
+    "note": "",
+    "source_url": "https://nssdc.gsfc.nasa.gov/planetary/lunar/lunar_sites.html"
+  }
+]

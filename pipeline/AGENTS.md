@@ -10,9 +10,14 @@ browser. Every output goes to `web/public/data/` and matches a contract in `SPEC
 pipeline/
 ├── pyproject.toml          # Python 3.12, managed with uv; ruff + pytest
 ├── config.yaml             # regions, date range, resolutions, output paths (single place for knobs)
-├── Makefile                # make setup | ephem | terrain | layers | masks | validate | package | all | test | lint
+├── Makefile                # make setup | ephem | terrain | layers | masks | validate | imagery | package | all | test | lint
 ├── src/lunar_pipeline/
 │   ├── __main__.py         # CLI: python -m lunar_pipeline <command>
+│   ├── config.py           # strict frozen config; repository-root paths
+│   ├── binio.py            # little-endian arrays + required metadata
+│   ├── fetch.py            # cache, retries, streaming/resume + SHA-256
+│   ├── schemas.py          # shared schema validation; warn once if missing
+│   ├── masks.py            # native Rust masks adapter (PIPE-8)
 │   ├── coords.py           # lat/lon <-> south polar stereographic (MOON_ME, R = 1737.4 km) + tests
 │   ├── horizons.py         # JPL Horizons API client: chunking, retries, caching, parsing
 │   ├── ephem.py            # builds ephem.bin + ephem.json (hourly 2026-2030)
@@ -20,6 +25,7 @@ pipeline/
 │   │   ├── trek.py         # Moon Trek / QuickMap download APIs
 │   │   ├── pgda.py         # PGDA LOLA GeoTIFF fallback
 │   │   ├── tiles.py        # crop + downsample to raw float32 tiles + JSON header
+│   │   ├── imagery.py      # surface imagery (PIPE-10)
 │   │   └── layers.py       # slope, crater depth (local relief), roughness proxy, rock layer
 │   ├── validate.py         # Horizons topocentric az/el for curated sites -> validation set
 │   └── package.py          # manifest.json, size budget, citations
@@ -29,7 +35,7 @@ pipeline/
 
 ## Pipeline order
 `ephem` → `terrain` → `layers` → `masks` (calls the engine's native Rust bin `cargo run --release --bin masks`) →
-`validate` → `package`. `make all` runs them in order and is safe to re-run (cached, idempotent).
+`validate` → `imagery` → `package`. `make all` runs them in order and is safe to re-run (cached, idempotent).
 
 ## Outputs (all in `web/public/data/`)
 | File | Made by | Contract |
@@ -55,3 +61,15 @@ pipeline/
 ## How teammates use it
 `cd pipeline && make setup && make all` regenerates every data file. To use the data without running the
 pipeline, pull `main`: the outputs are committed under `web/public/data/` once they fit the size budget.
+
+## Scaffold status (PIPE-1)
+
+All stages currently print their issue ID and exit 0; no output products are generated.
+`terrain` is a Make alias for CLI `terrain-fetch` then `tiles`. The CLI registry imports stages
+lazily; each stage implements `run(cfg: Config) -> None`. Helpers horizons.py, coords.py and
+terrain/pgda.py also expose stubs for their owners.
+
+Downstream issues edit their own modules and tests, leaving __main__.py, Makefile, pyproject.toml,
+uv.lock and config.yaml stable. Use sequential streaming downloads and raster windows on the
+16 GB MacBook Air. Tests use fake transports; conftest.py blocks accidental network access.
+Read README.md for helper signatures and NOTES.md for source provenance and limitations.
