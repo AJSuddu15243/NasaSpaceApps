@@ -1,0 +1,316 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T23:41:00Z",
+  "files": [
+    {
+      "path": "ephem.bin",
+      "bytes": 1051776,
+      "sha256": "97767be0e17f4fd2b122460c5f9305cb3069abd2ffe3350694e270fc45abd81b",
+      "source_urls": [
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272027-01-01+00%3A00%27&STOP_TIME=%272027-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272028-01-01+00%3A00%27&STOP_TIME=%272028-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272029-01-01+00%3A00%27&STOP_TIME=%272029-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272030-01-01+00%3A00%27&STOP_TIME=%272030-12-31+23%3A00%27"
+      ]
+    },
+    {
+      "path": "ephem.json",
+      "bytes": 2214,
+      "sha256": "c0f6fc4d2a66523ce60668dee2b02efc2def35ed6f156f81e55260baeeeb7c89",
+      "source_urls": [
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272027-01-01+00%3A00%27&STOP_TIME=%272027-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272028-01-01+00%3A00%27&STOP_TIME=%272028-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272029-01-01+00%3A00%27&STOP_TIME=%272029-12-31+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272030-01-01+00%3A00%27&STOP_TIME=%272030-12-31+23%3A00%27"
+      ]
+    },
+    {
+      "path": "grid/connecting-ridge.bin",
+      "bytes": 375000,
+      "sha256": "13d10a388065f53f5be2cfce897b7aec13afd2bf469155586ecc53c5d6c9b6ca",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "grid/connecting-ridge.json",
+      "bytes": 2180,
+      "sha256": "cfc34ca8bebba83e7aea1596023940f86d85077279772d0c13f04a57d26591fa",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "grid/haworth.bin",
+      "bytes": 375000,
+      "sha256": "39d1d7ec1d32a69a1a322cd5e919ba1eba47250b190c7306a526668dec632e6d",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "grid/haworth.json",
+      "bytes": 2170,
+      "sha256": "69cc4ce1668da738e3ad9aa187bf7bbd71e0ab060ae9f78769b721c888e08969",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "grid/malapert-massif.bin",
+      "bytes": 375000,
+      "sha256": "5c49fd74d14c09ebabcd662812e75c5df6c069d090bc098b846c648b2d50eeb4",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "grid/malapert-massif.json",
+      "bytes": 2179,
+      "sha256": "d3416d623cafcc7a796a8aa0a79760d9d4779aad99debbbb2e31683cdcfce2c1",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "imagery/connecting-ridge.json",
+      "bytes": 1058,
+      "sha256": "b89d4b3b069153269b32d20334cb254298898a903fb62ad5a78b1446084a0645",
+      "source_urls": [
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+        "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "imagery/connecting-ridge.webp",
+      "bytes": 1982616,
+      "sha256": "fe980e6079698c66274f0fc5e621a8a390644f823d9868242eb10ce2191c4f97",
+      "source_urls": [
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+        "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "imagery/haworth.json",
+      "bytes": 1051,
+      "sha256": "24d5538fc2da15c52bf94a0277da6d85fd0dbe6403f4f36a5f79ed6c5803edc3",
+      "source_urls": [
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+        "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "imagery/haworth.webp",
+      "bytes": 1783710,
+      "sha256": "a222bb4b38b67158c7c0f36116843e79618979c100b06acea7ae15878e373a68",
+      "source_urls": [
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+        "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "imagery/malapert-massif.json",
+      "bytes": 1058,
+      "sha256": "a32d888653d5a0ee55a5b732000bb48b5b197f2accf78b2bb5862c4e677b6760",
+      "source_urls": [
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+        "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "imagery/malapert-massif.webp",
+      "bytes": 1985986,
+      "sha256": "4431e6e71fdd9d7d7f21fc870b9d94b93e7bad289e1d9a32cf82079b77720302",
+      "source_urls": [
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+        "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+        "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "mock/ephem.bin",
+      "bytes": 8088,
+      "sha256": "9c1d3c4bb1d5ff5e2ec0a2efb75a207c94961dfa34647a91f74831f76661e8c7",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/ephem.json",
+      "bytes": 383,
+      "sha256": "3d3f17f142145f80f119f13ff1c6cd729f995a881296dc6329f8c2e1facfc131",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/grid/demo.bin",
+      "bytes": 128,
+      "sha256": "3869ad7f812d1c8db6c88add98ce6c1c00d57f7394680a11f6ac72955cc6d87e",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/grid/demo.json",
+      "bytes": 629,
+      "sha256": "1f6434b798a28905b5571c71c4a0a5130ecd97737051f52b61e5f5ae80563c1b",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/masks/demo-basin-c.json",
+      "bytes": 2889,
+      "sha256": "0b075ca532faaff5073d0453074cc3ddb9f1a9339c754ecf1e60f69ac96dffb7",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/masks/demo-ridge-a.json",
+      "bytes": 2888,
+      "sha256": "f732a1769f8adc5784cf0a798d3753ff4c431d0cce6fd964b225ea4e4d4bae09",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/masks/demo-ridge-b.json",
+      "bytes": 2888,
+      "sha256": "ef00eaae94d9a9b138f17a6fab83e3de284fec3aeb2e6a0f0e07fa3f31ef2ae1",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "mock/sites.json",
+      "bytes": 883,
+      "sha256": "be6927ad13c415a8dfb5e3126e3f76073df4c0bee0a739c6a1f29454b2803343",
+      "source_urls": [
+        "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "tiles/connecting-ridge_80m.bin",
+      "bytes": 250000,
+      "sha256": "79a163713766ac3954c24ed3da9bf1611d39329448672a1bd1815aee9b54bdba",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "tiles/connecting-ridge_80m.json",
+      "bytes": 660,
+      "sha256": "f31a04aa6e09503a47693d4cd893dc78f348986354868652fa51d0ee9d0a0d11",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "tiles/haworth_80m.bin",
+      "bytes": 250000,
+      "sha256": "0bb9980dc5d700fb3cbad69b48cc0c185b89b14b8f897baba898777dedfdfc52",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "tiles/haworth_80m.json",
+      "bytes": 650,
+      "sha256": "32be344a4791e039efb15a5c18b0bd5dc2d40a22e64749125dd7bf371f98bfaf",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "tiles/malapert-massif_80m.bin",
+      "bytes": 250000,
+      "sha256": "4e40e37ef24fc765efab09591fe3147c0a7b79327b753018c2e75ca1f674f66c",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "tiles/malapert-massif_80m.json",
+      "bytes": 659,
+      "sha256": "7cd86d9c5773b85f150f66f5dea0df760e064d5d8aeb98542abd393ea76cb1c7",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "validation/connecting-ridge.json",
+      "bytes": 227490,
+      "sha256": "6c152794d01dd1d25edbdc6437987e52f1082d631c4ca7fc2d7c04f83d67b131",
+      "source_urls": [
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%2710%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27222.510000%2C-89.463200%2C0.000%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27222.510000%2C-89.463200%2C0.000%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%2710%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27222.510000%2C-89.463200%2C0.000%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27222.510000%2C-89.463200%2C0.000%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27"
+      ]
+    },
+    {
+      "path": "validation/haworth.json",
+      "bytes": 226133,
+      "sha256": "88292f63c061f1f92b5dc9990cefa92c6d353de3221645996c26fb5f34333bee",
+      "source_urls": [
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%2710%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27337.223000%2C-86.763900%2C0.000%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27337.223000%2C-86.763900%2C0.000%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%2710%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27337.223000%2C-86.763900%2C0.000%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27337.223000%2C-86.763900%2C0.000%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27"
+      ]
+    },
+    {
+      "path": "validation/malapert-massif.json",
+      "bytes": 226149,
+      "sha256": "0be2ae40fa1f2ecffb2f49b98823734a1041a737d6d7d4ddcc8f37be5d035b22",
+      "source_urls": [
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%2710%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27359.764220%2C-85.994800%2C0.000%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27359.764220%2C-85.994800%2C0.000%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-01-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%2710%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27359.764220%2C-85.994800%2C0.000%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27399%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27coord%40301%27&STEP_SIZE=%271+h%27&QUANTITIES=%274%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&COORD_TYPE=%27GEODETIC%27&SITE_COORD=%27359.764220%2C-85.994800%2C0.000%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27",
+        "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272028-07-01+00%3A00%27&STOP_TIME=%272028-07-30+23%3A00%27"
+      ]
+    }
+  ]
+}
