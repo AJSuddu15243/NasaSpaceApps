@@ -26,7 +26,7 @@ export function createShellStore(browser: BrowserPort) {
       browser.history[replace ? 'replaceState' : 'pushState'](null, '', `${snapshot.path}${search}${browser.location.hash}`);
       publish();
     },
-    navigate(path: '/' | '/app') {
+    navigate(path: '/' | '/app' | '/docs') {
       browser.history.pushState(null, '', `${path}${writeScenario(snapshot.scenario)}`);
       publish();
     },

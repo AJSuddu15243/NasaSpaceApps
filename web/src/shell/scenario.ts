@@ -1,5 +1,5 @@
 import type { Weights } from '../contracts/engine-api';
-export type View = '3d' | 'panorama' | 'map';
+export type View = '3d' | 'panorama' | 'map' | 'globe';
 export type Mode = 'planner' | 'explorer';
 export interface Scenario { sites: string[]; date: string; hours: number; weights: Weights; mode: Mode; view: View }
 export const DEFAULT_SCENARIO: Scenario = {
@@ -50,7 +50,7 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
   }
   if (q.has('view')) {
     const view = q.get('view');
-    if (view === '3d' || view === 'panorama' || view === 'map') scenario.view = view;
+    if (view === '3d' || view === 'panorama' || view === 'map' || view === 'globe') scenario.view = view;
     else warnings.push('Unknown view: 3D was restored.');
   }
   return { scenario, warnings };

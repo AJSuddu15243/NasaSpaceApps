@@ -1,0 +1,88 @@
+{
+  "terms": [
+    {
+      "id": "horizon-mask",
+      "term": "Horizon mask",
+      "short": "A map of how high terrain blocks the sky at each point.",
+      "long": "For every spot we compute the highest elevation angle that local terrain reaches in each direction. Anything below that angle is hidden — the same way a hill blocks the Sun for you on Earth.",
+      "category": "terrain"
+    },
+    {
+      "id": "solar-window",
+      "term": "Solar window",
+      "short": "How long a site stays in sunlight during the mission.",
+      "long": "We walk the mission timeline hour by hour and count the hours the Sun is above the local horizon. Near the pole the Sun barely climbs, so this number is often small and very sensitive to terrain.",
+      "category": "lighting"
+    },
+    {
+      "id": "earth-contact",
+      "term": "Earth contact",
+      "short": "How often a site can see Earth for radio or direct links.",
+      "long": "Earth hangs just above the lunar horizon near the poles. Terrain that shades the Sun often shades Earth too, so power and communications can pull in opposite directions.",
+      "category": "communications"
+    },
+    {
+      "id": "blackout",
+      "term": "Blackout",
+      "short": "The longest stretch with no Earth in view.",
+      "long": "Because Earth barely rises at the south pole, a site can lose contact for many hours while the planet is behind a ridge or crater rim. We report the worst gap, not the average.",
+      "category": "communications"
+    },
+    {
+      "id": "psr",
+      "term": "Permanently shadowed region (PSR)",
+      "short": "A crater floor that never sees sunlight.",
+      "long": "Deep polar craters whose rims block the low Sun forever. They stay near 40 K and may trap water ice — useful for resources, dangerous for a lander that needs sunlight.",
+      "category": "terrain"
+    },
+    {
+      "id": "sub-solar",
+      "term": "Sub-solar point",
+      "short": "Where the Sun is directly overhead on the Moon.",
+      "long": "The point on the lunar surface where the Sun sits at zenith. Its latitude wobbles only a few degrees because the Moon's spin axis is tilted just 1.5° to its orbit.",
+      "category": "astronomy"
+    },
+    {
+      "id": "sub-earth",
+      "term": "Sub-Earth point",
+      "short": "Where Earth sits directly overhead on the Moon.",
+      "long": "Earth is tidally locked to the Moon, so this point barely moves — which is why Earth is always near the same part of the lunar sky and often near the horizon at the poles.",
+      "category": "astronomy"
+    },
+    {
+      "id": "moon-me",
+      "term": "MOON_ME frame",
+      "short": "The Moon-fixed coordinate frame all positions use.",
+      "long": "A coordinate system that rotates with the Moon, so a site's latitude and longitude stay fixed no matter where the Moon is in its orbit. All our positions are reported in this frame.",
+      "category": "coordinates"
+    },
+    {
+      "id": "launch-window",
+      "term": "Launch / landing window",
+      "short": "The span of dates when lighting and contact conditions hold.",
+      "long": "Because the Sun's polar position and Earth's position change over weeks, the same site can be bright and talkative in one month and dark and silent in another. We compare windows, not single dates.",
+      "category": "mission"
+    },
+    {
+      "id": "libration",
+      "term": "Libration",
+      "short": "The Moon's slow wobble that lets us see a little extra.",
+      "long": "The Moon's orbit is slightly tilted and elliptical, so over a month we see about 59% of its surface instead of exactly half. It does not change lighting much at the poles, but it shifts which craters peek over the horizon.",
+      "category": "astronomy"
+    },
+    {
+      "id": "solar-elevation",
+      "term": "Solar elevation",
+      "short": "How high the Sun is above the local horizon, in degrees.",
+      "long": "At the lunar equator the Sun can reach 90°. At the south pole it never gets higher than about 1.5° — it skims the horizon like a sunrise that never finishes.",
+      "category": "lighting"
+    },
+    {
+      "id": "synthetic-data",
+      "term": "Synthetic data",
+      "short": "Demo values generated for the prototype, not measurements.",
+      "long": "Parts of this demo run on generated stand-in data so the interface can be explored before the real datasets finish processing. Anything labelled synthetic is not a scientific result.",
+      "category": "data"
+    }
+  ]
+}

@@ -5,8 +5,8 @@ test('hero is immediately useful and hands off to the workspace', async ({ page 
   const started = Date.now();
   await page.goto('/');
   const hero = page.locator('.landing-hero');
-  await expect(hero.getByRole('heading', { name: 'A landing date changes the view.' })).toBeVisible();
-  const heroCta = hero.getByRole('button', { name: 'Open the navigator' });
+  await expect(hero.getByRole('heading', { name: /Choose where/ })).toBeVisible();
+  const heroCta = hero.getByRole('button', { name: 'Explore the Moon' });
   await expect(heroCta).toBeVisible();
   expect(Date.now() - started).toBeLessThan(2500);
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
