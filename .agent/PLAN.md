@@ -77,3 +77,6 @@ Both sides take the sun direction from the same `ephemeris(t)`.
 - [ ] Timing numbers (milliseconds per time step for the grid size used)
 - [ ] Determinism demo: same seed and weights give the same hash every run
 - [ ] Pitch slides
+
+## Related
+- [Tech stack review: conceptual gaps](STACK_REVIEW.md) (draft)
