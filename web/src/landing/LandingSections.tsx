@@ -98,11 +98,12 @@ function SequenceStep({ progress, index, eyebrow, title, body, cta, onOpen }: {
   progress: ReturnType<typeof useScroll>['scrollYProgress'];
   index: number; eyebrow: string; title: string; body: string; cta?: boolean; onOpen: () => void;
 }) {
-  const start = index * 0.24;
-  const end = start + 0.3;
-  const opacity = useTransform(progress, [start, start + 0.07, end - 0.07, end], [0, 1, 1, 0]);
-  const y = useTransform(progress, [start, start + 0.1, end - 0.05, end], [34, 0, 0, -20]);
-  return <motion.div className="seq-step" style={{ opacity, y }}>
+  const start = index * 0.235;
+  const end = Math.min(start + 0.3, 1.05);
+  const opacity = useTransform(progress, [start, start + 0.06, end - 0.06, end], [0, 1, 1, 0]);
+  const y = useTransform(progress, [start, start + 0.09, end - 0.05, end], [34, 0, 0, -20]);
+  const clip = useTransform(progress, [start, start + 0.13, end - 0.04, end], ['inset(0% 100% 0% 0%)', 'inset(0% 0% 0% 0%)', 'inset(0% 0% 0% 0%)', 'inset(0% 0% 100% 0%)']);
+  return <motion.div className="seq-step" style={{ opacity, y, clipPath: clip }}>
     <p className="seq-index">{index + 1} / 04</p>
     <p className="seq-eyebrow">{eyebrow}</p>
     <h3>{title}</h3>
