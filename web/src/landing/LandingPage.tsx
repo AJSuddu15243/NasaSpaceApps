@@ -1,16 +1,31 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { chooseHeroMode } from './flight';
+import { chooseHeroMode, type HeroCapability } from './flight';
 import { LandingSections } from './LandingSections';
 import './landing.css';
 
-const MoonBackdrop = lazy(() => import('./MoonBackdrop'));
+const MoonGlobe = lazy(() => import('./Globe3D'));
+
+const MOON_CONFIG = {
+  radius: 1.45,
+  textureUrl: '/textures/moon_color.jpg',
+  bumpMapUrl: '/textures/moon_elevation.jpg',
+  bumpScale: 3,
+  showAtmosphere: true,
+  atmosphereColor: '#7e93b8',
+  atmosphereIntensity: 1.4,
+  atmosphereBlur: 3,
+  autoRotateSpeed: 0.3,
+  ambientIntensity: 0.22,
+  pointLightIntensity: 2.6,
+  southPoleMarker: true,
+} as const;
 
 export function LandingPage({ onOpen }: { onOpen: () => void }) {
   const [mode, setMode] = useState<'pending' | 'flight' | 'static'>('pending');
-  const diveRef = useRef(0);
+  const diveRef = useRef({ dive: 0 });
 
   useEffect(() => {
-    const capability = {
+    const capability: HeroCapability = {
       reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
       saveData: (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true,
       hardwareConcurrency: navigator.hardwareConcurrency || 0,
@@ -25,7 +40,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
 
   return <div className={`landing scene-${mode}`}>
     <div className="moon-backdrop" aria-hidden="true">
-      {mode === 'flight' ? <Suspense fallback={null}><MoonBackdrop diveRef={diveRef} /></Suspense> : null}
+      {mode === 'flight' ? <Suspense fallback={null}><MoonGlobe config={MOON_CONFIG} className="h-full w-full" rigRef={diveRef} /></Suspense> : null}
       {mode === 'static' ? <div className="static-moon"><span /></div> : null}
     </div>
 

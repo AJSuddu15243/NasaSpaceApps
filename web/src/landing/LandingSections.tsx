@@ -111,10 +111,10 @@ function SequenceStep({ progress, index, eyebrow, title, body, cta, onOpen }: {
   </motion.div>;
 }
 
-export function LandingSections({ onOpen, diveRef }: { onOpen: () => void; diveRef: MutableRefObject<number> }) {
+export function LandingSections({ onOpen, diveRef }: { onOpen: () => void; diveRef: MutableRefObject<{ dive: number }> }) {
   const sequenceRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: sequenceRef, offset: ['start 85%', 'end 20%'] });
-  useMotionValueEvent(scrollYProgress, 'change', value => { diveRef.current = value; });
+  useMotionValueEvent(scrollYProgress, 'change', value => { diveRef.current.dive = value; });
 
   return <>
     <section ref={sequenceRef} id="challenge" className="landing-challenge" aria-label="Why the lunar south pole is hard">
