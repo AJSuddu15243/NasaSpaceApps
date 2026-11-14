@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Crosshair, Loader2, MapPin, Orbit, RotateCcw } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../design';
 import './globe.css';
 
 export interface GlobeMarker {
@@ -151,11 +152,13 @@ export function MoonGlobeView({ markers, timeLabel }: { markers: GlobeMarker[]; 
     {!ready && !failed && <div className="globe-loading" role="status"><Loader2 className="spin" aria-hidden="true" /><span>Loading lunar surface…</span></div>}
     {failed && <div className="globe-error" role="alert"><p>The 3D Moon could not start.</p><p className="hint">{failed}</p></div>}
 
-    <div className="globe-controls" role="toolbar" aria-label="Globe controls">
-      <button type="button" onClick={() => flyTo(OVERVIEW)} aria-label="Reset camera"><RotateCcw size={15} aria-hidden="true" /><span>Reset</span></button>
-      <button type="button" onClick={() => flyTo(SOUTH_POLE)} aria-label="Fly to lunar south pole"><MapPin size={15} aria-hidden="true" /><span>South pole</span></button>
-      <button type="button" onClick={() => setAutoRotate(value => !value)} aria-pressed={autoRotate} aria-label="Toggle auto-rotation"><Orbit size={15} aria-hidden="true" /><span>{autoRotate ? 'Pause spin' : 'Auto-rotate'}</span></button>
-    </div>
+    <TooltipProvider delayDuration={250}>
+      <div className="globe-controls" role="toolbar" aria-label="Globe controls">
+        <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => flyTo(OVERVIEW)} aria-label="Reset camera"><RotateCcw size={15} aria-hidden="true" /></button></TooltipTrigger><TooltipContent>Reset camera</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => flyTo(SOUTH_POLE)} aria-label="Fly to lunar south pole"><MapPin size={15} aria-hidden="true" /></button></TooltipTrigger><TooltipContent>Fly to south pole</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => setAutoRotate(value => !value)} aria-pressed={autoRotate} aria-label="Toggle auto-rotation"><Orbit size={15} aria-hidden="true" /></button></TooltipTrigger><TooltipContent>{autoRotate ? 'Pause rotation' : 'Auto-rotate'}</TooltipContent></Tooltip>
+      </div>
+    </TooltipProvider>
 
     <div className="globe-hint"><Crosshair size={12} aria-hidden="true" /> Drag to rotate · scroll to zoom · click the surface</div>
     {timeLabel && <div className="globe-time"><span className="eyebrow">EPHEMERIS AT</span><span>{timeLabel}</span></div>}

@@ -34,7 +34,7 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
   return <section className="view-panel" aria-labelledby="view-heading">
     <div className="view-toolbar"><div><span className="eyebrow">02 / OBSERVE</span><h2 id="view-heading">South pole environment</h2></div><Badge>{isGlobe ? 'LROC imagery' : 'Illustrative layer'}</Badge></div>
     <div className="view-switch" role="group" aria-label="Environment view">
-      {(Object.keys(labels) as View[]).map(view => <Button key={view} variant={view === scenario.view ? 'secondary' : 'ghost'} aria-pressed={view === scenario.view} onClick={() => change({ view })}>{labels[view]}</Button>)}
+      {(Object.keys(labels) as View[]).map(view => <Button key={view} variant={view === scenario.view ? 'secondary' : 'ghost'} className="view-tab" aria-pressed={view === scenario.view} onClick={() => change({ view })}>{labels[view]}</Button>)}
     </div>
     {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="empty-caption"><span className="eyebrow">LIVE GLOBE</span><h3>Loading the Moon…</h3><p>The globe view streams in on demand to keep the workspace light.</p></div></div>}>
       <MoonGlobeView markers={globeMarkers} timeLabel={scenario.date.slice(0, 16).replace('T', ' ') + ' UTC'} />

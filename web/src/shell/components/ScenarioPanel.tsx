@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react';
+import { ChevronLeft } from 'lucide-react';
 import type { DemoData } from '../data';
 import { DEFAULT_SCENARIO, MAX_SITES, validUtc, type Scenario } from '../scenario';
 import { Button, Input, Label } from '../ui';
 import { SitePicker } from '../../features/sites/SitePicker';
-export function ScenarioPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>, replace?: boolean) => void }) {
+export function ScenarioPanel({ scenario, data, change, onCollapse }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>, replace?: boolean) => void; onCollapse?: () => void }) {
   return <aside className="scenario-panel" aria-label="Sites and scenario">
+    {onCollapse && <div className="panel-collapse-row"><button type="button" className="panel-collapse-btn" onClick={onCollapse} aria-label="Collapse sites panel"><ChevronLeft size={14} aria-hidden="true" /></button></div>}
     <SitePicker sites={data.sites} selected={scenario.sites} onChange={sites => change({ sites: sites.slice(0, MAX_SITES) })} />
     <DateWindow key={`${scenario.date}/${scenario.hours}`} scenario={scenario} change={change} />
     {scenario.mode === 'planner' && <fieldset className="weight-list"><legend>Comparison weights</legend>

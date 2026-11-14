@@ -1,4 +1,4 @@
-.moon-globe{position:relative;min-height:480px;border:1px solid var(--shell-line);border-radius:12px;overflow:hidden;background:#04060d}
+.moon-globe{position:relative;flex:1;min-height:480px;border:1px solid var(--shell-line);border-radius:12px;overflow:hidden;background:#04060d}
 .moon-globe-canvas{position:absolute;inset:0}
 .moon-globe-canvas canvas{display:block}
 .globe-loading{position:absolute;inset:0;display:grid;place-items:center;gap:10px;color:var(--shell-muted);font-size:12px;letter-spacing:.04em}
@@ -17,8 +17,8 @@
 .globe-marker-glyph{font-size:9px;font-weight:700}
 
 .globe-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
-.globe-controls button{display:flex;align-items:center;gap:7px;min-height:34px;padding:7px 11px;border:1px solid var(--shell-line);border-radius:8px;background:hsl(var(--background)/.78);backdrop-filter:blur(8px);color:var(--shell-text);font-size:11px;font-weight:500;cursor:pointer;transition:background-color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard)}
-.globe-controls button:hover{background:hsl(var(--card));border-color:var(--shell-field)}
+.globe-controls button{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--shell-line);border-radius:8px;background:hsl(var(--background)/.78);backdrop-filter:blur(8px);color:var(--shell-text);cursor:pointer;transition:background-color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard),color var(--motion-fast) var(--ease-standard)}
+.globe-controls button:hover{background:hsl(var(--card));border-color:var(--shell-field);color:var(--shell-sun)}
 .globe-controls button[aria-pressed=true]{border-color:hsl(var(--sun)/.5);color:var(--shell-sun)}
 .globe-controls svg{flex-shrink:0}
 
@@ -40,5 +40,5 @@
 .globe-note{margin:10px 0 0;font-size:11px;line-height:1.5;color:var(--shell-muted)}
 .globe-coords{margin:8px 0 0;font-size:9px;color:var(--shell-muted);opacity:.75}
 
-@media(max-width:700px){.moon-globe{min-height:380px}.globe-controls button span{display:none}.globe-controls button{padding:8px}.globe-info{left:8px;right:8px;width:auto}}
+@media(max-width:700px){.moon-globe{min-height:380px}.globe-info{left:8px;right:8px;width:auto}}
 @media(prefers-reduced-motion:reduce){.globe-marker,.globe-controls button{transition:none!important}}
