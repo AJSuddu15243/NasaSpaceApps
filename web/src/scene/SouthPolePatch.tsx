@@ -1,33 +1,12 @@
-import { useEffect, useMemo } from "react";
-import type { ReactElement } from "react";
-
-import { createSouthPoleTerrainGeometry } from "./terrain";
-import {
-  DEFAULT_TERRAIN_SHADER_CONFIG,
-  TerrainShaderMaterial,
-} from "./shaders";
-import type { SouthPoleTile } from "./types";
-
-interface SouthPolePatchProps {
-  readonly tile: SouthPoleTile;
-  readonly contoursEnabled?: boolean;
-}
-
-export function SouthPolePatch({ tile, contoursEnabled = false }: SouthPolePatchProps): ReactElement {
-  const geometry = useMemo(
-    () => createSouthPoleTerrainGeometry(tile),
-    [tile],
-  );
-  const shaderConfig = useMemo(
-    () => ({ ...DEFAULT_TERRAIN_SHADER_CONFIG, showContours: contoursEnabled }),
-    [contoursEnabled],
-  );
-
+import { useEffect, useMemo } from 'react';
+import { createLocalTerrain, elevationRange } from './localTerrain';
+import { TerrainShaderMaterial } from './shaders';
+import type { LunarSceneProps, SouthPoleTile } from './types';
+export function SouthPolePatch({ tile, contoursEnabled = false, elevationEnabled = false, assets, layer, overlayOpacity, onImageryError, exaggeration = 1 }: LunarSceneProps & { tile: SouthPoleTile }) {
+  const geometry = useMemo(() => createLocalTerrain(tile, exaggeration), [tile, exaggeration]);
+  const config = useMemo(() => ({ elevationRangeM: elevationRange(tile), showContours: contoursEnabled, contourIntervalM: 100 }), [tile, contoursEnabled]);
   useEffect(() => () => geometry.dispose(), [geometry]);
-
-  return (
-    <mesh geometry={geometry} castShadow receiveShadow renderOrder={1}>
-      <TerrainShaderMaterial config={shaderConfig} />
-    </mesh>
-  );
+  return <mesh geometry={geometry} castShadow receiveShadow>
+    <TerrainShaderMaterial onImageryError={onImageryError} config={config} tile={tile} assets={assets} layer={layer} overlayOpacity={overlayOpacity} elevationEnabled={elevationEnabled} />
+  </mesh>;
 }

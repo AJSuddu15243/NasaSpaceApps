@@ -1,18 +1,17 @@
-import { lazy, Suspense, useState } from 'react';
-import { Box, Crosshair, Globe, Layers, Map, Mountain } from 'lucide-react';
-import { LunarScene, type CameraMode } from '../../scene';
+import { lazy, Suspense } from 'react';
+import { Box, Globe, Map, Mountain } from 'lucide-react';
 import type { Scenario, View } from '../scenario';
 import type { DemoData } from '../data';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../design';
 import { polarPoint } from '../viewGeometry';
 import { parseCustomSite } from '../../features/sites/sites';
 import { ephemAt } from '../../features/globe/ephem';
 import { ephemCoverage } from '../../features/compare/timeline';
 import type { GlobeMarker } from '../../features/globe/MoonGlobeView';
 
-export interface ScrubState { hour: number | null; set: (hour: number | null) => void }
-
 const MoonGlobeView = lazy(() => import('../../features/globe/MoonGlobeView').then(m => ({ default: m.MoonGlobeView })));
+const SceneViewport = lazy(() => import('../../scene/SceneViewport').then(m => ({ default: m.SceneViewport })));
+
+export interface ScrubState { hour: number | null; set: (hour: number | null) => void }
 
 const views: { id: View; label: string; icon: typeof Globe }[] = [
   { id: 'globe', label: 'Globe', icon: Globe },
@@ -22,9 +21,6 @@ const views: { id: View; label: string; icon: typeof Globe }[] = [
 ];
 
 export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void; scrub?: ScrubState }) {
-  const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
-  const [contoursEnabled, setContoursEnabled] = useState(false);
-  const isThreeD = scenario.view === '3d';
   const markers = scenario.sites.flatMap((id, index) => {
     const site = data.sites.find(item => item.id === id);
     const coords = site ?? parseCustomSite(id);
@@ -49,6 +45,7 @@ export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenari
     ] : []),
   ];
   const isGlobe = scenario.view === 'globe';
+  const isTerrain = scenario.view === '3d' || scenario.view === 'map';
   const active = views.find(v => v.id === scenario.view)!;
 
   return <section className="vw" aria-labelledby="view-heading">
@@ -61,24 +58,19 @@ export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenari
     <div className="vw-stage">
       {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="viewport-meta"><span>LOADING</span></div><div className="empty-caption"><h3>Loading the Moon…</h3></div></div>}>
         <MoonGlobeView markers={globeMarkers} timeLabel={ephemTime.slice(0, 16).replace('T', ' ') + ' UTC'} />
-      </Suspense> : isThreeD ? <div className="terrain-scene-wrap">
-        <div className="terrain-scene">
-          <LunarScene
-            cameraMode={cameraMode}
-            onCameraModeChange={setCameraMode}
-            contoursEnabled={contoursEnabled}
-            aria-label="Interactive lunar south-pole terrain scene"
-          />
-        </div>
-        <TooltipProvider delayDuration={250}>
-          <div className="vw-floatbar" role="toolbar" aria-label="Scene controls">
-            <Tooltip><TooltipTrigger asChild><button type="button" className="icon-btn" aria-pressed={cameraMode === 'south-pole'} onClick={() => setCameraMode(mode => mode === 'orbit' ? 'south-pole' : 'orbit')} aria-label="Fly to south pole"><Crosshair size={15} aria-hidden="true" /></button></TooltipTrigger><TooltipContent>{cameraMode === 'orbit' ? 'Fly to south pole' : 'Return to orbit'}</TooltipContent></Tooltip>
-            <Tooltip><TooltipTrigger asChild><button type="button" className="icon-btn" aria-pressed={contoursEnabled} onClick={() => setContoursEnabled(value => !value)} aria-label="Toggle contour lines"><Layers size={15} aria-hidden="true" /></button></TooltipTrigger><TooltipContent>Contour lines</TooltipContent></Tooltip>
-          </div>
-        </TooltipProvider>
-        <p className="scene-hint">Drag to orbit · scroll to zoom · double-click flies to the pole</p>
-      </div> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
-        <div className="viewport-meta"><span>MOON_ME · 80–90°S</span><span>UTC {scenario.date.slice(0, 16).replace('T', ' ')}</span></div>
+      </Suspense> : isTerrain ? <Suspense fallback={<div className="terrain-empty" role="status"><div className="viewport-meta"><span>LOADING</span></div><div className="empty-caption"><h3>Loading terrain…</h3></div></div>}>
+        <SceneViewport
+          view={scenario.view === 'map' ? 'map' : '3d'}
+          date={ephemTime}
+          table={data.table}
+          onSiteSelect={id => change({ sites: [id, ...scenario.sites.filter(s => s !== id)].slice(0, 4) })}
+          sites={scenario.sites.flatMap((id, index) => {
+            const site = data.sites.find(item => item.id === id);
+            const coords = site ?? parseCustomSite(id);
+            return coords ? [{ id, name: site?.name ?? 'Custom point', lat: coords.lat, lon: coords.lon, index }] : [];
+          })} />
+      </Suspense> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
+        <div className="viewport-meta"><span>MOON_ME · 80–90°S</span><span>UTC {ephemTime.slice(0, 16).replace('T', ' ')}</span></div>
         <svg className="lunar-outline" viewBox="0 0 480 380" fill="none" role="img" aria-label={`Illustrative ${active.label.toLowerCase()} with ${markers.length} selected site markers`}>
           <defs><radialGradient id="surface" cx="48%" cy="44%"><stop offset="0" stopColor="#343941"/><stop offset=".6" stopColor="#1c2026"/><stop offset="1" stopColor="#0a0c10"/></radialGradient><filter id="soft"><feGaussianBlur stdDeviation="12"/></filter></defs>
           <ellipse className="earth-cast" cx="370" cy="78" rx="62" ry="22" filter="url(#soft)"/>
@@ -91,10 +83,10 @@ export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenari
           <text className="pole-label" x="240" y="194" textAnchor="middle">SOUTH POLE</text>
         </svg>
         <div className="viewport-readout"><div><span>Selected</span><strong>{markers.length.toString().padStart(2, '0')}</strong></div><div><span>Window</span><strong>{scenario.hours} h</strong></div><div><span>Layer</span><strong>{active.label}</strong></div></div>
-        <div className="empty-caption"><p>Visual orientation only. Real LOLA terrain, horizon masks, and ephemeris vectors are not connected in this preview.</p></div>
+        <div className="empty-caption"><p>Visual orientation only. Terrain metrics come from horizon masks, not this illustration.</p></div>
       </div>}
     </div>
-    {scrub && (isGlobe || isThreeD) && <div className="vw-scrub">
+    {scrub && (isGlobe || isTerrain) && <div className="vw-scrub">
       <div className="vw-scrub-row">
         <span className="vw-scrub-time">{scrubActive ? `T+${scrub.hour} h · ${ephemTime.slice(0, 16).replace('T', ' ')} UTC` : 'Mission start'}</span>
         <button type="button" className="vw-scrub-live" onClick={() => scrub.set(null)} disabled={!scrubActive}>Live</button>
@@ -108,6 +100,6 @@ export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenari
     <div className="vw-footer"><span><i className="legend-dot sun"/> Sun / power</span><span><i className="legend-dot earth"/> Earth / communications</span></div>
     <details className="method-note"><summary>How to read this</summary><p>At the lunar south pole, nearby terrain can block the Sun or Earth. Compare sites over the same time window before drawing conclusions.</p></details>
     {isGlobe && <p className="vw-caption"><span className="eyebrow">LUNAR SURFACE</span>LROC colour mosaic and LOLA elevation, NASA SVS. Numbered pins are scenario sites; S/E mark sub-solar and sub-Earth points at the scenario time.</p>}
-    {isThreeD && <p className="vw-caption"><span className="eyebrow">SOUTH POLAR REGION</span>Synthetic terrain preview. Elevation and lighting are illustrative until pipeline and ephemeris data are connected.</p>}
+    {isTerrain && <p className="vw-caption"><span className="eyebrow">REAL TERRAIN</span>LOLA elevation tiles and JPL Horizons lighting for the south-polar regions. Sites without shipped tiles show a synthetic preview.</p>}
   </section>;
 }

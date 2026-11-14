@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Vector2, Vector3 } from "three";
+import { Vector2 } from "three";
 
 import {
   createTerrainShaderUniforms,
@@ -14,9 +14,7 @@ test("uses the Cividis defaults with 100 m contours disabled", () => {
   expect(uniforms.uElevationRangeM.value).toEqual(new Vector2(-250, 750));
   expect(uniforms.uContourIntervalM.value).toBe(100);
   expect(uniforms.uShowContours.value).toBe(false);
-  expect(uniforms.uLightDirectionView.value).toEqual(
-    new Vector3(...DEFAULT_TERRAIN_SHADER_CONFIG.lightDirectionView).normalize(),
-  );
+
 });
 
 test("rejects invalid elevation and contour settings at the shader boundary", () => {

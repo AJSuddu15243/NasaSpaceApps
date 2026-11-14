@@ -1,14 +1,16 @@
 uniform vec2 uElevationRangeM;
-uniform vec3 uLightDirectionView;
-uniform float uHillshadeStrength;
 uniform bool uShowContours;
+uniform bool uElevationEnabled;
 uniform float uContourIntervalM;
-uniform float uContourWidthM;
-uniform float uContourOpacity;
-uniform vec3 uContourColor;
-
 varying float vElevationM;
-varying vec3 vNormalView;
+varying vec2 vTerrainUv;
+uniform sampler2D uSlopeMap;
+uniform sampler2D uImage;
+uniform vec4 uSlopeUv;
+uniform vec4 uImageUv;
+uniform int uLayer;
+uniform float uOverlayOpacity;
+
 
 // Cividis is designed to remain readable for common forms of colour-vision deficiency.
 vec3 cividisRamp(float value) {
@@ -30,29 +32,25 @@ vec3 cividisRamp(float value) {
   return mix(ochre, yellow, (value - 0.75) * 4.0);
 }
 
-float contourMask() {
-  if (!uShowContours || uContourIntervalM <= 0.0) {
-    return 0.0;
+vec3 terrainColor() {
+  float height = clamp((vElevationM - uElevationRangeM.x) / (uElevationRangeM.y - uElevationRangeM.x), 0.0, 1.0);
+  vec3 base = uElevationEnabled ? cividisRamp(height) : mix(vec3(0.32, 0.34, 0.36), vec3(0.62, 0.63, 0.64), height);
+  if (uLayer == 1) base = texture2D(uImage, uImageUv.xy + vTerrainUv * uImageUv.zw).rgb;
+  if (uLayer == 3) {
+    vec2 gridUv = uSlopeUv.xy + vTerrainUv * uSlopeUv.zw;
+    vec4 packed = texture2D(uSlopeMap, gridUv);
+    float slope = (packed.r * 65280.0 + packed.g * 255.0) * (90.0 / 65535.0);
+    base = mix(base, cividisRamp(clamp(slope / 30.0, 0.0, 1.0)), uOverlayOpacity);
+    float width = max(fwidth(slope), 0.08);
+    float limitLine = 1.0 - smoothstep(width, width * 2.0, abs(slope - 10.0));
+    base = mix(base, vec3(0.98), limitLine * uOverlayOpacity);
   }
-
-  float phase = mod(vElevationM - uElevationRangeM.x, uContourIntervalM);
-  float distanceToLine = min(phase, uContourIntervalM - phase);
-  float antiAliasWidth = max(fwidth(vElevationM) * 1.5, uContourWidthM * 2.0);
-  return 1.0 - smoothstep(uContourWidthM, antiAliasWidth, distanceToLine);
-}
-
-void main() {
-  float elevationSpan = max(uElevationRangeM.y - uElevationRangeM.x, 0.0001);
-  float normalizedElevation = clamp(
-    (vElevationM - uElevationRangeM.x) / elevationSpan,
-    0.0,
-    1.0
-  );
-  vec3 elevationColor = cividisRamp(normalizedElevation);
-  float sun = max(dot(normalize(vNormalView), normalize(uLightDirectionView)), 0.0);
-  float hillshade = mix(1.0, 0.35 + 0.65 * sun, clamp(uHillshadeStrength, 0.0, 1.0));
-  vec3 shadedColor = elevationColor * hillshade;
-  float contours = contourMask() * clamp(uContourOpacity, 0.0, 1.0);
-
-  gl_FragColor = vec4(mix(shadedColor, uContourColor, contours), 1.0);
+  if (uShowContours) {
+    float phase = mod(vElevationM, uContourIntervalM);
+    float distanceToLine = min(phase, uContourIntervalM - phase);
+    float width = max(fwidth(vElevationM), 0.4);
+    float line = 1.0 - smoothstep(0.0, width, distanceToLine);
+    base = mix(base, vec3(0.04), line * 0.75);
+  }
+  return base;
 }
