@@ -13,9 +13,13 @@ export async function loadDemoData(signal: AbortSignal, request: typeof fetch = 
   const table = parseEphem(header, bytes);
   const masks = new Map<string, SiteMask>();
   await Promise.all(sites.map(async site => {
-    const mask = parseMask(await resource(`masks/${site.id}.json`).then(r => r.json()), site.id);
-    if (mask.lat !== site.lat || mask.lon !== site.lon) throw new Error('Site coordinates and terrain mask disagree.');
-    masks.set(site.id, mask);
+    // Regions whose horizon mask has not shipped yet still list and plot;
+    // metrics report the gap honestly instead of failing the whole load.
+    const mask = await resource(`masks/${site.id}.json`).then(r => r.json()).catch(() => null);
+    if (!mask) return;
+    const parsed = parseMask(mask, site.id);
+    if (parsed.lat !== site.lat || parsed.lon !== site.lon) throw new Error('Site coordinates and terrain mask disagree.');
+    masks.set(site.id, parsed);
   }));
   return { sites, masks, table };
 }

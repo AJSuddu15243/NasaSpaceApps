@@ -7,13 +7,21 @@ export function generateMocks(root) {
   const json = (path, value) => writeFileSync(resolve(root, path), JSON.stringify(value, null, 2) + '\n');
   const source = 'https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md';
   const meta = { schema_version: 1, generated_at: '2026-11-14T12:00:00Z', source_urls: [source] };
+  const m2m = 'https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf';
+  const psj = 'https://iopscience.iop.org/article/10.3847/PSJ/ad1b50';
   const sites = [
-    { id: 'demo-ridge-a', name: 'Demo ridge A', lat: -89.5, lon: 30, category: 'artemis3', note: 'Synthetic site for interface testing; not an Artemis candidate.', source_url: source },
-    { id: 'demo-ridge-b', name: 'Demo ridge B', lat: -88.8, lon: 45, category: 'artemis3', note: 'Synthetic site for interface testing; not an Artemis candidate.', source_url: source },
-    { id: 'demo-basin-c', name: 'Demo basin C', lat: -89.1, lon: -20, category: 'artemis3', note: 'Synthetic site for interface testing; not an Artemis candidate.', source_url: source },
+    { id: 'connecting-ridge', name: 'Shackleton Connecting Ridge', lat: -89.4632, lon: -137.49, category: 'artemis3', note: 'Artemis III candidate region; near the Shackleton rim with long illumination windows.', source_url: m2m },
+    { id: 'peak-near-shackleton', name: 'Peak Near Shackleton', lat: -88.963, lon: 129.783, category: 'artemis3', note: 'Artemis III candidate region; elevated terrain near Shackleton crater.', source_url: psj },
+    { id: 'malapert-massif', name: 'Malapert Massif', lat: -85.9948, lon: -0.23578, category: 'artemis3', note: 'Artemis III candidate region; massif with near-continuous Earth visibility.', source_url: m2m },
+    { id: 'haworth', name: 'Haworth', lat: -86.7639, lon: -22.777, category: 'artemis3', note: 'Artemis III candidate region; crater floor site west of the pole.', source_url: m2m },
+    { id: 'nobile-rim-1', name: 'Nobile Rim 1', lat: -85.47, lon: 36.209, category: 'artemis3', note: 'Artemis III candidate region; rim of Nobile crater near Leibnitz Beta plateau.', source_url: psj },
+    { id: 'demo-ridge-a', name: 'Demo ridge A', lat: -89.5, lon: 30, category: 'demo', note: 'Synthetic fixture for interface testing; not a landing site.', source_url: source },
+    { id: 'demo-ridge-b', name: 'Demo ridge B', lat: -88.8, lon: 45, category: 'demo', note: 'Synthetic fixture for interface testing; not a landing site.', source_url: source },
+    { id: 'demo-basin-c', name: 'Demo basin C', lat: -89.1, lon: -20, category: 'demo', note: 'Synthetic fixture for interface testing; not a landing site.', source_url: source },
   ];
   json('sites.json', sites);
-  for (const site of sites) json(`masks/${site.id}.json`, { ...meta, id: site.id, lat: site.lat, lon: site.lon, elev_m: 0, slope_deg: 4, bins: 360, mask_deg: Array(360).fill(2), max_distance_km: 150, dem_source: 'Synthetic flat horizon; not a DEM' });
+  // Only demo sites get synthetic masks; real regions wait for pipeline output.
+  for (const site of sites.filter(site => site.category === 'demo')) json(`masks/${site.id}.json`, { ...meta, id: site.id, lat: site.lat, lon: site.lon, elev_m: 0, slope_deg: 4, bins: 360, mask_deg: Array(360).fill(2), max_distance_km: 150, dem_source: 'Synthetic flat horizon; not a DEM' });
   const n = 337;
   json('ephem.json', { ...meta, t0_iso: '2026-11-14T12:00:00.000Z', step_hours: 1, n, fields: ['sun_lat', 'sun_lon', 'sun_dist_km', 'earth_lat', 'earth_lon', 'earth_dist_km'], dtype: 'float32' });
   const buffer = Buffer.alloc(n * 24);

@@ -30,6 +30,7 @@ export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; s
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
     if (!site) return { id, name, metrics: null, message: 'Custom coordinates are plotted in the view. Terrain metrics need a horizon mask, and none exists for this point yet.' };
+    if (!data.masks.has(site.id)) return { id, name, metrics: null, message: 'Horizon mask pending — the pipeline has not shipped terrain data for this region yet.' };
     try {
       return { id, name, metrics: site_metrics(data.masks.get(site.id)!, data.table, scenario.date, scenario.hours, MOCK_PARAMS), message: null };
     } catch (error) {
@@ -42,7 +43,7 @@ export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; s
 
   return <aside className="ws-results rs" aria-label="Site comparison">
     <div className="ws-panel-head">
-      <div><h2>Compare</h2><p className="ws-panel-sub">Synthetic examples · not mission results</p></div>
+      <div><h2>Compare</h2><p className="ws-panel-sub">Example metrics · real regions pending pipeline data</p></div>
       {onCollapse && <button type="button" className="panel-collapse-btn" onClick={onCollapse} aria-label="Collapse comparison panel"><ChevronRight size={14} aria-hidden="true" /></button>}
     </div>
     <div className="ws-scroll">

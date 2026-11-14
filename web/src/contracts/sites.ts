@@ -28,9 +28,9 @@ export interface Site {
    */
   lon: number;
   /**
-   * Site group (no units): Artemis III candidate region, CLPS lander, international mission, or Apollo (equatorial contrast).
+   * Site group (no units): Artemis III candidate region, CLPS lander, international mission, Apollo (equatorial contrast), or demo (synthetic fixture for interface testing).
    */
-  category: "artemis3" | "clps" | "intl" | "apollo";
+  category: "artemis3" | "clps" | "intl" | "apollo" | "demo";
   /**
    * One-line plain-language note shown in the UI (no units); may be empty.
    */
