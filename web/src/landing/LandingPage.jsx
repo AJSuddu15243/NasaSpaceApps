@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import * as THREE from 'three';
 import { FLIGHT_DURATION_MS, flightCameraZ, flightProgress } from './flight.js';
 import './style.css';
@@ -99,7 +98,7 @@ function MoonScene({ reducedMotion }) {
   return <div className={`moon-scene ${finished ? 'arrived' : ''}`} ref={mount} aria-hidden="true" />;
 }
 
-function App() {
+export default function LandingPage() {
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -141,5 +140,3 @@ function App() {
     <footer><div className="brand"><span className="brand-mark">✳</span><span>SOUTH POLE<br /><strong>NAVIGATOR</strong></span></div><p>Made for the next giant leap.</p><a href="#top">Back to top ↑</a></footer>
   </>;
 }
-
-createRoot(document.getElementById('root')).render(<App />);
