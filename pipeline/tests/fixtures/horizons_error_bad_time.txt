@@ -1,0 +1,5 @@
+API VERSION: 1.2
+API SOURCE: NASA/JPL Horizons API
+
+
+Cannot interpret date. Type "?!" or try YYYY-Mon-Dy {HH:MM} format.
