@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
-import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { Check, ChevronDown, ChevronLeft, Save } from 'lucide-react';
 import type { DemoData } from '../data';
 import { DEFAULT_SCENARIO, MAX_SITES, validUtc, type Scenario } from '../scenario';
+import { scenarioShareUrl, saveScenario } from '../../scenarios/store';
 import { Button, Input, Label } from '../ui';
 import { SitePicker } from '../../features/sites/SitePicker';
 
@@ -23,8 +24,33 @@ export function ScenarioPanel({ scenario, data, change, onCollapse }: { scenario
         </div>
       </div>
     </details>}
-    <div className="sc-foot"><Button variant="outline" className="sc-restore" onClick={() => change(structuredClone(DEFAULT_SCENARIO))}>Restore demo scenario</Button></div>
+    <div className="sc-foot">
+      <SaveScenario scenario={scenario} />
+      <Button variant="outline" className="sc-restore" onClick={() => change(structuredClone(DEFAULT_SCENARIO))}>Restore demo scenario</Button>
+    </div>
   </aside>;
+}
+
+function SaveScenario({ scenario }: { scenario: Scenario }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [status, setStatus] = useState('');
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const stored = saveScenario(name, scenario);
+    const url = scenarioShareUrl(stored.slug);
+    try { await navigator.clipboard.writeText(url); setStatus(`Saved "${stored.name}" — link copied`); }
+    catch { setStatus(`Saved "${stored.name}" — copy ${url}`); }
+    setOpen(false); setName('');
+  }
+  if (!open) return <Button variant="outline" className="sc-save" onClick={() => setOpen(true)}><Save size={13} aria-hidden="true" /> Save scenario</Button>;
+  return <form className="sc-save-form" onSubmit={submit}>
+    <Label htmlFor="scenario-name" className="sr-only">Scenario name</Label>
+    <Input id="scenario-name" value={name} onChange={e => setName(e.target.value)} placeholder="Scenario name" maxLength={60} autoFocus />
+    <Button type="submit" disabled={!name.trim()}><Check size={13} aria-hidden="true" /> Save</Button>
+    <Button type="button" variant="ghost" onClick={() => { setOpen(false); setStatus(''); }}>Cancel</Button>
+    {status && <p className="sc-hint" role="status">{status}</p>}
+  </form>;
 }
 
 function DateWindow({ scenario, change }: { scenario: Scenario; change: (patch: Partial<Scenario>) => void }) {
