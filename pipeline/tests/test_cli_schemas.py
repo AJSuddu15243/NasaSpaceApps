@@ -4,7 +4,7 @@ import warnings
 import jsonschema
 import pytest
 
-from lunar_pipeline import ephem, schemas
+from lunar_pipeline import ephem, schemas, validate
 from lunar_pipeline.__main__ import COMMANDS, main
 from lunar_pipeline.config import REPO_ROOT
 
@@ -23,8 +23,9 @@ def offline_stages(monkeypatch):
 
 @pytest.fixture(autouse=True)
 def offline_ephem(monkeypatch):
-    """ephem (PIPE-2) is implemented and needs Horizons; CLI tests only prove dispatch."""
+    """ephem (PIPE-2) and validate (PIPE-7) need Horizons; CLI tests only prove dispatch."""
     monkeypatch.setattr(ephem, "run", lambda cfg: print("ephem: dispatched"))
+    monkeypatch.setattr(validate, "run", lambda cfg: print("validate: dispatched"))
 
 
 @pytest.mark.parametrize("command", [*COMMANDS, "all"])
@@ -33,7 +34,7 @@ def test_registered_command_cannot_be_unreachable(command, offline_stages, capsy
     lines = capsys.readouterr().out.splitlines()
     expected = list(COMMANDS) if command == "all" else [command]
     assert [line.split(":")[0] for line in lines] == expected
-    dispatched = {*IMPLEMENTED, "ephem"}
+    dispatched = {*IMPLEMENTED, "ephem", "validate"}
     for line in lines:
         command = line.split(":")[0]
         if command in dispatched:
