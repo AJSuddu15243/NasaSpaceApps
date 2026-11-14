@@ -117,6 +117,11 @@ pub struct GridLayerInfo {
     pub nodata: Option<f64>,
     pub byte_offset: u64,
     pub byte_length: u64,
+    /// True when the layer stands in for the quantity it names (e.g. rock from DEM roughness).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub proxy: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
 }
 
 /// grid/{region}.json. (x0, y0) is the centre of cell (col 0, row 0); col grows with +x,
@@ -255,4 +260,17 @@ pub struct Area {
     pub lon: f64,
     pub score: f64,
     pub radius_m: f64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn shipped_grid_header_parses_with_rock_proxy() {
+        let h: GridHeader =
+            serde_json::from_str(include_str!("../../web/public/data/grid/haworth.json")).unwrap();
+        assert!(h.layer_info[&GridLayer::Rock].proxy);
+        assert!(!h.layer_info[&GridLayer::SlopeDeg].proxy); // absent -> false
+    }
 }

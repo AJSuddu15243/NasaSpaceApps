@@ -5,6 +5,7 @@ complete), cropped to the near-field footprint (+-tiles.NEAR_HALF_M), then aggre
 heatmap_cell_m (160 m) cells. Choices agreed with Ananth 2026-11-14: grid +-10 km @ 160 m;
 crater radius 500 m; roughness window 5 x 5; slope = max of the 2 x 2 (conservative for the hard
 slope limit), other layers = mean; aspect from the mean gradient. The mask layer is PIPE-8's.
+PIPE-6: rock = clip(roughness_deg / ROCK_REF_DEG, 0, 1), a proxy flagged in the header.
 """
 
 import json
@@ -21,7 +22,16 @@ from lunar_pipeline.terrain import pgda, tiles
 CRATER_RADIUS_M = 500.0
 ROUGHNESS_WINDOW = 5
 MARGIN_PX = 8  # >= ceil(500 / 80) for crater depth, and >= 1 (Horn) + 2 (roughness)
-LAYERS = ("slope_deg", "aspect_deg", "elev_m", "crater_depth_m", "roughness_deg")
+LAYERS = ("slope_deg", "aspect_deg", "elev_m", "crater_depth_m", "roughness_deg", "rock")
+# shortcut: rock is DEM roughness, not rocks (no rock-abundance or boulder raster covers 85-90 S),
+# swap in a measured layer once one exists (pipeline/README.md "Rock distribution").
+# 5 deg ~ the pooled 99th percentile of 160 m roughness over the three regions (median 0.9-1.1 deg,
+# p99 3.8-5.3 deg on PGDA 80 m) and half the 10 deg slope limit; fixed so regions compare.
+ROCK_REF_DEG = 5.0
+ROCK_NOTE = (
+    "Proxy, not measured rocks: DEM roughness (std-dev of 80 m slope over 5 x 5) / 5 deg, "
+    "clipped to [0, 1]; no rock-abundance or boulder map covers 85-90 S"
+)
 
 
 def horn_gradient(z, cell_m):
@@ -89,6 +99,11 @@ def window_std(a, n):
     return sliding_window_view(a, (n, n)).std(axis=(2, 3))
 
 
+def rock_proxy(roughness_deg):
+    """Roughness (deg) -> rock factor in [0, 1]; 1 at and above ROCK_REF_DEG."""
+    return np.clip(roughness_deg / ROCK_REF_DEG, 0.0, 1.0)
+
+
 def _crop(a, k):
     return a[k : a.shape[0] - k, k : a.shape[1] - k] if k else a
 
@@ -135,6 +150,7 @@ def compute(z, x0, y0, src_m, cell_m):
         "elev_m": mean["elev"],
         "crater_depth_m": mean["relief"],
         "roughness_deg": mean["rough"],
+        "rock": rock_proxy(mean["rough"]),
     }
     return {n: v.astype(np.float32) for n, v in out.items()}, gx0, gy0
 
@@ -146,7 +162,7 @@ def write_grid(path, layers, header):
         data = np.ascontiguousarray(layers[name], dtype="<f4")
         if not np.isfinite(data).all():
             raise ValueError(f"{name}: nonfinite values")
-        units = "m" if name.endswith("_m") else "deg"
+        units = "fraction" if name == "rock" else "m" if name.endswith("_m") else "deg"
         info[name] = {
             "dtype": "float32",
             "scale": 1,
@@ -157,6 +173,8 @@ def write_grid(path, layers, header):
             "byte_offset": offset,
             "byte_length": data.nbytes,
         }
+        if name == "rock":
+            info[name] |= {"proxy": True, "note": ROCK_NOTE}
         chunks.append(data.tobytes())
         offset += data.nbytes
     header = {**header, "layers": list(LAYERS), "layer_info": info}
@@ -193,8 +211,9 @@ def run(cfg: Config) -> None:
                 "bins": cfg.masks.grid_bins,
             }
             write_grid(cfg.paths.out / "grid" / f"{name}.bin", layers, header)
-            s, d = layers["slope_deg"], layers["crater_depth_m"]
+            s, d, r = layers["slope_deg"], layers["crater_depth_m"], layers["rock"]
             print(
                 f"layers: {name} {nx}x{ny} @ {cell_m:g} m; slope {s.min():.1f}..{s.max():.1f} deg "
-                f"({(s <= 10).mean():.0%} <= 10 deg), crater depth {d.min():.0f}..{d.max():.0f} m"
+                f"({(s <= 10).mean():.0%} <= 10 deg), crater depth {d.min():.0f}..{d.max():.0f} m, "
+                f"rock proxy min/mean/max {r.min():.2f}/{r.mean():.2f}/{r.max():.2f}"
             )

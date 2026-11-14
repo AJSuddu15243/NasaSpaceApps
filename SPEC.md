@@ -65,9 +65,10 @@ explanations for students and the public).
   Earthset. Stated assumption: a DSN station can see the Moon; no relays.
 - **Terrain factors:** slope (hard limit, default 10°; a 160 m grid cell takes the max of its 80 m slopes), aspect
   (downhill direction, for the thermal surface normal), crater depth (detrended local relief within 500 m) and roughness
-  (std-dev of slope over 5 × 5 cells of 80 m) from the DEM. **Rock distribution:** layer
-  from Diviner rock abundance or LROC boulder maps; W1 confirms polar coverage first. Until a source is
-  confirmed, its weight defaults to 0 and the UI shows "no data".
+  (std-dev of slope over 5 × 5 cells of 80 m) from the DEM. **Rock distribution:** no public
+  rock-abundance or boulder raster covers 85–90° S (Diviner and NAC boulder maps stop at 60° S; search in
+  `pipeline/README.md`), so `rock` is a DEM roughness proxy, clip(roughness / 5°, 0, 1), flagged `proxy: true`
+  in the grid header. Its weight defaults to 0 and the UI must label it as a proxy, not measured rocks.
 - **Weighted greedy evaluator:** score = Σ wᵢ · normalized factorᵢ (weights are UI sliders). Average over a
   base-sized window, pick the best, exclude its surroundings, repeat → top-N areas. "Nearby better spot" = best
   cell within R km of a chosen site.

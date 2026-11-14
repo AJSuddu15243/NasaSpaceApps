@@ -44,7 +44,7 @@ export function DesignPage() {
             <Card><h3 className="mb-3 font-medium">Loading terrain</h3><Skeleton label="Loading terrain preview" /></Card>
             <Card><h3 className="font-medium">No sites selected</h3><p className="mt-2 text-sm text-muted-foreground">Choose a site to begin a comparison.</p></Card>
             <Alert title="Terrain could not load" destructive><p>Check your connection and try again.</p><Button variant="outline" className="mt-3" onClick={() => setNotice('Retry previewed. No network request was made.')}>Preview retry</Button></Alert>
-            <Alert title="No rock data for this layer"><p>Rock distribution is unavailable. Its weight remains zero until a source is confirmed.</p></Alert>
+            <Alert title="Rock layer is a proxy"><p>No measured rock map covers the south pole, so this layer estimates rocks from terrain roughness. Its weight is zero by default.</p></Alert>
           </div></section>
         </TabsContent>
         <TabsContent value="tokens"><h2 className="section-title">Token catalogue</h2><TokenGallery /></TabsContent>

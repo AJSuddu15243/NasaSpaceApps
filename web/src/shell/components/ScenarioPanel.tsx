@@ -11,7 +11,7 @@ export function ScenarioPanel({ scenario, data, change, onCollapse }: { scenario
     <DateWindow key={`${scenario.date}/${scenario.hours}`} scenario={scenario} change={change} />
     {scenario.mode === 'planner' && <fieldset className="weight-list"><legend>Comparison weights</legend>
       {(['sun', 'earth', 'slope', 'crater'] as const).map(key => <div key={key}><Label htmlFor={`weight-${key}`}>{({ sun: 'Sunlight', earth: 'Earth contact', slope: 'Low slope', crater: 'Shallow terrain' })[key]} <output htmlFor={`weight-${key}`}>{scenario.weights[key]}%</output></Label><input id={`weight-${key}`} type="range" min="0" max="100" step="1" value={scenario.weights[key]} onChange={event => change({ weights: { ...scenario.weights, [key]: Number(event.target.value) } }, true)} /></div>)}
-      <p className="hint">Weights are saved in your link. Ranking is unavailable until the simulation is connected.</p><p className="hint">Rock layer: no data · weight 0</p>
+      <p className="hint">Weights are saved in your link. Ranking is unavailable until the simulation is connected.</p><p className="hint">Rock layer: terrain-roughness proxy, not measured rocks · weight 0 by default</p>
     </fieldset>}
     <Button variant="outline" className="full-width" onClick={() => change(structuredClone(DEFAULT_SCENARIO))}>Restore demo scenario</Button>
   </aside>;
