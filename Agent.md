@@ -16,6 +16,11 @@ deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a
   [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md). Scoring + greedy design: [`.agent/GREEDY.md`](.agent/GREEDY.md).
 - Older ADC terrain grids and links: [`LunarLandingSiteNavigation/`](LunarLandingSiteNavigation/) (high-res local terrain only).
 
+## Demo-day plan (read first)
+
+[`docs/handoff/START-HERE.md`](docs/handoff/START-HERE.md): MVP scope, who owns what, and a ready prompt per person. UI work runs on the six
+`[UI-n]` issues described in `docs/handoff/issues/`.
+
 ## Active Work
 
 Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress** (ENG-1 + ENG-6 scoring merged; PIPE-7 in review). Scope and details are in

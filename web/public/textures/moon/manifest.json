@@ -1,0 +1,5 @@
+{
+  "color": "/textures/moon_color.jpg",
+  "height": "/textures/moon_elevation.jpg",
+  "credit": "Moon: NASA SVS CGI Moon Kit (LROC colour, LOLA elevation; NASA/GSFC/Arizona State University). Run scripts/fetch-moon-textures.sh for the 4k LROC map."
+}
