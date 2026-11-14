@@ -7,7 +7,9 @@ export interface GlobeMarker {
   lng: number;
   name: string;
   index: number;
+  kind?: 'site' | 'sun' | 'earth';
   note?: string;
+  distanceKm?: number;
 }
 
 interface GlobeControls {
@@ -44,9 +46,11 @@ interface Selection {
   lng: number;
   note?: string;
   custom?: boolean;
+  kind?: 'site' | 'sun' | 'earth';
+  distanceKm?: number;
 }
 
-export function MoonGlobeView({ markers }: { markers: GlobeMarker[] }) {
+export function MoonGlobeView({ markers, timeLabel }: { markers: GlobeMarker[]; timeLabel?: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<GlobeInstance | null>(null);
   const markersRef = useRef(markers);
@@ -88,12 +92,15 @@ export function MoonGlobeView({ markers }: { markers: GlobeMarker[] }) {
           .htmlElementsData(markersRef.current)
           .htmlElement(d => {
             const el = document.createElement('div');
-            el.className = 'globe-marker';
-            el.innerHTML = `<span>${d.index + 1}</span>`;
+            const kind = d.kind ?? 'site';
+            el.className = `globe-marker globe-marker--${kind}`;
+            el.dataset.tip = `${d.name} · ${d.lat.toFixed(1)}°, ${d.lng.toFixed(1)}°`;
+            el.innerHTML = kind === 'site' ? `<span>${d.index + 1}</span>` : `<span class="globe-marker-glyph">${kind === 'sun' ? 'S' : 'E'}</span>`;
             el.title = d.name;
             el.addEventListener('click', event => {
               event.stopPropagation();
-              selectRef.current({ name: d.name, lat: d.lat, lng: d.lng, note: d.note });
+              selectRef.current({ name: d.name, lat: d.lat, lng: d.lng, note: d.note, kind, distanceKm: d.distanceKm });
+              if (kind === 'site') globeRef.current?.pointOfView({ lat: d.lat, lng: d.lng, altitude: 1.3 }, 900);
             });
             return el;
           })
@@ -124,7 +131,7 @@ export function MoonGlobeView({ markers }: { markers: GlobeMarker[] }) {
   }, []);
 
   useEffect(() => {
-    globeRef.current?.htmlElementsData(markers).pointOfView(OVERVIEW, 0);
+    globeRef.current?.htmlElementsData(markers);
   }, [markers]);
 
   useEffect(() => {
@@ -137,6 +144,7 @@ export function MoonGlobeView({ markers }: { markers: GlobeMarker[] }) {
 
   const fmtLat = (value: number) => `${Math.abs(value).toFixed(2)}°${value < 0 ? 'S' : 'N'}`;
   const fmtLng = (value: number) => `${Math.abs(value).toFixed(2)}°${value < 0 ? 'W' : 'E'}`;
+  const fmtDist = (km: number) => km >= 1e6 ? `${(km / 1e6).toFixed(1)}M km` : km >= 1e3 ? `${Math.round(km / 1e3)}k km` : `${km.toFixed(0)} km`;
 
   return <div className="moon-globe">
     <div ref={hostRef} className="moon-globe-canvas" role="application" aria-label="Interactive 3D Moon. Drag to rotate, scroll to zoom." />
@@ -150,11 +158,12 @@ export function MoonGlobeView({ markers }: { markers: GlobeMarker[] }) {
     </div>
 
     <div className="globe-hint"><Crosshair size={12} aria-hidden="true" /> Drag to rotate · scroll to zoom · click the surface</div>
+    {timeLabel && <div className="globe-time"><span className="eyebrow">EPHEMERIS AT</span><span>{timeLabel}</span></div>}
 
     {selection && <aside className="globe-info" aria-label="Selected location">
-      <header><span className="eyebrow">{selection.custom ? 'SURFACE POINT' : 'SELECTED SITE'}</span><button type="button" onClick={() => setSelection(null)} aria-label="Close location details">×</button></header>
+      <header><span className="eyebrow">{selection.kind === 'sun' ? 'SUB-SOLAR POINT' : selection.kind === 'earth' ? 'SUB-EARTH POINT' : selection.custom ? 'SURFACE POINT' : 'SELECTED SITE'}</span><button type="button" onClick={() => setSelection(null)} aria-label="Close location details">×</button></header>
       <h3>{selection.name}</h3>
-      <dl><div><dt>Latitude</dt><dd>{fmtLat(selection.lat)}</dd></div><div><dt>Longitude</dt><dd>{fmtLng(selection.lng)}</dd></div></dl>
+      <dl><div><dt>Latitude</dt><dd>{fmtLat(selection.lat)}</dd></div><div><dt>Longitude</dt><dd>{fmtLng(selection.lng)}</dd></div>{selection.distanceKm !== undefined && <div><dt>Distance</dt><dd>{fmtDist(selection.distanceKm)}</dd></div>}</dl>
       {selection.note && <p className="globe-note">{selection.note}</p>}
       <p className="globe-coords">MOON_ME frame · click anywhere for coordinates</p>
     </aside>}

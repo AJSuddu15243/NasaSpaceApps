@@ -7,9 +7,14 @@
 .globe-error{position:absolute;inset:0;display:grid;place-content:center;gap:6px;padding:24px;text-align:center;color:var(--shell-muted);font-size:13px}
 .globe-error .hint{font-size:11px;opacity:.7}
 
-.globe-marker{display:grid;place-items:center;width:26px;height:26px;margin:-13px 0 0 -13px;border:1.5px solid var(--shell-sun);border-radius:50%;background:hsl(var(--background)/.85);color:var(--shell-sun);font:600 10px var(--font-data);cursor:pointer;transition:transform var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard);pointer-events:auto}
+.globe-marker{position:relative;display:grid;place-items:center;width:26px;height:26px;margin:-13px 0 0 -13px;border:1.5px solid var(--shell-sun);border-radius:50%;background:hsl(var(--background)/.85);color:var(--shell-sun);font:600 10px var(--font-data);cursor:pointer;transition:transform var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard);pointer-events:auto}
 .globe-marker:hover{transform:scale(1.2);box-shadow:0 0 0 4px hsl(var(--sun)/.18)}
 .globe-marker span{transform:translateY(-.5px)}
+.globe-marker::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;translate:-50% 4px;white-space:nowrap;padding:4px 8px;border:1px solid var(--shell-line);border-radius:6px;background:hsl(var(--card)/.95);color:var(--shell-text);font:500 10px var(--font-data);letter-spacing:.02em;opacity:0;pointer-events:none;transition:opacity var(--motion-fast) var(--ease-standard),translate var(--motion-fast) var(--ease-standard);z-index:5}
+.globe-marker:hover::after,.globe-marker:focus-visible::after{opacity:1;translate:-50% 0}
+.globe-marker--sun{border-color:hsl(var(--sun));color:hsl(var(--sun));width:20px;height:20px;margin:-10px 0 0 -10px}
+.globe-marker--earth{border-color:hsl(var(--earth));color:hsl(var(--earth));width:20px;height:20px;margin:-10px 0 0 -10px}
+.globe-marker-glyph{font-size:9px;font-weight:700}
 
 .globe-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
 .globe-controls button{display:flex;align-items:center;gap:7px;min-height:34px;padding:7px 11px;border:1px solid var(--shell-line);border-radius:8px;background:hsl(var(--background)/.78);backdrop-filter:blur(8px);color:var(--shell-text);font-size:11px;font-weight:500;cursor:pointer;transition:background-color var(--motion-fast) var(--ease-standard),border-color var(--motion-fast) var(--ease-standard)}
@@ -18,6 +23,9 @@
 .globe-controls svg{flex-shrink:0}
 
 .globe-hint{position:absolute;left:12px;bottom:10px;z-index:3;display:flex;align-items:center;gap:6px;color:var(--shell-muted);font:400 9px var(--font-data);letter-spacing:.06em;opacity:.85;pointer-events:none}
+.globe-time{position:absolute;top:12px;left:12px;z-index:3;display:grid;gap:2px;padding:8px 11px;border:1px solid var(--shell-line);border-radius:8px;background:hsl(var(--background)/.78);backdrop-filter:blur(8px);pointer-events:none}
+.globe-time .eyebrow{font-size:8px}
+.globe-time span:last-child{font:500 11px var(--font-data);font-variant-numeric:tabular-nums;color:var(--shell-text);letter-spacing:.02em}
 
 .globe-info{position:absolute;left:12px;bottom:34px;z-index:4;width:min(280px,calc(100% - 24px));border:1px solid var(--shell-line);border-radius:10px;background:hsl(var(--card)/.92);backdrop-filter:blur(10px);padding:14px 16px;box-shadow:var(--shadow-raised)}
 .globe-info header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
