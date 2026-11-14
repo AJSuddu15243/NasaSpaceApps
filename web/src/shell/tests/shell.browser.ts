@@ -41,7 +41,13 @@ test('responsive layouts, focus and automated accessibility', async ({ page }) =
     await page.setViewportSize({ width, height });
     for (const route of ['/', '/app']) {
       await page.goto(route);
-      if (route === '/app') await expect(page.locator('.primary-metric')).toHaveCount(2);
+      if (route === '/app') {
+        await expect(page.locator('.primary-metric')).toHaveCount(2);
+        const scene = page.getByRole('group', { name: 'Interactive lunar south-pole terrain scene' });
+        const bounds = await scene.evaluate(node => ({ width: node.clientWidth, height: node.clientHeight }));
+        await expect(scene.locator('canvas')).toHaveJSProperty('clientWidth', bounds.width);
+        await expect(scene.locator('canvas')).toHaveJSProperty('clientHeight', bounds.height);
+      }
       await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
