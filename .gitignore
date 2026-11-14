@@ -1,0 +1,7 @@
+.DS_Store
+__pycache__/
+.venv/
+# raw data is large; keep it out of git
+LunarLandingSiteNavigation/data/**/*.csv
+LunarLandingSiteNavigation/data/**/*.zip
+LunarLandingSiteNavigation/data/**/*.png
