@@ -50,3 +50,33 @@ body{min-width:320px;background:radial-gradient(circle at 52% 18%,hsl(220 12% 11
 @media(max-width:1100px){.workspace-grid{grid-template-columns:minmax(225px,260px) minmax(0,1fr)}.results-panel{grid-column:1/-1}.result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.workspace-grid{grid-template-columns:1fr}.terrain-empty{min-height:430px}.result-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.terrain-empty,.selected-sites button,.site-row,.custom-site,.result-card,.site-node,.metric-track i{animation:none!important}.site-row,.selected-sites button,.result-card,.view-switch .ui-button,.custom-toggle{transition:none!important}}
+
+/* UI pass: deep-space backdrop, sticky chrome, comparison details. */
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.55;background-image:radial-gradient(1px 1px at 12% 22%,#ffffff38 50%,transparent 51%),radial-gradient(1px 1px at 68% 12%,#ffffff2e 50%,transparent 51%),radial-gradient(1.5px 1.5px at 84% 38%,#ffffff26 50%,transparent 51%),radial-gradient(1px 1px at 34% 8%,#ffffff30 50%,transparent 51%),radial-gradient(1px 1px at 52% 30%,#ffffff24 50%,transparent 51%),radial-gradient(1.5px 1.5px at 8% 64%,#ffffff22 50%,transparent 51%),radial-gradient(1px 1px at 91% 74%,#ffffff2a 50%,transparent 51%),radial-gradient(1px 1px at 44% 52%,#ffffff1f 50%,transparent 51%),radial-gradient(1px 1px at 24% 86%,#ffffff26 50%,transparent 51%),radial-gradient(1.5px 1.5px at 76% 90%,#ffffff22 50%,transparent 51%);}
+.app-header{position:sticky;top:0;z-index:10;background:hsl(var(--background)/.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.app-header nav{align-items:center}
+.app-header nav a{transition:color var(--motion-fast) var(--ease-standard)}
+.app-header nav a:hover{color:var(--shell-text)}
+.share-notice{animation:item-enter var(--motion-base) var(--ease-standard) both}
+
+/* Comparison cards: status, best-value and event details. */
+.best-tag{display:inline-block;margin-left:6px;padding:1px 5px;border:1px solid hsl(var(--sun)/.4);border-radius:3px;color:var(--shell-sun);font:400 7px var(--font-data);letter-spacing:.08em;text-transform:uppercase;vertical-align:1px}
+.metric-best dt{color:var(--shell-text)}
+.metric-best .metric-track i{background:var(--shell-sun)!important}
+.event-countdowns{display:flex;gap:14px;flex-wrap:wrap;margin:0;padding:9px 14px 0;border-top:1px solid hsl(var(--border)/.45);font-size:9px;color:var(--shell-muted)}
+.event-countdowns span{display:flex;gap:5px;align-items:baseline}
+.event-countdowns b{font:400 10px var(--font-data);color:var(--shell-text);font-variant-numeric:tabular-nums}
+.card-reason{margin:8px 14px 0;font-size:9px;line-height:1.5;color:var(--shell-muted)}
+.result-card .card-heading [title]{cursor:help}
+
+/* Workspace polish: consistent panel chrome and quieter secondary text. */
+.workspace-heading .mode-switch{border-color:hsl(var(--border)/.9);background:hsl(var(--card)/.6);backdrop-filter:blur(8px)}
+.mode-switch .ui-button{border-radius:7px}
+.site-picker-title .site-count{white-space:nowrap}
+.site-catalogue{scrollbar-color:hsl(var(--input)) transparent}
+.site-catalogue::-webkit-scrollbar{width:8px}
+.site-catalogue::-webkit-scrollbar-thumb{background:hsl(var(--input)/.6);border-radius:4px}
+.custom-site input:focus-visible,.site-search input:focus-visible{outline:2px solid var(--shell-text);outline-offset:1px}
+
+@media(max-width:700px){.app-header{position:static}}
+@media(prefers-reduced-motion:reduce){.share-notice{animation:none!important}.app-header nav a{transition:none!important}}
