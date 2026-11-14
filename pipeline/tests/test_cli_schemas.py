@@ -9,7 +9,7 @@ from lunar_pipeline.__main__ import COMMANDS, main
 from lunar_pipeline.config import REPO_ROOT
 
 # Implemented network stages are replaced by an offline marker; their own tests cover them.
-IMPLEMENTED = {"terrain-fetch": "terrain.trek"}
+IMPLEMENTED = {"terrain-fetch": "terrain.trek", "package": "package"}
 
 
 @pytest.fixture

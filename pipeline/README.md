@@ -61,6 +61,13 @@ for an extent?
 in `terrain/pgda.py`), prints its metadata and runs physics checks; a second run only re-hashes.
 The pin is trust-on-first-use: PGDA publishes no checksum. Facts and gotchas: `notes/pipe-3.md`.
 
+`make package` (PIPE-9) writes `web/public/data/manifest.json` (contract `manifest`): every shipped file
+(dotfiles and the manifest itself excluded) with bytes, SHA-256 and `source_urls`, taken from the file's
+own JSON, from each `sites.json` entry's `source_url`, or from the sibling `{stem}.json` header for
+binaries and imagery. It fails on an uncited file or when the folder exceeds `data_budget_mb` (decimal MB,
+raw bytes; Vercel compresses on the fly, so no `.br` files). It prints the distinct citations for LND-4.
+Run it last, after every data PR has merged.
+
 ## Shared interfaces
 
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;
