@@ -1,73 +1,54 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { chooseHeroMode, type HeroCapability } from './flight';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { chooseHeroMode } from './flight';
 import { LandingSections } from './LandingSections';
 import './landing.css';
 
-const MoonScene = lazy(() => import('./MoonScene'));
-
-interface NavigatorWithHints extends Navigator {
-  deviceMemory?: number;
-  connection?: { saveData?: boolean };
-}
-
-function supportsWebGL(): boolean {
-  try {
-    const canvas = document.createElement('canvas');
-    return Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
-
-function readCapability(): HeroCapability {
-  const hints = navigator as NavigatorWithHints;
-  return {
-    reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
-    saveData: Boolean(hints.connection?.saveData),
-    hardwareConcurrency: navigator.hardwareConcurrency || 0,
-    deviceMemory: hints.deviceMemory,
-    webgl: supportsWebGL(),
-  };
-}
+const MoonBackdrop = lazy(() => import('./MoonBackdrop'));
 
 export function LandingPage({ onOpen }: { onOpen: () => void }) {
-  const [mode, setMode] = useState<'static' | 'flight'>('static');
-  const [sceneReady, setSceneReady] = useState(false);
+  const [mode, setMode] = useState<'pending' | 'flight' | 'static'>('pending');
+  const diveRef = useRef(0);
+
   useEffect(() => {
-    const media = matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => {
-      setSceneReady(false);
-      setMode(chooseHeroMode(readCapability()));
+    const capability = {
+      reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      saveData: (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData === true,
+      hardwareConcurrency: navigator.hardwareConcurrency || 0,
+      deviceMemory: (navigator as Navigator & { deviceMemory?: number }).deviceMemory,
+      webgl: true,
     };
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
+    const canvas = document.createElement('canvas');
+    capability.webgl = !!(canvas.getContext('webgl2') || canvas.getContext('webgl'));
+    canvas.remove();
+    setMode(chooseHeroMode(capability));
   }, []);
-  return <main id="main" className="landing" tabIndex={-1}>
-    <section className="landing-hero" aria-labelledby="landing-title">
-      <div className="landing-copy">
-        <p className="landing-kicker"><span aria-hidden="true" /> LUNAR SOUTH POLE / UTC</p>
-        <h1 id="landing-title">A landing date<br />changes the <em>view.</em></h1>
-        <p className="landing-lede">Compare sites. Find your window.</p>
-        <p className="landing-summary">Explore how sunlight, terrain horizons and direct Earth contact shape a mission window—then share the exact scenario.</p>
-        <div className="landing-actions">
-          <button type="button" className="landing-cta" onClick={onOpen}>Open the navigator <span aria-hidden="true">↗</span></button>
-          <a href="#landing-context">Why the pole changes</a>
+
+  return <div className={`landing scene-${mode}`}>
+    <div className="moon-backdrop" aria-hidden="true">
+      {mode === 'flight' ? <Suspense fallback={null}><MoonBackdrop diveRef={diveRef} /></Suspense> : null}
+      {mode === 'static' ? <div className="static-moon"><span /></div> : null}
+    </div>
+
+    <main id="main" className="landing-main">
+      <section className="landing-hero" aria-labelledby="hero-title">
+        <div className="landing-copy">
+          <p className="landing-kicker"><span />NASA SPACE APPS · LUNAR LANDING SITE NAVIGATOR</p>
+          <h1 id="hero-title">Choose where <em>light, warmth</em> and contact meet.</h1>
+          <p className="landing-lede">A workspace for comparing south-pole landing sites and dates — by real terrain horizon, sky geometry and comm windows.</p>
+          <p className="landing-summary">Pick candidate sites, move the date, and see which places keep a lander powered, temperate and in reach of Earth — with every assumption and every synthetic dataset labelled.</p>
+          <div className="landing-actions">
+            <button type="button" className="landing-cta" onClick={onOpen}>Explore the Moon <span aria-hidden="true">→</span></button>
+            <a href="#challenge">Why the pole is hard</a>
+          </div>
+          <p className="landing-disclaimer">Synthetic demonstration data unless a dataset is marked real.</p>
         </div>
-        <p className="landing-disclaimer">Independent NASA Space Apps prototype · no mission recommendation</p>
-      </div>
-      <div role="img" className={`landing-visual ${sceneReady ? 'scene-ready' : ''}`} aria-label={mode === 'flight' ? 'Animated approach to the lunar south pole' : 'Static lunar south-pole view'}>
-        <div className="static-moon" aria-hidden="true"><span /></div>
-        {mode === 'flight' && <Suspense fallback={null}><MoonScene onReady={() => setSceneReady(true)} /></Suspense>}
-        <div className="landing-coordinate" aria-hidden="true"><span>SOUTH POLE</span><strong>90° S</strong></div>
-      </div>
-      <div className="landing-readout" aria-hidden="true"><span>01 / SITE</span><span>02 / DATE</span><span>03 / WINDOW</span><span>04 / COMPARE</span></div>
-    </section>
-    <section id="landing-context" className="landing-context" aria-labelledby="context-title">
-      <p>WHY IT CHANGES</p>
-      <h2 id="context-title">At the pole, the horizon decides what the sky can reach.</h2>
-      <p>Low Sun angles create long shadows. Nearby terrain can interrupt both illumination and a direct line to Earth. A small change in place or time can change the usable window.</p>
-    </section>
-    <LandingSections onOpen={onOpen} />
-  </main>;
+        <div className="landing-readout" aria-hidden="true">
+          <span>SCENARIO / DEMO-01</span>
+          <span>LROC IMAGERY + LOLA ELEVATION</span>
+          <span>MOON_ME FRAME</span>
+        </div>
+      </section>
+      <LandingSections onOpen={onOpen} diveRef={diveRef} />
+    </main>
+  </div>;
 }

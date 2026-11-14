@@ -1,6 +1,5 @@
-import { IconArrowWaveRightUp, IconLink, IconMountain, IconShieldCheck, IconSun, IconTable, IconWorld } from '@tabler/icons-react';
-import { Timeline } from './Timeline';
-import { BentoGrid, BentoGridItem } from './BentoGrid';
+import { useRef, type MutableRefObject } from 'react';
+import { motion, useMotionValueEvent, useScroll, useTransform } from 'motion/react';
 import './sections.css';
 
 const team = [
@@ -10,118 +9,74 @@ const team = [
   ['UX', 'Product and story', 'Make assumptions, trade-offs and missing data visible.'],
 ] as const;
 
-const pipeline = [
+const challenges = [
   {
-    title: 'Acquire',
-    content: (
-      <div>
-        <p className="mb-6 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-          Terrain and sky geometry enter the app as validated contracts, not loose files.
-        </p>
-        <dl className="space-y-3 text-xs md:text-sm">
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">Terrain</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">LOLA · Moon Trek polar grids</dd></div>
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">Sky geometry</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">JPL Horizons · hourly states</dd></div>
-          <div className="flex justify-between gap-6"><dt className="text-neutral-500 dark:text-neutral-400">Boundary check</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">units · lengths · finite values</dd></div>
-        </dl>
-      </div>
-    ),
+    index: '01',
+    title: 'Sunlight',
+    body: 'The Sun skims the horizon for weeks at a time. Local ridges and crater rims decide whether a site sees light at all — and for how long.',
+    metric: 'Longest continuous darkness is a first-class metric, not a footnote.',
   },
   {
-    title: 'Compute',
-    content: (
-      <div>
-        <p className="mb-6 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-          A deterministic Rust/WASM engine integrates terrain horizon masks against the ephemeris table.
-        </p>
-        <dl className="space-y-3 text-xs md:text-sm">
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">Outputs</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">sunlit % · darkness · Earth contact</dd></div>
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">Window</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">336 h default · 1 h step</dd></div>
-          <div className="flex justify-between gap-6"><dt className="text-neutral-500 dark:text-neutral-400">Boundary</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">no physics in React or GLSL</dd></div>
-        </dl>
-      </div>
-    ),
+    index: '02',
+    title: 'Temperature',
+    body: 'Two-week nights drop toward 100 K while sunlit ground soars past 390 K. Thermal survival depends on where a site spends its window.',
+    metric: 'Hours below the survival threshold are counted per site.',
   },
   {
-    title: 'Compare',
-    content: (
-      <div>
-        <p className="mb-6 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-          Every site is scored on the same window so trade-offs stay visible instead of collapsing into one score.
-        </p>
-        <dl className="space-y-3 text-xs md:text-sm">
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">Ranking</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">best value per metric</dd></div>
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">Thresholds</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">labelled demo constants</dd></div>
-          <div className="flex justify-between gap-6"><dt className="text-neutral-500 dark:text-neutral-400">Missing data</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">shown unavailable, never estimated</dd></div>
-        </dl>
-      </div>
-    ),
+    index: '03',
+    title: 'Earth contact',
+    body: 'Earth never rises far above the polar horizon. Terrain that blocks the Sun often blocks the planet too — power and communications pull in opposite directions.',
+    metric: 'Direct-to-Earth visibility and longest blackout are scored separately.',
   },
   {
-    title: 'Share',
-    content: (
-      <div>
-        <p className="mb-6 text-xs font-normal text-neutral-800 md:text-sm dark:text-neutral-200">
-          The scenario is the URL. Sites, date, window and weights reproduce exactly on reload.
-        </p>
-        <dl className="space-y-3 text-xs md:text-sm">
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">State</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">?sites · date · hours · view</dd></div>
-          <div className="flex justify-between gap-6 border-b border-neutral-200 pb-2 dark:border-neutral-800"><dt className="text-neutral-500 dark:text-neutral-400">History</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">browser back/forward aware</dd></div>
-          <div className="flex justify-between gap-6"><dt className="text-neutral-500 dark:text-neutral-400">Deep links</dt><dd className="font-mono text-neutral-700 dark:text-neutral-300">survive refresh and share</dd></div>
-        </dl>
-      </div>
-    ),
+    index: '04',
+    title: 'Launch window',
+    body: 'A landing date is a variable, not a constant. The same site can be brilliant in November and unreachable in February.',
+    metric: 'Every comparison holds date, window length and weights fixed.',
   },
-];
+] as const;
 
-/* Compact SVG vignettes for the bento headers — schematic, not decorative stock. */
-const Vignette = ({ children, label }: { children: React.ReactNode; label: string }) => (
-  <div className="bv" role="img" aria-label={label}>{children}</div>
-);
+const steps = [
+  {
+    index: '01',
+    eyebrow: 'THE POLE NEVER SEES THE SUN',
+    title: 'Long shadows, permanently.',
+    body: 'At 90°S the Sun circles the horizon instead of crossing the sky. Crater rims and ridge lines decide which patches ever see light.',
+  },
+  {
+    index: '02',
+    eyebrow: 'EARTH DROPS BELOW THE HORIZON',
+    title: 'Contact comes and goes.',
+    body: 'Earth hangs barely above the terrain. The same ridges that shade a site can silence its radio link for hours at a stretch.',
+  },
+  {
+    index: '03',
+    eyebrow: 'EVERY SITE IS A TRADE-OFF',
+    title: 'Power versus communication.',
+    body: 'More sunlight usually means less Earth contact, and vice versa. The question is never “is this site good” — it is “good for which window”.',
+  },
+  {
+    index: '04',
+    eyebrow: 'LUNAR WINDOW',
+    title: 'We map the window, not the hope.',
+    body: 'Lunar Window compares candidate sites across dates using real terrain horizons and sky geometry — then shows its work.',
+    cta: true,
+  },
+] as const;
 
-const features = [
-  {
-    title: 'Solar illumination window',
-    description: 'Sunlit percentage, longest continuous darkness and mean solar elevation — computed against the real horizon, not a flat map.',
-    icon: <IconSun className="h-4 w-4 text-neutral-500" />,
-    header: <Vignette label="Schematic solar elevation arc over a horizon"><svg viewBox="0 0 200 90" className="bv-svg"><line x1="10" y1="70" x2="190" y2="70" className="bv-horizon"/><path d="M30 70 Q100 -10 170 70" className="bv-arc"/><circle cx="62" cy="46" r="4" className="bv-sun"/><circle cx="100" cy="30" r="4" className="bv-sun"/><circle cx="138" cy="46" r="4" className="bv-sun dim"/><text x="150" y="20" className="bv-label">72% sunlit</text></svg></Vignette>,
-    span: '',
-  },
-  {
-    title: 'Direct-to-Earth contact',
-    description: 'Earth visibility percentage and longest blackout, so a site is never praised for sunlight it cannot phone home from.',
-    icon: <IconWorld className="h-4 w-4 text-neutral-500" />,
-    header: <Vignette label="Schematic Earth above the lunar horizon"><svg viewBox="0 0 200 90" className="bv-svg"><line x1="10" y1="70" x2="190" y2="70" className="bv-horizon"/><circle cx="120" cy="34" r="14" className="bv-earth"/><circle cx="116" cy="30" r="3" className="bv-earth-core"/><text x="60" y="30" className="bv-label earth">61% Earth</text></svg></Vignette>,
-    span: '',
-  },
-  {
-    title: 'Terrain horizon masking',
-    description: 'LOLA-derived ridge lines block Sun and Earth rays locally. The horizon decides what the sky can reach.',
-    icon: <IconMountain className="h-4 w-4 text-neutral-500" />,
-    header: <Vignette label="Schematic ridge blocking sunlight"><svg viewBox="0 0 200 90" className="bv-svg"><polygon points="0,70 50,40 90,62 140,30 200,58 200,90 0,90" className="bv-ridge"/><line x1="30" y1="8" x2="80" y2="62" className="bv-ray blocked"/><line x1="150" y1="8" x2="170" y2="40" className="bv-ray"/></svg></Vignette>,
-    span: 'md:col-span-2',
-  },
-  {
-    title: 'Side-by-side comparison',
-    description: 'Best value per metric is highlighted; status badges explain whether each site sits within demo thresholds.',
-    icon: <IconTable className="h-4 w-4 text-neutral-500" />,
-    header: <Vignette label="Schematic comparison metric rows"><svg viewBox="0 0 200 90" className="bv-svg"><g className="bv-row"><rect x="10" y="12" width="120" height="8" rx="2" className="bv-bar"/><rect x="140" y="12" width="50" height="8" rx="2" className="bv-bar best"/></g><g className="bv-row"><rect x="10" y="32" width="90" height="8" rx="2" className="bv-bar earth"/><rect x="140" y="32" width="50" height="8" rx="2" className="bv-bar"/></g><g className="bv-row"><rect x="10" y="52" width="60" height="8" rx="2" className="bv-bar"/><rect x="140" y="52" width="50" height="8" rx="2" className="bv-bar"/></g><g className="bv-row"><rect x="10" y="72" width="105" height="8" rx="2" className="bv-bar earth"/><rect x="140" y="72" width="50" height="8" rx="2" className="bv-bar best"/></g></svg></Vignette>,
-    span: '',
-  },
-  {
-    title: 'Shareable scenario',
-    description: 'Date, window, weights and site selection live in the URL — deep links reproduce the exact analysis.',
-    icon: <IconLink className="h-4 w-4 text-neutral-500" />,
-    header: <Vignette label="Schematic shareable scenario URL"><svg viewBox="0 0 200 90" className="bv-svg"><rect x="10" y="24" width="180" height="42" rx="8" className="bv-panel"/><circle cx="24" cy="45" r="3" className="bv-dot ok"/><circle cx="36" cy="45" r="3" className="bv-dot warn"/><circle cx="48" cy="45" r="3" className="bv-dot muted"/><text x="62" y="42" className="bv-url">lunarwindow.app/app</text><text x="62" y="57" className="bv-url dim">?sites=…&amp;date=…&amp;view=globe</text></svg></Vignette>,
-    span: '',
-  },
-  {
-    title: 'Honest data states',
-    description: 'Synthetic fixtures are labelled, missing masks show unavailable, and engine outputs carry their assumptions.',
-    icon: <IconShieldCheck className="h-4 w-4 text-neutral-500" />,
-    header: <Vignette label="Schematic data state labels"><svg viewBox="0 0 200 90" className="bv-svg"><g className="bv-row"><rect x="10" y="14" width="86" height="20" rx="5" className="bv-pill ok"/><text x="18" y="28" className="bv-pilltext">CURRENT</text></g><g className="bv-row"><rect x="10" y="42" width="86" height="20" rx="5" className="bv-pill warn"/><text x="18" y="56" className="bv-pilltext">SYNTHETIC</text></g><g className="bv-row"><rect x="10" y="70" width="86" height="20" rx="5" className="bv-pill muted"/><text x="18" y="84" className="bv-pilltext">UNAVAILABLE</text></g></svg></Vignette>,
-    span: 'md:col-span-2',
-  },
-];
+const walkthrough = [
+  ['01', 'Pick sites', 'Curated south-pole candidates or custom coordinates down to 80°S.'],
+  ['02', 'Set the window', 'A UTC start time and mission length — up to a full year.'],
+  ['03', 'Read the horizon', 'Terrain decides sunlight and Earth contact; nothing is averaged away.'],
+  ['04', 'Compare and share', 'Metrics, statuses and countdowns side by side, all inside the URL.'],
+] as const;
+
+const technology = [
+  ['Deterministic engine', 'A Rust/WASM core evaluates every site against the same inputs — no physics hidden in components or shaders.'],
+  ['Contract-checked data', 'Terrain grids, horizon masks and ephemeris tables are schema-validated with explicit units before use.'],
+  ['Inspectable state', 'The entire scenario lives in the URL: sites, date, window, weights and view reproduce exactly.'],
+  ['Honest fallbacks', 'Synthetic fixtures are labelled, missing masks report unavailable, and engine outputs carry their assumptions.'],
+] as const;
 
 const resources = [
   ['LROC QuickMap', 'Lunar imagery and topography', 'https://quickmap.lroc.asu.edu/'],
@@ -129,49 +84,117 @@ const resources = [
   ['JPL Horizons', 'Sun and Earth ephemerides', 'https://ssd.jpl.nasa.gov/horizons/'],
 ] as const;
 
-export function LandingSections({ onOpen }: { onOpen: () => void }) {
+function Reveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return <motion.div
+    className={className}
+    initial={{ opacity: 0, y: 26, filter: 'blur(6px)' }}
+    whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+    viewport={{ once: true, margin: '-12% 0px' }}
+    transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
+  >{children}</motion.div>;
+}
+
+function SequenceStep({ progress, index, eyebrow, title, body, cta, onOpen }: {
+  progress: ReturnType<typeof useScroll>['scrollYProgress'];
+  index: number; eyebrow: string; title: string; body: string; cta?: boolean; onOpen: () => void;
+}) {
+  const start = index * 0.24;
+  const end = start + 0.3;
+  const opacity = useTransform(progress, [start, start + 0.07, end - 0.07, end], [0, 1, 1, 0]);
+  const y = useTransform(progress, [start, start + 0.1, end - 0.05, end], [34, 0, 0, -20]);
+  return <motion.div className="seq-step" style={{ opacity, y }}>
+    <p className="seq-index">{index + 1} / 04</p>
+    <p className="seq-eyebrow">{eyebrow}</p>
+    <h3>{title}</h3>
+    <p className="seq-body">{body}</p>
+    {cta && <button type="button" className="seq-cta" onClick={onOpen}>Explore the workspace <span aria-hidden="true">→</span></button>}
+  </motion.div>;
+}
+
+export function LandingSections({ onOpen, diveRef }: { onOpen: () => void; diveRef: MutableRefObject<number> }) {
+  const sequenceRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: sequenceRef, offset: ['start 85%', 'end 20%'] });
+  useMotionValueEvent(scrollYProgress, 'change', value => { diveRef.current = value; });
+
   return <>
-    <section className="landing-section landing-method" aria-labelledby="method-title">
-      <div className="landing-section-heading"><p>02 / HOW IT WORKS</p><h2 id="method-title">One scenario, traced from source to screen.</h2><p>Terrain, sky geometry, deterministic compute and comparison stay separate so every result can be inspected instead of merely trusted.</p></div>
-      <Timeline
-        data={pipeline}
-        title="How a scenario travels"
-        description="Four stages between raw lunar data and a shareable comparison — each with explicit units, timestamps and validation state."
-      />
-    </section>
-
-    <section className="landing-section landing-features" aria-labelledby="features-title">
-      <div className="landing-section-heading"><p>03 / THE PRODUCT</p><h2 id="features-title">Compare the window, not a single instant.</h2><p>These are the same instruments the navigator exposes. Values shown in previews are visibly synthetic until the real engine and sourced datasets land.</p></div>
-      <BentoGrid className="max-w-none">
-        {features.map(item => <BentoGridItem key={item.title} title={item.title} description={item.description} header={item.header} icon={item.icon} className={item.span} />)}
-      </BentoGrid>
-      <p className="bento-note">Planned timeline view: mission-window scrubbing is structural only — no computed mission data is shown yet.</p>
-    </section>
-
-    <section className="landing-section landing-validation" aria-labelledby="validation-title">
-      <div className="landing-section-heading"><p>04 / VALIDATION</p><h2 id="validation-title">Show what is known, tested and still missing.</h2></div>
-      <div className="ledger">
-        <div className="ledger-row"><span className="status-current">CURRENT</span><div><h3>Contract-checked inputs</h3><p>Schema, units, binary lengths and finite values are checked before mock data reaches the interface.</p></div></div>
-        <div className="ledger-row"><span className="status-current">CURRENT</span><div><h3>Deterministic boundary</h3><p>The web adapter is shaped for the Rust/WASM engine; physics is not recreated in components or shaders.</p></div></div>
-        <div className="ledger-row"><span className="status-next">NEXT</span><div><h3>Horizons comparison</h3><p>Real ephemeris output will be compared with JPL Horizons and reported with time and angular error.</p></div></div>
-        <div className="ledger-row"><span className="status-next">NEXT</span><div><h3>Real terrain evidence</h3><p>LOLA-derived terrain, horizon masks and source manifests replace every clearly labelled synthetic fixture.</p></div></div>
+    <section ref={sequenceRef} id="challenge" className="landing-challenge" aria-label="Why the lunar south pole is hard">
+      <div className="seq-sticky">
+        {steps.map((step, index) => <SequenceStep key={step.title} progress={scrollYProgress} index={index} eyebrow={step.eyebrow} title={step.title} body={step.body} cta={'cta' in step && step.cta} onOpen={onOpen} />)}
       </div>
     </section>
 
-    <section className="landing-section landing-team" aria-labelledby="team-title">
-      <div className="landing-section-heading"><p>05 / TEAM</p><h2 id="team-title">Four disciplines, one inspectable scenario.</h2><p>Role initials are used until the team publishes its preferred names and portraits.</p></div>
-      <div className="ledger team-ledger">
-        {team.map(([initials, role, description]) => <div className="ledger-row" key={initials}><span className="team-initial">{initials}</span><div><h3>{role}</h3><p>{description}</p></div></div>)}
+    <section className="landing-editorial" aria-labelledby="editorial-title">
+      <Reveal><p className="landing-eyebrow">THE PROBLEM</p><h2 id="editorial-title">Four forces decide whether a site works.</h2></Reveal>
+      <div className="editorial-list">
+        {challenges.map(item => <Reveal key={item.index} className="editorial-row">
+          <span className="editorial-index">{item.index}</span>
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+          <p className="editorial-metric">{item.metric}</p>
+        </Reveal>)}
       </div>
     </section>
 
-    <section className="landing-section landing-resources" aria-labelledby="resources-title">
-      <div className="landing-section-heading"><p>06 / PRIMARY RESOURCES</p><h2 id="resources-title">Continue with the source tools.</h2></div>
+    <section className="landing-preview" aria-labelledby="preview-title">
+      <Reveal className="preview-heading">
+        <p className="landing-eyebrow">THE PRODUCT</p>
+        <h2 id="preview-title">This is the actual workspace.</h2>
+        <p>The navigator below is the live application with its synthetic demo dataset — terrain scene, site comparison and shareable scenario state.</p>
+      </Reveal>
+      <Reveal delay={0.1} className="app-frame">
+        <iframe src="/app" title="Lunar Window workspace — live preview" loading="lazy" tabIndex={-1} aria-hidden="true" />
+        <div className="app-frame-bar"><span><i /> LIVE PREVIEW</span><span>Synthetic demo data · no landing recommendation</span></div>
+      </Reveal>
+    </section>
+
+    <section className="landing-walkthrough" aria-labelledby="walkthrough-title">
+      <Reveal><p className="landing-eyebrow">MISSION WALKTHROUGH</p><h2 id="walkthrough-title">From candidate to comparison in four moves.</h2></Reveal>
+      <div className="walk-grid">
+        {walkthrough.map(([index, title, body]) => <Reveal key={index} className="walk-step">
+          <span className="walk-index">{index}</span>
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </Reveal>)}
+      </div>
+    </section>
+
+    <section className="landing-technology" aria-labelledby="tech-title">
+      <Reveal><p className="landing-eyebrow">TECHNOLOGY</p><h2 id="tech-title">Built so a result can be audited.</h2></Reveal>
+      <div className="tech-list">
+        {technology.map(([title, body]) => <Reveal key={title} className="tech-row">
+          <h3>{title}</h3>
+          <p>{body}</p>
+        </Reveal>)}
+      </div>
+    </section>
+
+    <section className="landing-team-section" aria-labelledby="team-title">
+      <Reveal><p className="landing-eyebrow">TEAM</p><h2 id="team-title">Four disciplines, one inspectable scenario.</h2><p className="team-note">Role initials are used until the team publishes its preferred names and portraits.</p></Reveal>
+      <div className="team-grid">
+        {team.map(([initials, role, description]) => <Reveal key={initials} className="team-card">
+          <span className="team-initial">{initials}</span>
+          <h3>{role}</h3>
+          <p>{description}</p>
+        </Reveal>)}
+      </div>
+    </section>
+
+    <section className="landing-resources" aria-labelledby="resources-title">
+      <Reveal><p className="landing-eyebrow">PRIMARY RESOURCES</p><h2 id="resources-title">Continue with the source tools.</h2></Reveal>
       <div className="resource-list">
-        {resources.map(([name, desc, href]) => <a key={href} href={href} target="_blank" rel="noreferrer"><span>{name}</span><small>{desc}</small><IconArrowWaveRightUp size={18} aria-hidden="true" className="resource-arrow"/></a>)}
+        {resources.map(([name, desc, href]) => <Reveal key={href} className="resource-row">
+          <a href={href} target="_blank" rel="noreferrer"><span>{name}</span><small>{desc}</small><b aria-hidden="true">↗</b></a>
+        </Reveal>)}
       </div>
     </section>
 
-    <section className="landing-final" aria-labelledby="final-title"><p>THE SAME CONTEXT, READY TO SHARE</p><h2 id="final-title">Choose a site. Move the date. See what changes.</h2><button type="button" onClick={onOpen}>Compare landing sites <span aria-hidden="true">↗</span></button><small>Synthetic demonstration data is labelled throughout.</small></section>
+    <section className="landing-final" aria-labelledby="final-title">
+      <Reveal>
+        <p className="final-eyebrow">THE SAME CONTEXT, READY TO SHARE</p>
+        <h2 id="final-title">Choose a site. Move the date. See what changes.</h2>
+        <button type="button" onClick={onOpen}>Compare landing sites <span aria-hidden="true">→</span></button>
+        <small>Synthetic demonstration data is labelled throughout the workspace.</small>
+      </Reveal>
+    </section>
   </>;
 }
