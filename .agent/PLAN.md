@@ -1,5 +1,7 @@
 # Plan: Moon Base Location Sim
 
+> **Decisions are now settled in [`SPEC.md`](../SPEC.md)**; this checklist is kept for reference.
+>
 > **⚠️ DRAFT — not the final plan.** This is just what we've worked out so far. Expect anything here to change as the team decides.
 
 ## Goal
