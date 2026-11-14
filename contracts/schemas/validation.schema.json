@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation.schema.json",
+  "title": "ValidationSet",
+  "description": "Reference Sun and Earth directions from JPL Horizons for one site (web/public/data/validation/{site_id}.json), used to check the engine's geometry. Angles are for the body centre as seen from the site on the smooth sphere plus elev_m; no terrain, no refraction.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "source_urls", "site_id", "lat", "lon", "elev_m", "samples"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/generated_at" },
+    "source_urls": { "$ref": "common.schema.json#/$defs/source_urls" },
+    "site_id": { "$ref": "common.schema.json#/$defs/slug", "description": "Site id (no units); equals the id in sites.json and the file name." },
+    "lat": { "$ref": "common.schema.json#/$defs/lat_deg" },
+    "lon": { "$ref": "common.schema.json#/$defs/lon_deg" },
+    "elev_m": { "$ref": "common.schema.json#/$defs/elev_m" },
+    "samples": {
+      "description": "Reference directions at sampled instants.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "title": "ValidationSample",
+        "description": "Sun and Earth direction at one instant.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["t_iso", "sun_az", "sun_el", "earth_az", "earth_el"],
+        "properties": {
+          "t_iso": { "$ref": "common.schema.json#/$defs/utc_iso", "description": "Instant of the sample, UTC ISO 8601 with Z." },
+          "sun_az": { "$ref": "common.schema.json#/$defs/azimuth_deg" },
+          "sun_el": { "$ref": "common.schema.json#/$defs/elevation_deg" },
+          "earth_az": { "$ref": "common.schema.json#/$defs/azimuth_deg" },
+          "earth_el": { "$ref": "common.schema.json#/$defs/elevation_deg" }
+        }
+      }
+    }
+  }
+}

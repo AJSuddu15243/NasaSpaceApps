@@ -1,0 +1,42 @@
+{
+  "params": {
+    "battery_h": 24,
+    "survival_temp_k": 120,
+    "antenna_margin_deg": 2,
+    "slope_limit_deg": 10,
+    "step_hours": 1
+  },
+  "weights": {
+    "sun": 1,
+    "earth": 1,
+    "slope": 0.5,
+    "crater": 0.25,
+    "rock": 0,
+    "thermal": 0.5
+  },
+  "metrics": {
+    "pct_lit": 82.4,
+    "longest_dark_h": 36,
+    "pct_earth_visible": 55.1,
+    "longest_blackout_h": 160,
+    "h_to_first_sunset": 41,
+    "h_to_first_earthset": null,
+    "mean_sun_el_deg": 0.8,
+    "max_sun_el_deg": 1.9,
+    "mean_power_vertical": 0.81,
+    "mean_power_horizontal": 0.012,
+    "t_min_k": 40,
+    "t_max_k": 212.5,
+    "h_below_survival": 60
+  },
+  "areas": [
+    {
+      "x_m": 7580.9,
+      "y_m": 13130.5,
+      "lat": -89.5,
+      "lon": 30,
+      "score": 0.87,
+      "radius_m": 500
+    }
+  ]
+}

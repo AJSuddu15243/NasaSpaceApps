@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "common.schema.json",
+  "title": "Common",
+  "description": "Shared definitions. Every convention that more than one contract relies on is written here once and referenced from the other schemas.",
+  "$defs": {
+    "schema_version": {
+      "description": "Contract version of this file (unitless integer). Bumped on any breaking change to the file's schema.",
+      "type": "integer",
+      "const": 1
+    },
+    "generated_at": {
+      "description": "Instant this file was generated, UTC ISO 8601 with Z.",
+      "$ref": "#/$defs/utc_iso"
+    },
+    "utc_iso": {
+      "description": "Instant in UTC, ISO 8601 with a literal Z suffix, e.g. 2026-11-14T12:00:00Z. No local offsets.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+    },
+    "source_urls": {
+      "description": "URLs of every upstream dataset or API this file was derived from (no units). At least one.",
+      "type": "array",
+      "items": { "type": "string", "format": "uri" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "slug": {
+      "description": "Lower-case identifier used in file names (no units): letters, digits and hyphens.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "lat_deg": {
+      "description": "Planetocentric latitude in degrees, Moon-fixed mean-Earth frame (MOON_ME), in [-90, 90]; south is negative.",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lon_deg": {
+      "description": "East-positive longitude in degrees, Moon-fixed mean-Earth frame (MOON_ME), in [-180, 180). 180 itself is written as -180.",
+      "type": "number",
+      "minimum": -180,
+      "exclusiveMaximum": 180
+    },
+    "elev_m": {
+      "description": "Terrain height in metres above the 1737400 m reference sphere (negative below it).",
+      "type": "number"
+    },
+    "azimuth_deg": {
+      "description": "Azimuth in degrees, clockwise from local north as seen from above (north 0, east 90), in [0, 360).",
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMaximum": 360
+    },
+    "elevation_deg": {
+      "description": "Angle in degrees above the local horizontal plane (the plane perpendicular to the radial through the site), in [-90, 90]; negative is below the plane. No refraction.",
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "crs": {
+      "description": "Projection name (no units). Always south polar stereographic on a sphere; parameters are in crs_params.",
+      "type": "string",
+      "const": "polar-stereo-south"
+    },
+    "crs_params": {
+      "description": "Parameters of the south polar stereographic projection, true scale at the pole (k0 = 1). With rho = 2 * radius_m * tan(pi/4 + lat/2) (lat in radians, negative in the south): x = rho * sin(lon), y = rho * cos(lon). So +y points along longitude 0 (towards Earth) and +x along longitude 90 east.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lat_0", "lon_0", "radius_m"],
+      "properties": {
+        "lat_0": { "description": "Latitude of the projection origin in degrees: the south pole.", "type": "number", "const": -90 },
+        "lon_0": { "description": "Central longitude in degrees: the meridian that maps to the +y axis.", "type": "number", "const": 0 },
+        "radius_m": { "description": "Radius of the reference sphere in metres.", "type": "number", "const": 1737400 }
+      }
+    },
+    "x0": {
+      "description": "Projected x in metres of the CENTRE of cell (col 0, row 0). Raster axis convention, defined only here: col grows with +x, row grows with +y, so the centre of cell (col, row) is (x0 + col * cell_m, y0 + row * cell_m). Cells are stored row-major: index = row * nx + col. Binary values are little-endian.",
+      "type": "number"
+    },
+    "y0": {
+      "description": "Projected y in metres of the CENTRE of cell (col 0, row 0). See x0 for the axis convention.",
+      "type": "number"
+    },
+    "cell_m": {
+      "description": "Cell size in projected metres, the same along x and y.",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "nx": {
+      "description": "Number of columns (cells along +x); unitless count.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "ny": {
+      "description": "Number of rows (cells along +y); unitless count.",
+      "type": "integer",
+      "minimum": 1
+    }
+  }
+}
