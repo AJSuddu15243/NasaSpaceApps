@@ -8,6 +8,9 @@ import { useMediaQuery } from './useMediaQuery';
 import { ScenarioPanel } from './components/ScenarioPanel';
 import { ViewPanel } from './components/ViewPanel';
 import { ResultsPanel } from './components/ResultsPanel';
+import { TooltipProvider } from '../design';
+import './workspace.css';
+
 type LoadState = { status: 'loading' } | { status: 'ready'; data: DemoData } | { status: 'error'; message: string };
 
 const NARROW = '(max-width: 1020px)';
@@ -31,23 +34,23 @@ export default function Navigator() {
   }, [attempt]);
 
   const panels = load.status === 'ready' && <>
-    {scenario.sites.some(id => !load.data.sites.some(site => site.id === id)) && <p role="status" className="notice">Some linked sites are unavailable in this demo catalogue. Choose available sites or restore the demo scenario.</p>}
+    {scenario.sites.some(id => !load.data.sites.some(site => site.id === id)) && <div className="ws-notices"><p role="status" className="notice">Some linked sites are unavailable in this demo catalogue. Choose available sites or restore the demo scenario.</p></div>}
     {narrow ? <div className="workspace-stack">
       <ScenarioPanel scenario={scenario} data={load.data} change={setScenario} />
       <ViewPanel scenario={scenario} data={load.data} change={setScenario} />
       <ResultsPanel scenario={scenario} data={load.data} />
     </div> : <div className="workspace-panels">
       <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel className="workspace-panel" ref={leftRef} defaultSize={21} minSize={15} maxSize={30} collapsible collapsedSize={0}
+        <ResizablePanel className="workspace-panel" ref={leftRef} defaultSize={20} minSize={15} maxSize={28} collapsible collapsedSize={0}
           onCollapse={() => setLeftCollapsed(true)} onExpand={() => setLeftCollapsed(false)}>
           <ScenarioPanel scenario={scenario} data={load.data} change={setScenario} onCollapse={() => leftRef.current?.collapse()} />
         </ResizablePanel>
         <ResizableHandle withHandle aria-label="Resize sites panel" />
-        <ResizablePanel className="workspace-panel" defaultSize={56} minSize={34}>
+        <ResizablePanel className="workspace-panel" defaultSize={60} minSize={42}>
           <ViewPanel scenario={scenario} data={load.data} change={setScenario} />
         </ResizablePanel>
         <ResizableHandle withHandle aria-label="Resize comparison panel" />
-        <ResizablePanel className="workspace-panel" ref={rightRef} defaultSize={23} minSize={17} maxSize={36} collapsible collapsedSize={0}
+        <ResizablePanel className="workspace-panel" ref={rightRef} defaultSize={20} minSize={15} maxSize={30} collapsible collapsedSize={0}
           onCollapse={() => setRightCollapsed(true)} onExpand={() => setRightCollapsed(false)}>
           <ResultsPanel scenario={scenario} data={load.data} onCollapse={() => rightRef.current?.collapse()} />
         </ResizablePanel>
@@ -58,12 +61,24 @@ export default function Navigator() {
   </>;
 
   return <main id="main" className="workspace" tabIndex={-1}>
-    <div className="workspace-heading"><div><p className="eyebrow">MISSION ANALYSIS / SCENARIO 001</p><h1>Compare the window.<br/><span>Read the horizon.</span></h1></div><div className="mode-switch" role="group" aria-label="Experience mode"><Button variant={scenario.mode === 'planner' ? 'secondary' : 'ghost'} aria-pressed={scenario.mode === 'planner'} onClick={() => setScenario({ mode: 'planner' })}>Planner</Button><Button variant={scenario.mode === 'explorer' ? 'secondary' : 'ghost'} aria-pressed={scenario.mode === 'explorer'} onClick={() => setScenario({ mode: 'explorer' })}>Explorer</Button></div></div>
-    <div className="demo-banner"><strong><i/> Preview environment</strong><span>Synthetic terrain and results · no landing recommendation</span><time>{scenario.date.slice(0, 10)} UTC</time></div>
-    {warnings.length > 0 && <div role="alert" className="notice">{warnings.map(w => <p key={w}>{w}</p>)}</div>}
-    {scenario.mode === 'explorer' && <p className="explainer">Pick places and dates to compare how much sunlight they receive and how often they have a clear view of Earth for communication.</p>}
-    {load.status === 'loading' && <div role="status" className="loading-workspace"><span>Loading demo catalogue…</span><div className="loading-blocks" aria-hidden="true"><div/><div/><div/></div></div>}
+    <div className="ws-topbar">
+      <div>
+        <p className="eyebrow">MISSION ANALYSIS</p>
+        <h1>Compare the window. Read the horizon.</h1>
+      </div>
+      <div className="ws-topbar-right">
+        <span className="ws-date">{scenario.date.slice(0, 10)} UTC</span>
+        <div className="ws-mode" role="group" aria-label="Experience mode">
+          <button type="button" aria-pressed={scenario.mode === 'planner'} onClick={() => setScenario({ mode: 'planner' })}>Planner</button>
+          <button type="button" aria-pressed={scenario.mode === 'explorer'} onClick={() => setScenario({ mode: 'explorer' })}>Explorer</button>
+        </div>
+      </div>
+    </div>
+    <div className="ws-banner"><strong><i/> Preview environment</strong><span className="ws-banner-note">Synthetic terrain and results · no landing recommendation</span></div>
+    {warnings.length > 0 && <div role="alert" className="notice ws-notices">{warnings.map(w => <p key={w}>{w}</p>)}</div>}
+    {scenario.mode === 'explorer' && <p className="ws-explainer">Pick places and dates to compare how much sunlight they receive and how often they have a clear view of Earth for communication.</p>}
+    {load.status === 'loading' && <div role="status" className="loading-workspace"><span>Loading demo catalogue…</span></div>}
     {load.status === 'error' && <div className="load-error" role="alert"><h2>The workspace could not load.</h2><p>{load.message}</p><Button onClick={() => retry(value => value + 1)}>Retry loading</Button></div>}
-    {panels}
+    <TooltipProvider delayDuration={250}>{panels}</TooltipProvider>
   </main>;
 }
