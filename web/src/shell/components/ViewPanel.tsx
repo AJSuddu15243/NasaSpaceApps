@@ -4,6 +4,7 @@ import type { DemoData } from '../data';
 import { Badge, Button } from '../ui';
 import { polarPoint } from '../viewGeometry';
 import { parseCustomSite } from '../../features/sites/sites';
+import { ephemAt } from '../../features/globe/ephem';
 import type { GlobeMarker } from '../../features/globe/MoonGlobeView';
 
 const MoonGlobeView = lazy(() => import('../../features/globe/MoonGlobeView').then(m => ({ default: m.MoonGlobeView })));
@@ -16,12 +17,19 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     const coords = site ?? parseCustomSite(id);
     return coords ? [{ ...polarPoint(coords.lat, coords.lon), name: site?.name ?? 'Custom point', index }] : [];
   });
-  const globeMarkers: GlobeMarker[] = scenario.sites.flatMap((id, index) => {
-    const site = data.sites.find(item => item.id === id);
-    const coords = site ?? parseCustomSite(id);
-    if (!coords) return [];
-    return [{ lat: coords.lat, lng: coords.lon, name: site?.name ?? 'Custom point', index, note: site?.note }];
-  });
+  const ephem = ephemAt(data.table, scenario.date);
+  const globeMarkers: GlobeMarker[] = [
+    ...scenario.sites.flatMap((id, index) => {
+      const site = data.sites.find(item => item.id === id);
+      const coords = site ?? parseCustomSite(id);
+      if (!coords) return [];
+      return [{ lat: coords.lat, lng: coords.lon, name: site?.name ?? 'Custom point', index, kind: 'site' as const, note: site?.note }];
+    }),
+    ...(ephem ? [
+      { lat: ephem.sunLat, lng: ephem.sunLon, name: 'Sub-solar point', index: -1, kind: 'sun' as const, distanceKm: ephem.sunDistKm },
+      { lat: ephem.earthLat, lng: ephem.earthLon, name: 'Sub-Earth point', index: -1, kind: 'earth' as const, distanceKm: ephem.earthDistKm },
+    ] : []),
+  ];
   const isGlobe = scenario.view === 'globe';
   return <section className="view-panel" aria-labelledby="view-heading">
     <div className="view-toolbar"><div><span className="eyebrow">02 / OBSERVE</span><h2 id="view-heading">South pole environment</h2></div><Badge>{isGlobe ? 'LROC imagery' : 'Illustrative layer'}</Badge></div>
@@ -29,8 +37,8 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
       {(Object.keys(labels) as View[]).map(view => <Button key={view} variant={view === scenario.view ? 'secondary' : 'ghost'} aria-pressed={view === scenario.view} onClick={() => change({ view })}>{labels[view]}</Button>)}
     </div>
     {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="empty-caption"><span className="eyebrow">LIVE GLOBE</span><h3>Loading the Moon…</h3><p>The globe view streams in on demand to keep the workspace light.</p></div></div>}>
-      <MoonGlobeView markers={globeMarkers} />
-      <p className="scene-caption"><span className="eyebrow">LUNAR SURFACE</span> LROC colour mosaic and LOLA elevation, NASA SVS. Site markers are your scenario selection; click the surface for coordinates.</p>
+      <MoonGlobeView markers={globeMarkers} timeLabel={scenario.date.slice(0, 16).replace('T', ' ') + ' UTC'} />
+      <p className="scene-caption"><span className="eyebrow">LUNAR SURFACE</span> LROC colour mosaic and LOLA elevation, NASA SVS. Numbered pins are your scenario sites; S/E mark the sub-solar and sub-Earth points from the ephemeris table at the scenario time.</p>
     </Suspense> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
       <div className="viewport-meta"><span>MOON_ME · 80–90°S</span><span>UTC {scenario.date.slice(0, 16).replace('T', ' ')}</span></div>
       <svg className="lunar-outline" viewBox="0 0 480 380" fill="none" role="img" aria-label={`Illustrative ${labels[scenario.view]} with ${markers.length} selected site markers`}>
