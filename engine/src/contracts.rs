@@ -38,6 +38,9 @@ pub struct SiteMask {
     pub lat: f64,
     pub lon: f64,
     pub elev_m: f64,
+    /// Optional until ENG-3 / PIPE-8 writes it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aspect_deg: Option<f64>,
     pub slope_deg: f64,
     pub bins: u32,
     pub mask_deg: Vec<f64>,
@@ -94,8 +97,10 @@ pub struct CrsParams {
 pub enum GridLayer {
     Mask,
     SlopeDeg,
+    AspectDeg,
     ElevM,
     CraterDepthM,
+    RoughnessDeg,
     Rock,
 }
 

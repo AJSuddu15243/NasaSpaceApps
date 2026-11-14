@@ -59,11 +59,13 @@ explanations for students and the public).
   lit · sin(elev) (horizontal panel); % lit, longest darkness, time to sunset.
 - **Thermal exposure:** instantaneous radiative-equilibrium surface temperature,
   T = ((1 − A) · S · max(0, n·ŝ) · lit / (ε σ))^¼ with A ≈ 0.12, ε ≈ 0.95, S = 1361 W/m² × (1 AU / r)², n = local
-  surface normal from the DEM slope; a user-set floor for shadowed hours. Metrics: min/max temperature and hours below a user-set survival temperature. Label it "simplified, no thermal
+  surface normal from the DEM slope and aspect; a user-set floor for shadowed hours. Metrics: min/max temperature and hours below a user-set survival temperature. Label it "simplified, no thermal
   inertia" and show Diviner measurements as a reference where available.
 - **DTE radio visibility:** Earth centre above the mask + antenna margin; % contact, longest blackout, time to
   Earthset. Stated assumption: a DSN station can see the Moon; no relays.
-- **Terrain factors:** slope (hard limit, default 10°) and crater depth from the DEM. **Rock distribution:** layer
+- **Terrain factors:** slope (hard limit, default 10°; a 160 m grid cell takes the max of its 80 m slopes), aspect
+  (downhill direction, for the thermal surface normal), crater depth (detrended local relief within 500 m) and roughness
+  (std-dev of slope over 5 × 5 cells of 80 m) from the DEM. **Rock distribution:** layer
   from Diviner rock abundance or LROC boulder maps; W1 confirms polar coverage first. Until a source is
   confirmed, its weight defaults to 0 and the UI shows "no data".
 - **Weighted greedy evaluator:** score = Σ wᵢ · normalized factorᵢ (weights are UI sliders). Average over a

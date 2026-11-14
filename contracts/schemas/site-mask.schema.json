@@ -14,6 +14,7 @@
     "lat": { "$ref": "common.schema.json#/$defs/lat_deg" },
     "lon": { "$ref": "common.schema.json#/$defs/lon_deg" },
     "elev_m": { "$ref": "common.schema.json#/$defs/elev_m" },
+    "aspect_deg": { "description": "Compass direction the site slope faces (downhill), degrees clockwise from local north in [0, 360); optional until the mask builder (ENG-3 / PIPE-8) writes it.", "type": "number", "minimum": 0, "exclusiveMaximum": 360 },
     "slope_deg": { "description": "Terrain slope at the site in degrees from horizontal, in [0, 90].", "type": "number", "minimum": 0, "maximum": 90 },
     "bins": { "description": "Number of azimuth bins (unitless count); equals mask_deg.length. Fixed at 360 for curated sites.", "type": "integer", "const": 360 },
     "mask_deg": {
