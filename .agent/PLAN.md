@@ -4,6 +4,17 @@
 >
 > **⚠️ DRAFT — not the final plan.** This is just what we've worked out so far. Expect anything here to change as the team decides.
 
+## Active Work
+
+- **Owner:** Ananth (this user), since 2026-11-14
+- **Status:** in progress — ENG-1 crate scaffold merged (#69); ENG-2..9 open. Engine guide: [`engine/AGENTS.md`](../engine/AGENTS.md)
+- **Scope:** the Rust simulator core and the native/WASM interface. UI, rendering, and data work are not claimed.
+- **Overlap rule:** other agents should coordinate with Ananth before implementing a duplicate simulator or
+  modifying the simulation core / native-WASM interface.
+
+This records ownership only. Rust was chosen in [`SPEC.md`](../SPEC.md); the checklist below is kept for reference
+and is not updated as work lands. Track progress in the GitHub issues instead.
+
 ## Goal
 Test many candidate moon base sites at the same time and rank them using a **deterministic** simulation that runs
 in the browser. The globe is rendered in WebGL with three.js. Output is a heatmap of good landing *areas*
