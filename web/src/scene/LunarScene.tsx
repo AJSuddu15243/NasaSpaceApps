@@ -44,10 +44,12 @@ function SceneContents({
   mode,
   simulationRef,
   tile,
+  contoursEnabled,
 }: {
   readonly mode: CameraMode;
   readonly simulationRef?: SceneSimulationRef;
   readonly tile: NonNullable<LunarSceneProps["tile"]>;
+  readonly contoursEnabled: boolean;
 }): ReactElement {
   return (
     <>
@@ -57,7 +59,7 @@ function SceneContents({
       {/* shortcut: static presentation light until SCN-3 uses the ephemeris Sun vector. */}
       <directionalLight castShadow intensity={1.1} position={[3, 2, 4]} />
       <MoonGlobe />
-      <SouthPolePatch tile={tile} />
+      <SouthPolePatch tile={tile} contoursEnabled={contoursEnabled} />
       <SceneCamera mode={mode} />
       <SimulationBridge simulationRef={simulationRef} />
     </>
@@ -67,6 +69,7 @@ function SceneContents({
 export function LunarScene({
   tile,
   simulationRef,
+  contoursEnabled = false,
   cameraMode,
   onCameraModeChange,
   className,
@@ -104,7 +107,7 @@ export function LunarScene({
         }
       }}
     >
-      <SceneContents mode={activeCameraMode} simulationRef={simulationRef} tile={activeTile} />
+      <SceneContents mode={activeCameraMode} simulationRef={simulationRef} tile={activeTile} contoursEnabled={contoursEnabled} />
     </Canvas>
   );
 }

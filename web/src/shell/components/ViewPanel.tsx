@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { LunarScene, type CameraMode } from '../../scene';
+import { TerrainShadingControls } from '../../scene/shaders';
 import type { Scenario, View } from '../scenario';
 import type { DemoData } from '../data';
 import { Badge, Button } from '../ui';
@@ -8,6 +9,7 @@ import { parseCustomSite } from '../../features/sites/sites';
 const labels: Record<View, string> = { '3d': '3D terrain', panorama: 'Horizon panorama', map: 'Polar map' };
 export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void }) {
   const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
+  const [contoursEnabled, setContoursEnabled] = useState(false);
   const isThreeD = scenario.view === '3d';
   const markers = scenario.sites.flatMap((id, index) => {
     const site = data.sites.find(item => item.id === id);
@@ -22,6 +24,7 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     {isThreeD ? <>
       <div className="terrain-scene-toolbar">
         <p className="hint">Drag to orbit. Double-click the canvas or use the button to fly to the south pole.</p>
+        <TerrainShadingControls contoursEnabled={contoursEnabled} onContoursEnabledChange={setContoursEnabled} />
         <Button
           variant="outline"
           onClick={() => setCameraMode(mode => mode === 'orbit' ? 'south-pole' : 'orbit')}
@@ -33,6 +36,7 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
         <LunarScene
           cameraMode={cameraMode}
           onCameraModeChange={setCameraMode}
+          contoursEnabled={contoursEnabled}
           aria-label="Interactive lunar south-pole terrain scene"
         />
       </div>

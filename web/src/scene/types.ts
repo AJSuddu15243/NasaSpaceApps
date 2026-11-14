@@ -32,6 +32,7 @@ export type CameraMode = "orbit" | "south-pole";
 export interface LunarSceneProps {
   readonly tile?: SouthPoleTile;
   readonly simulationRef?: SceneSimulationRef;
+  readonly contoursEnabled?: boolean;
   readonly cameraMode?: CameraMode;
   readonly onCameraModeChange?: (mode: CameraMode) => void;
   readonly className?: string;
