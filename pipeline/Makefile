@@ -3,8 +3,13 @@
 setup:
 	uv sync --locked
 
-ephem terrain-fetch tiles layers masks validate imagery package all:
+ephem terrain-fetch tiles masks validate imagery package all:
 	uv run --locked python -m lunar_pipeline $@
+
+# layers rewrites grid/*.bin without the mask layer, so masks always runs right after it.
+layers:
+	uv run --locked python -m lunar_pipeline layers
+	uv run --locked python -m lunar_pipeline masks
 
 terrain:
 	uv run --locked python -m lunar_pipeline terrain-fetch
