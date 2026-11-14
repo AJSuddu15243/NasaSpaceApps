@@ -1,4 +1,4 @@
-.moon-globe{position:relative;flex:1;min-height:480px;border:1px solid var(--shell-line);border-radius:12px;overflow:hidden;background:#04060d}
+.moon-globe{position:relative;flex:1;min-height:480px;border:1px solid var(--shell-line);border-radius:12px;overflow:hidden;background:var(--shell-bg)}
 .moon-globe-canvas{position:absolute;inset:0}
 .moon-globe-canvas canvas{display:block}
 .globe-loading{position:absolute;inset:0;display:grid;place-items:center;gap:10px;color:var(--shell-muted);font-size:12px;letter-spacing:.04em}
