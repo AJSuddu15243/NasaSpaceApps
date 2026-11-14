@@ -18,15 +18,15 @@ export default function Navigator() {
     return () => controller.abort();
   }, [attempt]);
   return <main id="main" className="workspace" tabIndex={-1}>
-    <div className="workspace-heading"><div><p className="eyebrow">LANDING SITE WORKSPACE</p><h1>One window. Different horizons.</h1></div><div className="mode-switch" role="group" aria-label="Experience mode"><Button variant={scenario.mode === 'planner' ? 'secondary' : 'ghost'} aria-pressed={scenario.mode === 'planner'} onClick={() => setScenario({ mode: 'planner' })}>Planner</Button><Button variant={scenario.mode === 'explorer' ? 'secondary' : 'ghost'} aria-pressed={scenario.mode === 'explorer'} onClick={() => setScenario({ mode: 'explorer' })}>Explorer</Button></div></div>
-    <div className="demo-banner"><strong>Interface preview</strong><span>All sites, terrain and results here are synthetic. No landing recommendation is being made.</span></div>
+    <div className="workspace-heading"><div><p className="eyebrow">MISSION ANALYSIS / SCENARIO 001</p><h1>Compare the window.<br/><span>Read the horizon.</span></h1></div><div className="mode-switch" role="group" aria-label="Experience mode"><Button variant={scenario.mode === 'planner' ? 'secondary' : 'ghost'} aria-pressed={scenario.mode === 'planner'} onClick={() => setScenario({ mode: 'planner' })}>Planner</Button><Button variant={scenario.mode === 'explorer' ? 'secondary' : 'ghost'} aria-pressed={scenario.mode === 'explorer'} onClick={() => setScenario({ mode: 'explorer' })}>Explorer</Button></div></div>
+    <div className="demo-banner"><strong><i/> Preview environment</strong><span>Synthetic terrain and results · no landing recommendation</span><time>{scenario.date.slice(0, 10)} UTC</time></div>
     {warnings.length > 0 && <div role="alert" className="notice">{warnings.map(w => <p key={w}>{w}</p>)}</div>}
     {scenario.mode === 'explorer' && <p className="explainer">Pick places and dates to compare how much sunlight they receive and how often they have a clear view of Earth for communication.</p>}
     {load.status === 'loading' && <div role="status" className="loading-workspace"><span>Loading demo catalogue…</span><div className="loading-blocks" aria-hidden="true"><div/><div/><div/></div></div>}
     {load.status === 'error' && <div className="load-error" role="alert"><h2>The workspace could not load.</h2><p>{load.message}</p><Button onClick={() => retry(value => value + 1)}>Retry loading</Button></div>}
     {load.status === 'ready' && <>
       {scenario.sites.some(id => !load.data.sites.some(site => site.id === id)) && <p role="status" className="notice">Some linked sites are unavailable in this demo catalogue. Choose available sites or restore the demo scenario.</p>}
-      <div className="workspace-grid"><ScenarioPanel scenario={scenario} data={load.data} change={setScenario}/><ViewPanel scenario={scenario} change={setScenario}/><ResultsPanel scenario={scenario} data={load.data}/></div>
+      <div className="workspace-grid"><ScenarioPanel scenario={scenario} data={load.data} change={setScenario}/><ViewPanel scenario={scenario} data={load.data} change={setScenario}/><ResultsPanel scenario={scenario} data={load.data}/></div>
     </>}
   </main>;
 }
