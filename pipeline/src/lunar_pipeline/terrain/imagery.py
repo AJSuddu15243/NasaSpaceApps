@@ -24,8 +24,9 @@ from rasterio.io import MemoryFile
 from rasterio.transform import from_origin
 from rasterio.warp import Resampling, reproject
 
-from lunar_pipeline import fetch, schemas
+from lunar_pipeline import coords, fetch, schemas
 from lunar_pipeline.config import Config
+from lunar_pipeline.terrain import tiles
 
 LAYER = "LRO_NAC_AvgMosaic_SPole855_1mp"
 BASE_URL = f"https://trek.nasa.gov/tiles/Moon/SP/{LAYER}/1.0.0"
@@ -51,25 +52,18 @@ TOTAL_BYTES = 6_000_000
 QUALITIES = (85, 75, 65, 55, 45)
 
 # Same DEM grid as PIPE-4 near-field tiles (tiles.cut): +-10 km, snapped to 80 m DEM pixel edges.
-NEAR_HALF_M = 10_000
 DEM_LEFT_M, DEM_TOP_M, DEM_PIX_M = -304_000.0, 304_000.0, 80.0
 CRS = "+proj=stere +lat_0=-90 +lon_0=0 +k=1 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs"
-RADIUS_M = 1_737_400.0
+RADIUS_M = coords.RADIUS_M
 
 
 def pixel_m(level: int) -> float:
     return 2 * ORIGIN_Y / (TILE_PX * 2**level)
 
 
-def to_xy(lat, lon):
-    # shortcut: duplicates coords.to_xy from PIPE-4 (PR #88), switch to it once that merges.
-    rho = 2 * RADIUS_M * math.tan(math.pi / 4 + math.radians(lat) / 2)
-    return rho * math.sin(math.radians(lon)), rho * math.cos(math.radians(lon))
-
-
-def extent(lat, lon, half_m=NEAR_HALF_M):
+def extent(lat, lon, half_m=tiles.NEAR_HALF_M):
     """(x_min, x_max, y_min, y_max) in metres: the near-field tile footprint (pixel edges)."""
-    cx, cy = to_xy(lat, lon)
+    cx, cy = (float(v) for v in coords.to_xy(lat, lon))
     n = round(2 * half_m / DEM_PIX_M)
     col0 = round((cx - DEM_LEFT_M) / DEM_PIX_M - n / 2)
     row0 = round((DEM_TOP_M - cy) / DEM_PIX_M - n / 2)

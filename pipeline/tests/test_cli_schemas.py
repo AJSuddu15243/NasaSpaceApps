@@ -9,7 +9,13 @@ from lunar_pipeline.__main__ import COMMANDS, main
 from lunar_pipeline.config import REPO_ROOT
 
 # Implemented network stages are replaced by an offline marker; their own tests cover them.
-IMPLEMENTED = {"terrain-fetch": "terrain.trek", "imagery": "terrain.imagery"}
+IMPLEMENTED = {
+    "terrain-fetch": "terrain.trek",
+    "tiles": "terrain.tiles",
+    "layers": "terrain.layers",
+    "imagery": "terrain.imagery",
+    "package": "package",
+}
 
 
 @pytest.fixture
@@ -91,7 +97,7 @@ def test_all_cannot_reorder_stages_or_omit_imagery(offline_stages, capsys):
     ]
 
 
-def test_broken_unrelated_module_cannot_prevent_tiles(monkeypatch, capsys):
+def test_broken_unrelated_module_cannot_prevent_tiles(offline_stages, monkeypatch, capsys):
     from lunar_pipeline import __main__ as cli
 
     real_import = cli.import_module
@@ -103,7 +109,7 @@ def test_broken_unrelated_module_cannot_prevent_tiles(monkeypatch, capsys):
 
     monkeypatch.setattr(cli, "import_module", broken_ephem)
     main(["tiles"])
-    assert "tiles: not implemented" in capsys.readouterr().out
+    assert "tiles: dispatched" in capsys.readouterr().out
 
 
 def test_schema_remote_reference_cannot_fetch_network(tmp_path, monkeypatch):
@@ -171,18 +177,3 @@ FND_EXAMPLES = REPO_ROOT / "contracts/examples/valid"
 @pytest.mark.parametrize("fixture", sorted(FND_EXAMPLES.glob("*.json")), ids=lambda p: p.stem)
 def test_fnd_contract_fixtures_are_accepted(fixture):
     schemas.validate(fixture.stem, json.loads(fixture.read_text()))
-
-
-@pytest.mark.parametrize(
-    "module,command,issue",
-    [
-        ("coords", "coords", "PIPE-4"),
-    ],
-)
-def test_helper_stubs_expose_downstream_entrypoint(module, command, issue, capsys):
-    from importlib import import_module
-
-    from lunar_pipeline.config import load_config
-
-    assert import_module(f"lunar_pipeline.{module}").run(load_config()) is None
-    assert capsys.readouterr().out == f"{command}: not implemented yet ({issue})\n"

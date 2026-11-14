@@ -66,8 +66,8 @@ Any other `.json` or `.bin` in the folder fails `validate-data`; other file type
 - **Grid layers.** `layers` lists the layers present, in file order, back to back from byte 0. `layer_info`
   has one entry per layer: physical value = stored × `scale` + `offset`; the element for cell `i`, component
   `c` is at `byte_offset + (i * components + c) * itemsize`; `nodata` is a STORED value. The `mask` layer is
-  int16 with scale 0.01 deg and `components = bins = 64`. A layer with no data (rock, until a source is
-  confirmed) is left out of `layers`. Scalar layers have one component: slope uses `deg`, elevation and
+  int16 with scale 0.01 deg and `components = bins = 64`. A layer with no data is left out of `layers`. `rock` is
+  present but is a DEM roughness proxy, flagged `proxy: true` with a `note` in its `layer_info` entry. Scalar layers have one component: slope uses `deg`, elevation and
   crater depth use `m`, and rock uses `fraction`.
 
 ## Gotchas for whoever produces these files

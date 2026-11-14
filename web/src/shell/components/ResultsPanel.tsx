@@ -4,6 +4,7 @@ import type { Scenario } from '../scenario';
 import type { Metrics } from '../../contracts/engine-api';
 import { bestValues, countdown, DEFAULT_THRESHOLDS, metricValue, siteStatus, type MetricKey } from '../../features/compare/metrics';
 import { parseCustomSite } from '../../features/sites/sites';
+import { ChevronRight } from 'lucide-react';
 import { Card, Badge } from '../ui';
 
 interface SiteResult {
@@ -20,7 +21,7 @@ function Metric({ label, value, tone, fill, best }: { label: string; value: stri
   return <div className={`metric-row ${tone ? `metric-${tone}` : ''} ${best ? 'metric-best' : ''}`}><div><dt>{label}{best && <span className="best-tag">Best</span>}</dt><dd>{value}</dd></div>{fill !== undefined && <span className="metric-track" aria-hidden="true"><i style={{ width: `${Math.max(0, Math.min(100, fill))}%` }}/></span>}</div>;
 }
 
-export function ResultsPanel({ data, scenario }: { data: DemoData; scenario: Scenario }) {
+export function ResultsPanel({ data, scenario, onCollapse }: { data: DemoData; scenario: Scenario; onCollapse?: () => void }) {
   const results: SiteResult[] = scenario.sites.map(id => {
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
@@ -39,7 +40,16 @@ export function ResultsPanel({ data, scenario }: { data: DemoData; scenario: Sce
     { key: 'earthContactPercent', label: 'Earth contact', text: m => `${m.pct_earth_visible}%`, tone: 'earth', fill: m => m.pct_earth_visible },
     { key: 'longestBlackoutHours', label: 'Longest blackout', text: m => `${m.longest_blackout_h} h`, tone: 'earth' },
   ];
-  return <aside className="results-panel" aria-label="Site comparison"><div className="panel-heading"><span className="eyebrow">03 / COMPARE</span><h2>Window summary</h2><p className="hint">Synthetic examples · not mission results</p></div>
+  return <aside className="results-panel" aria-label="Site comparison"><div className="panel-heading"><div className="panel-heading-text"><span className="eyebrow">03 / COMPARE</span><h2>Window summary</h2><p className="hint">Synthetic examples · not mission results</p></div>{onCollapse && <button type="button" className="panel-collapse-btn" onClick={onCollapse} aria-label="Collapse comparison panel"><ChevronRight size={14} aria-hidden="true" /></button>}</div>
+    {computed.length > 1 && <div className="compare-table-wrap"><table className="compare-table">
+      <caption className="sr-only">Metric comparison across selected sites; best value per row is highlighted.</caption>
+      <thead><tr><th scope="col">Metric</th>{results.map(result => <th key={result.id} scope="col" title={result.name}>{shortName(result.name)}</th>)}</tr></thead>
+      <tbody>{rows.map(row => <tr key={row.key}><th scope="row">{row.label}</th>{results.map(result => {
+        const value = result.metrics ? metricValue(result.metrics, row.key) : null;
+        const isBest = value !== null && value === best[row.key];
+        return <td key={result.id} className={isBest ? 'compare-best' : undefined}>{result.metrics ? row.text(result.metrics) : '—'}</td>;
+      })}</tr>)}<tr><th scope="row">Temp range</th>{results.map(result => <td key={result.id}>{result.metrics ? `${result.metrics.t_min_k}–${result.metrics.t_max_k} K` : '—'}</td>)}</tr></tbody>
+    </table></div>}
     {results.length === 0 ? <Card><h3>No sites selected</h3><p className="hint">Choose a demo site to inspect an example card.</p></Card> : <div className="result-grid">{results.map((result, index) => {
       const { metrics } = result;
       if (!metrics) return <Card key={result.id}><h3>{result.name}</h3><p className="hint">{result.message}</p></Card>;
@@ -53,6 +63,10 @@ export function ResultsPanel({ data, scenario }: { data: DemoData; scenario: Sce
     })}</div>}
     <p className="assumptions">Status uses demo thresholds: ≥70% sunlit, ≥60% Earth contact, ≤48 h darkness, ≤24 h blackout. Temperature model: simplified, no thermal inertia. Earth contact assumes a DSN station can see the Moon; no relay coverage.</p>
   </aside>;
+}
+
+function shortName(name: string): string {
+  return name.length > 14 ? `${name.slice(0, 13)}…` : name;
 }
 
 function customName(id: string): string {

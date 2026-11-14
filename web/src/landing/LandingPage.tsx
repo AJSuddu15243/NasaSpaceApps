@@ -47,7 +47,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
     <main id="main" className="landing-main">
       <section className="landing-hero" aria-labelledby="hero-title">
         <div className="landing-copy">
-          <p className="landing-kicker"><span />NASA SPACE APPS · LUNAR LANDING SITE NAVIGATOR</p>
+          <p className="landing-kicker"><span />LROC IMAGERY · LOLA ELEVATION · JPL HORIZONS</p>
           <h1 id="hero-title">Choose where <em>light, warmth</em> and contact meet.</h1>
           <p className="landing-lede">A workspace for comparing south-pole landing sites and dates — by real terrain horizon, sky geometry and comm windows.</p>
           <p className="landing-summary">Pick candidate sites, move the date, and see which places keep a lander powered, temperate and in reach of Earth — with every assumption and every synthetic dataset labelled.</p>
