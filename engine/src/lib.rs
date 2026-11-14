@@ -2,6 +2,7 @@
 //! API names and shapes follow SPEC.md "Engine API" and contracts/schemas/engine-api.schema.json (FND-1, proposed).
 
 pub mod contracts;
+pub mod score;
 
 pub use contracts::{Area, Metrics, Params, Weights};
 use serde::{Serialize, de::DeserializeOwned};
