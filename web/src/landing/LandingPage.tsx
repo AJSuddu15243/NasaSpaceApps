@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { chooseHeroMode, type HeroCapability } from './flight';
+import { LandingSections } from './LandingSections';
 import './landing.css';
 
 const MoonScene = lazy(() => import('./MoonScene'));
@@ -67,5 +68,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       <h2 id="context-title">At the pole, the horizon decides what the sky can reach.</h2>
       <p>Low Sun angles create long shadows. Nearby terrain can interrupt both illumination and a direct line to Earth. A small change in place or time can change the usable window.</p>
     </section>
+    <LandingSections onOpen={onOpen} />
   </main>;
 }
