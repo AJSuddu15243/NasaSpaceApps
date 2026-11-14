@@ -95,3 +95,11 @@
 @media(prefers-reduced-motion:reduce){
   .seq-cta,.landing-final button,.resource-row a{transition:none!important}
 }
+
+/* Light theme overrides (tokens handle text/borders; these fix literal dark surfaces) */
+[data-theme='light'] .landing{background:hsl(var(--background))}
+[data-theme='light'] .landing-hero:after{background:linear-gradient(100deg,hsl(var(--background)/.95) 0%,hsl(var(--background)/.82) 34%,hsl(var(--background)/.38) 58%,transparent 78%)}
+[data-theme='light'] .landing-editorial,.landing-team-section{background:hsl(var(--card))}
+[data-theme='light'] .landing-preview,.landing-technology,.landing-resources{background:hsl(var(--muted))}
+[data-theme='light'] .app-frame{background:hsl(var(--background));box-shadow:0 40px 120px hsl(var(--foreground)/.12)}
+[data-theme='light'] .app-frame-bar{background:linear-gradient(transparent,hsl(var(--background)/.85))}
