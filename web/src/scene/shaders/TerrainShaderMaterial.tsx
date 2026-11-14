@@ -1,45 +1,55 @@
-import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
-import { Vector3 } from "three";
-import type { ReactElement } from "react";
-import type { ShaderMaterial } from "three";
-
-import {
-  createTerrainShaderUniforms,
-  DEFAULT_TERRAIN_SHADER_CONFIG,
-  terrainFragmentShader,
-  terrainVertexShader,
-} from "./terrainShader";
-import type { TerrainShaderConfig } from "./terrainShader";
-
+import { useMemo, useEffect, useState } from 'react';
+import { DataTexture, MeshStandardMaterial, SRGBColorSpace, TextureLoader, Vector4, type Texture } from 'three';
+import { createTerrainShaderUniforms, DEFAULT_TERRAIN_SHADER_CONFIG, terrainFragmentShader } from './terrainShader';
+import type { TerrainShaderConfig } from './terrainShader';
+import { slopeTexture, slopeUv } from '../heatmap/slope';
+import type { LunarSceneProps, SouthPoleTile } from '../types';
 export interface TerrainShaderMaterialProps {
   readonly config?: TerrainShaderConfig;
+  readonly elevationEnabled?: boolean;
+  readonly tile?: SouthPoleTile;
+  readonly assets?: LunarSceneProps['assets'];
+  readonly layer?: LunarSceneProps['layer'];
+  readonly overlayOpacity?: number;
+  readonly onImageryError?: () => void;
 }
-
-const worldLightDirection = new Vector3();
-
-/** Elevation, view-correct hillshade, and optional height contours for the local terrain mesh. */
-export function TerrainShaderMaterial({
-  config = DEFAULT_TERRAIN_SHADER_CONFIG,
-}: TerrainShaderMaterialProps): ReactElement {
-  const materialRef = useRef<ShaderMaterial | null>(null);
-  const uniforms = useMemo(() => createTerrainShaderUniforms(config), [config]);
-
-  useFrame(({ camera }) => {
-    const material = materialRef.current;
-    if (!material) return;
-    const light = material.uniforms.uLightDirectionView.value as Vector3;
-    light.copy(worldLightDirection.set(...config.lightDirectionView))
-      .transformDirection(camera.matrixWorldInverse);
-  });
-
-  return (
-    <shaderMaterial
-      ref={materialRef}
-      uniforms={uniforms}
-      vertexShader={terrainVertexShader}
-      fragmentShader={terrainFragmentShader}
-      toneMapped={false}
-    />
-  );
+/** Keep Three's shadow pipeline; draw only supplied elevation/slope data. */
+export function TerrainShaderMaterial({ config = DEFAULT_TERRAIN_SHADER_CONFIG, elevationEnabled = false,
+  tile, assets, onImageryError, layer = 'relief', overlayOpacity = 0.85 }: TerrainShaderMaterialProps) {
+  const [image, setImage] = useState<Texture | null>(null);
+  useEffect(() => {
+    if (!assets?.imagery) { setImage(null); return; }
+    let disposed = false;
+    const texture = new TextureLoader().load(`/data/imagery/${assets.imagery.region}.webp`, loaded => {
+      if (!disposed) setImage(loaded);
+    }, undefined, () => { if (!disposed) { setImage(null); onImageryError?.(); } });
+    // PIPE-10 row 0 is y_min, matching positive V; do not invert the image.
+    texture.flipY = false; texture.colorSpace = SRGBColorSpace;
+    return () => { disposed = true; texture.dispose(); };
+  }, [assets?.imagery, onImageryError]);
+  const slope = useMemo(() => assets?.slope ? slopeTexture(assets.slope) : new DataTexture(new Uint8Array([0, 0, 0, 0]), 1, 1), [assets?.slope]);
+  useEffect(() => () => slope.dispose(), [slope]);
+  const material = useMemo(() => {
+    const result = new MeshStandardMaterial({ roughness: 1, metalness: 0 });
+    const h = assets?.imagery;
+    const imageUv = tile && h ? [(tile.x0M - h.x_min) / (h.x_max - h.x_min), (tile.y0M - h.y_min) / (h.y_max - h.y_min),
+      (tile.columns - 1) * tile.cellM / (h.x_max - h.x_min), (tile.rows - 1) * tile.cellM / (h.y_max - h.y_min)] : [0, 0, 1, 1];
+    const uniforms = { ...createTerrainShaderUniforms(config), uElevationEnabled: { value: elevationEnabled || layer === 'elevation' },
+      uSlopeMap: { value: slope }, uImage: { value: image ?? slope },
+      uSlopeUv: { value: new Vector4(...(tile && assets?.slope ? slopeUv(tile, assets.slope) : [0, 0, 1, 1] as const)) },
+      uImageUv: { value: new Vector4(...imageUv as [number, number, number, number]) },
+      uLayer: { value: layer === 'slope' && assets?.slope ? 3 : layer === 'imagery' && image ? 1 : 0 },
+      uOverlayOpacity: { value: overlayOpacity } };
+    result.onBeforeCompile = shader => {
+      Object.assign(shader.uniforms, uniforms);
+      shader.vertexShader = 'attribute float elevationM; varying float vElevationM; varying vec2 vTerrainUv;\n' + shader.vertexShader;
+      shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvElevationM = elevationM; vTerrainUv = uv;');
+      shader.fragmentShader = terrainFragmentShader + '\n' + shader.fragmentShader;
+      shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= terrainColor();');
+    };
+    result.customProgramCacheKey = () => 'lunar-terrain-v3';
+    return result;
+  }, [config, elevationEnabled, tile, assets, layer, overlayOpacity, slope, image]);
+  useEffect(() => () => material.dispose(), [material]);
+  return <primitive object={material} attach="material" />;
 }

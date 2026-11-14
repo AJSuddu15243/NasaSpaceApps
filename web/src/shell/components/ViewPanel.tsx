@@ -1,6 +1,5 @@
-import { lazy, Suspense, useState } from 'react';
-import { LunarScene, type CameraMode } from '../../scene';
-import { TerrainShadingControls } from '../../scene/shaders';
+import { lazy, Suspense } from 'react';
+const SceneViewport = lazy(() => import('../../scene/SceneViewport').then(m => ({ default: m.SceneViewport })));
 import type { Scenario, View } from '../scenario';
 import type { DemoData } from '../data';
 import { Badge, Button } from '../ui';
@@ -14,9 +13,7 @@ const MoonGlobeView = lazy(() => import('../../features/globe/MoonGlobeView').th
 const labels: Record<View, string> = { '3d': '3D terrain', panorama: 'Horizon panorama', map: 'Polar map', globe: 'Live globe' };
 
 export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void }) {
-  const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
-  const [contoursEnabled, setContoursEnabled] = useState(false);
-  const isThreeD = scenario.view === '3d';
+  const isTerrain = scenario.view === '3d' || scenario.view === 'map';
   const markers = scenario.sites.flatMap((id, index) => {
     const site = data.sites.find(item => item.id === id);
     const coords = site ?? parseCustomSite(id);
@@ -37,34 +34,21 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
   ];
   const isGlobe = scenario.view === 'globe';
   return <section className="view-panel" aria-labelledby="view-heading">
-    <div className="view-toolbar"><div><span className="eyebrow">02 / OBSERVE</span><h2 id="view-heading">South pole environment</h2></div><Badge>{isGlobe ? 'LROC imagery' : 'Illustrative layer'}</Badge></div>
+    <div className="view-toolbar"><div><span className="eyebrow">02 / OBSERVE</span><h2 id="view-heading">South pole environment</h2></div><Badge>{isGlobe ? 'LROC imagery' : isTerrain ? 'Terrain viewer' : 'Illustrative layer'}</Badge></div>
     <div className="view-switch" role="group" aria-label="Environment view">
       {(Object.keys(labels) as View[]).map(view => <Button key={view} variant={view === scenario.view ? 'secondary' : 'ghost'} className="view-tab" aria-pressed={view === scenario.view} onClick={() => change({ view })}>{labels[view]}</Button>)}
     </div>
     {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="empty-caption"><span className="eyebrow">LIVE GLOBE</span><h3>Loading the Moon…</h3><p>The globe view streams in on demand to keep the workspace light.</p></div></div>}>
       <MoonGlobeView markers={globeMarkers} timeLabel={scenario.date.slice(0, 16).replace('T', ' ') + ' UTC'} />
       <p className="scene-caption"><span className="eyebrow">LUNAR SURFACE</span> LROC colour mosaic and LOLA elevation, NASA SVS. Numbered pins are your scenario sites; S/E mark the sub-solar and sub-Earth points from the ephemeris table at the scenario time.</p>
-    </Suspense> : isThreeD ? <>
-      <div className="terrain-scene-toolbar">
-        <p className="hint">Drag to orbit. Double-click the canvas or use the button to fly to the south pole.</p>
-        <TerrainShadingControls contoursEnabled={contoursEnabled} onContoursEnabledChange={setContoursEnabled} />
-        <Button
-          variant="outline"
-          onClick={() => setCameraMode(mode => mode === 'orbit' ? 'south-pole' : 'orbit')}
-        >
-          {cameraMode === 'orbit' ? 'Fly to south pole' : 'Return to globe'}
-        </Button>
-      </div>
-      <div className="terrain-scene">
-        <LunarScene
-          cameraMode={cameraMode}
-          onCameraModeChange={setCameraMode}
-          contoursEnabled={contoursEnabled}
-          aria-label="Interactive lunar south-pole terrain scene"
-        />
-      </div>
-      <p className="scene-caption"><span className="eyebrow">SOUTH POLAR REGION</span> Synthetic terrain preview for SCN-1. Elevation and lighting are illustrative until pipeline and ephemeris data are connected.</p>
-    </> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
+    </Suspense> : isTerrain ? <Suspense fallback={<div className="terrain-empty" role="status">Loading terrain view…</div>}>
+      <SceneViewport onSiteSelect={id => change({ sites: [id, ...scenario.sites.filter(s => s !== id)].slice(0, 4) })} view={scenario.view === 'map' ? 'map' : '3d'} date={scenario.date} table={data.table}
+        sites={scenario.sites.flatMap((id, index) => {
+          const site = data.sites.find(item => item.id === id);
+          const coords = site ?? parseCustomSite(id);
+          return coords ? [{ id, name: site?.name ?? 'Custom point', lat: coords.lat, lon: coords.lon, index }] : [];
+        })} />
+    </Suspense> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
       <div className="viewport-meta"><span>MOON_ME · 80–90°S</span><span>UTC {scenario.date.slice(0, 16).replace('T', ' ')}</span></div>
       <svg className="lunar-outline" viewBox="0 0 480 380" fill="none" role="img" aria-label={`Illustrative ${labels[scenario.view]} with ${markers.length} selected site markers`}>
         <defs><radialGradient id="surface" cx="48%" cy="44%"><stop offset="0" stopColor="#343941"/><stop offset=".6" stopColor="#1c2026"/><stop offset="1" stopColor="#0a0c10"/></radialGradient><filter id="soft"><feGaussianBlur stdDeviation="12"/></filter></defs>

@@ -2,7 +2,6 @@ export {
   createTerrainShaderUniforms,
   DEFAULT_TERRAIN_SHADER_CONFIG,
   terrainFragmentShader,
-  terrainVertexShader,
   validateTerrainShaderConfig,
 } from "./terrainShader";
 export type { TerrainShaderConfig } from "./terrainShader";
