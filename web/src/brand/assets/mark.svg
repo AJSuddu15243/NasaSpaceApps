@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Lunar Window</title>
+  <path d="M12 56a4 4 0 0 1-4-4V30a24 24 0 0 1 48 0v22a4 4 0 0 1-4 4Z" stroke="#EBEDF0" stroke-width="4"/>
+  <path d="M9 43 24 32 35 40 47 35 55 42" stroke="#EBEDF0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="23" cy="23" r="4" fill="#FCC65A"/>
+  <circle cx="43" cy="24" r="3" fill="#80C3FA"/>
+</svg>
