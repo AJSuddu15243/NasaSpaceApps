@@ -2,13 +2,10 @@ import { useState, type FormEvent } from 'react';
 import type { DemoData } from '../data';
 import { DEFAULT_SCENARIO, MAX_SITES, validUtc, type Scenario } from '../scenario';
 import { Button, Input, Label } from '../ui';
+import { SitePicker } from '../../features/sites/SitePicker';
 export function ScenarioPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>, replace?: boolean) => void }) {
-  const toggleSite = (id: string) => change({ sites: scenario.sites.includes(id) ? scenario.sites.filter(site => site !== id) : [...scenario.sites, id] });
   return <aside className="scenario-panel" aria-label="Sites and scenario">
-    <div className="panel-heading"><span className="eyebrow">01 / CONFIGURE</span><h2>Your scenario</h2></div>
-    <fieldset className="site-list"><legend>Sites <span className="muted">{scenario.sites.length}/{MAX_SITES}</span></legend>
-      {data.sites.map(site => <label className="site-option" key={site.id}><input type="checkbox" checked={scenario.sites.includes(site.id)} disabled={!scenario.sites.includes(site.id) && scenario.sites.length >= MAX_SITES} onChange={() => toggleSite(site.id)} /><span>{site.name}<small>{site.lat.toFixed(2)}°, {site.lon.toFixed(2)}°</small></span></label>)}
-    </fieldset>
+    <SitePicker sites={data.sites} selected={scenario.sites} onChange={sites => change({ sites: sites.slice(0, MAX_SITES) })} />
     <DateWindow key={`${scenario.date}/${scenario.hours}`} scenario={scenario} change={change} />
     {scenario.mode === 'planner' && <fieldset className="weight-list"><legend>Comparison weights</legend>
       {(['sun', 'earth', 'slope', 'crater'] as const).map(key => <div key={key}><Label htmlFor={`weight-${key}`}>{({ sun: 'Sunlight', earth: 'Earth contact', slope: 'Low slope', crater: 'Shallow terrain' })[key]} <output htmlFor={`weight-${key}`}>{scenario.weights[key]}%</output></Label><input id={`weight-${key}`} type="range" min="0" max="100" step="1" value={scenario.weights[key]} onChange={event => change({ weights: { ...scenario.weights, [key]: Number(event.target.value) } }, true)} /></div>)}
