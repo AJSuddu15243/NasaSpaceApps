@@ -31,9 +31,9 @@ interface GlobeInstance {
   _destructor?: () => void;
 }
 
-type GlobeConstructor = (el: HTMLElement) => GlobeInstance;
+type GlobeConstructor = new (el: HTMLElement) => GlobeInstance;
 
-const OVERVIEW = { lat: 8, lng: 20, altitude: 2.35 };
+const OVERVIEW = { lat: -38, lng: 22, altitude: 2.3 };
 const SOUTH_POLE = { lat: -90, lng: 0, altitude: 1.35 };
 const TEXTURE_COLOR = '/textures/moon_color.jpg';
 const TEXTURE_BUMP = '/textures/moon_elevation.jpg';
@@ -74,7 +74,7 @@ export function MoonGlobeView({ markers }: { markers: GlobeMarker[] }) {
         const mod = await import('globe.gl');
         const Globe = (mod.default ?? mod) as unknown as GlobeConstructor;
         if (disposed || !hostRef.current) return;
-        const globe = Globe(hostRef.current);
+        const globe = new Globe(hostRef.current);
         globeRef.current = globe;
 
         globe
