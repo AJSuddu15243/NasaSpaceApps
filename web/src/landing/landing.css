@@ -3,3 +3,14 @@
 @media(max-width:600px){.landing-hero{min-height:840px;padding:48px 20px 90px}.landing h1{font-size:clamp(52px,15vw,74px)}.landing-summary{font-size:14px}.landing-actions{align-items:flex-start;flex-direction:column;gap:20px}.landing-visual{inset:34% -36% -4% -22%}.static-moon{width:100vw;right:-10%}.landing-readout{left:20px;right:20px}.landing-readout span:nth-child(even){display:none}.landing-context{padding:68px 20px}}
 @media(prefers-reduced-motion:reduce){.landing *{scroll-behavior:auto!important;transition:none!important}}
 .scene-ready .static-moon{opacity:0}
+
+/* UI pass: star field and interaction polish. */
+.landing-hero{background-image:radial-gradient(1px 1px at 12% 18%,#ffffff4d 50%,transparent 51%),radial-gradient(1px 1px at 34% 8%,#ffffff40 50%,transparent 51%),radial-gradient(1.5px 1.5px at 58% 14%,#ffffff38 50%,transparent 51%),radial-gradient(1px 1px at 82% 22%,#ffffff45 50%,transparent 51%),radial-gradient(1px 1px at 92% 52%,#ffffff38 50%,transparent 51%),radial-gradient(1.5px 1.5px at 8% 58%,#ffffff30 50%,transparent 51%),radial-gradient(1px 1px at 26% 78%,#ffffff3d 50%,transparent 51%),radial-gradient(1px 1px at 66% 84%,#ffffff30 50%,transparent 51%),radial-gradient(circle at 72% 42%,#25272d 0,transparent 35%),linear-gradient(135deg,#0f1013,#090a0d 64%)}
+.landing-cta{transition:transform var(--motion-fast) var(--ease-standard),box-shadow var(--motion-fast) var(--ease-standard)}
+.landing-cta:hover{transform:translateY(-1px);box-shadow:0 8px 28px hsl(var(--sun)/.28)}
+.landing-cta:active{transform:translateY(0)}
+.landing-actions a{transition:color var(--motion-fast) var(--ease-standard)}
+.landing-actions a:hover{color:var(--shell-text)}
+.static-moon{animation:moon-settle 1200ms var(--ease-standard) both}
+@keyframes moon-settle{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.static-moon{animation:none!important}.landing-cta{transition:none!important}}

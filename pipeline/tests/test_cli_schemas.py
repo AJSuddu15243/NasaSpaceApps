@@ -4,18 +4,42 @@ import warnings
 import jsonschema
 import pytest
 
-from lunar_pipeline import schemas
+from lunar_pipeline import ephem, schemas
 from lunar_pipeline.__main__ import COMMANDS, main
 from lunar_pipeline.config import REPO_ROOT
 
+# Implemented network stages are replaced by an offline marker; their own tests cover them.
+IMPLEMENTED = {"terrain-fetch": "terrain.trek"}
+
+
+@pytest.fixture
+def offline_stages(monkeypatch):
+    from importlib import import_module
+
+    for command, module in IMPLEMENTED.items():
+        stub = lambda cfg, command=command: print(f"{command}: dispatched")  # noqa: E731
+        monkeypatch.setattr(import_module(f"lunar_pipeline.{module}"), "run", stub)
+
+
+@pytest.fixture(autouse=True)
+def offline_ephem(monkeypatch):
+    """ephem (PIPE-2) is implemented and needs Horizons; CLI tests only prove dispatch."""
+    monkeypatch.setattr(ephem, "run", lambda cfg: print("ephem: dispatched"))
+
 
 @pytest.mark.parametrize("command", [*COMMANDS, "all"])
-def test_registered_command_cannot_be_unreachable(command, capsys):
+def test_registered_command_cannot_be_unreachable(command, offline_stages, capsys):
     main([command])
     lines = capsys.readouterr().out.splitlines()
     expected = list(COMMANDS) if command == "all" else [command]
     assert [line.split(":")[0] for line in lines] == expected
-    assert all("not implemented yet (PIPE-" in line for line in lines)
+    dispatched = {*IMPLEMENTED, "ephem"}
+    for line in lines:
+        command = line.split(":")[0]
+        if command in dispatched:
+            assert line.endswith(": dispatched")
+        else:
+            assert "not implemented yet (PIPE-" in line
 
 
 def test_help_cannot_hide_commands(capsys):
@@ -30,7 +54,7 @@ def test_help_cannot_hide_commands(capsys):
 def test_config_flag_works_on_either_side_of_command(before, capsys):
     flags = ["--config", str(REPO_ROOT / "pipeline/config.yaml")]
     main(flags + ["ephem"] if before else ["ephem"] + flags)
-    assert "ephem: not implemented" in capsys.readouterr().out
+    assert "ephem: dispatched" in capsys.readouterr().out
 
 
 def test_missing_schema_warns_once_but_new_schema_is_not_skipped(tmp_path, monkeypatch):
@@ -52,7 +76,7 @@ def test_schema_name_cannot_escape_contract_directory():
         schemas.validate("../secret", {})
 
 
-def test_all_cannot_reorder_stages_or_omit_imagery(capsys):
+def test_all_cannot_reorder_stages_or_omit_imagery(offline_stages, capsys):
     main(["all"])
     assert [line.split(":")[0] for line in capsys.readouterr().out.splitlines()] == [
         "ephem",
@@ -151,9 +175,7 @@ def test_fnd_contract_fixtures_are_accepted(fixture):
 @pytest.mark.parametrize(
     "module,command,issue",
     [
-        ("horizons", "horizons", "PIPE-2"),
         ("coords", "coords", "PIPE-4"),
-        ("terrain.pgda", "pgda", "PIPE-3"),
     ],
 )
 def test_helper_stubs_expose_downstream_entrypoint(module, command, issue, capsys):

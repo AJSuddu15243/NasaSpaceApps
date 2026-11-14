@@ -12,7 +12,8 @@ make all
 ```
 
 `setup` installs the committed lockfile, including dev tools. Tests are offline.
-**Every stage is currently a stub**: `make all` prints the planned stages and writes no data.
+Stages are stubs unless listed below; stubs print their issue ID and write no data.
+`terrain-fetch` (PIPE-3) is implemented: see "Terrain sources".
 
 From the repository root:
 
@@ -42,6 +43,23 @@ Each module exposes `run(cfg: Config) -> None`. `all` runs the table in order, s
 Make targets mirror the CLI, plus `setup`, `test`, `lint`, and `terrain` (terrain-fetch then tiles).
 No later stage needs to change the registry, Makefile, configuration, or dependency files.
 Coordinate shared edits to `terrain/layers.py` between PIPE-5 and PIPE-6.
+
+## Terrain sources (PIPE-3)
+
+Research, 2026-11-14 (timeboxed): can Moon Trek or LROC QuickMap return LOLA heights as numbers
+for an extent?
+
+| Endpoint | Returns | Analysis? | Why |
+|---|---|---|---|
+| `https://trek.nasa.gov/tiles/Moon/EQ/<layer>/1.0.0/WMTSCapabilities.xml` (WMTS) | `image/png` tiles (e.g. `LRO_LOLA_ClrShade_Global_128ppd_v04`) | No | Rendered 8-bit colour/shade, not metres. Use for imagery only |
+| `https://trek.nasa.gov/tiles/Moon/SP/...` (south-pole tiles) | HTTP 403 (listing), 404 for guessed DEM layer names | No | No documented numeric DEM layer |
+| `https://trek.nasa.gov/moon/TrekWS/rest/...` (catalogue/search) | HTTP 404 on public paths | No | No public, documented subset-by-extent API |
+| `https://quickmap.lroc.asu.edu/` → `quickmap.lroc.im-ldi.com` | JS app shell; `/api/` returns the same HTML | No | GeoTIFF export only through the interactive UI; not scriptable |
+| `https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF` | float32 COG, heights in m, 80 m/px, 80 S to pole | **Yes** | Numeric, cited, range requests supported. **Chosen** |
+
+`make terrain-fetch` downloads the PGDA DEM into `data/raw/` (189,158,392 bytes, SHA-256 pinned
+in `terrain/pgda.py`), prints its metadata and runs physics checks; a second run only re-hashes.
+The pin is trust-on-first-use: PGDA publishes no checksum. Facts and gotchas: `notes/pipe-3.md`.
 
 ## Shared interfaces
 
