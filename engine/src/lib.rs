@@ -1,6 +1,7 @@
 //! Lunar landing site engine. Pure Rust core (tested natively) plus thin wasm-bindgen exports.
 //! API names and shapes follow SPEC.md "Engine API" and contracts/schemas/engine-api.schema.json (FND-1, proposed).
 
+pub mod constants;
 pub mod contracts;
 pub mod score;
 

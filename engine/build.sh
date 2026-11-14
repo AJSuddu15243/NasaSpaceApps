@@ -3,6 +3,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 OUT=../web/src/engine/pkg
+# Strip machine paths (username, checkout dir) from panic strings so every machine emits the same bytes.
+# CARGO_ENCODED_RUSTFLAGS (0x1f-separated) survives spaces in paths; it replaces any RUSTFLAGS.
+SEP=$'\x1f'
+export CARGO_ENCODED_RUSTFLAGS="--remap-path-prefix=${CARGO_HOME:-$HOME/.cargo}=/cargo${SEP}--remap-path-prefix=$(cd .. && pwd)=/repo"
 wasm-pack build --release --target web --out-dir "$OUT"  # wasm-opt -O is wasm-pack's release default
 rm -f "$OUT/.gitignore"  # wasm-pack ignores everything by default; we commit pkg/
 WASM="$OUT/lunar_engine_bg.wasm"
