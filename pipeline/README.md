@@ -69,12 +69,34 @@ with +y, so the DEM is flipped; cells are block means snapped to DEM pixel edges
 `coords.to_xy` / `to_latlon` convert lat/lon ↔ south polar stereographic metres (R = 1737.4 km).
 
 `make layers` (PIPE-5) writes `web/public/data/grid/{region}.bin` + `.json` (contract `grid`): ±10 km at
-160 m (125 × 125, 312 KB per region), float32 layers `slope_deg, aspect_deg, elev_m, crater_depth_m,
-roughness_deg`, computed at 80 m with a 640 m margin, then 2 × 2 aggregated. Slope uses Horn's method and
+160 m (125 × 125, 375 KB per region), float32 layers `slope_deg, aspect_deg, elev_m, crater_depth_m,
+roughness_deg, rock`, computed at 80 m with a 640 m margin, then 2 × 2 aggregated. Slope uses Horn's method and
 the **max** of the 2 × 2 (conservative for the hard slope limit); aspect is the downhill direction clockwise
 from local north (0 on flat cells); crater depth is max − min within 500 m after removing the
 least-squares plane (so regional slope isn't counted as depth); roughness is the std-dev of
 slope over 5 × 5. The mask layer is added by PIPE-8.
+
+### Rock distribution (PIPE-6)
+
+`rock` (units `fraction`) = clip(`roughness_deg` / 5°, 0, 1), flagged `"proxy": true` with a `note` in
+`layer_info.rock`. It's a **proxy for terrain roughness, not measured rocks**, and its weight defaults to 0.
+The reference (5°) is fixed so regions compare: on the PGDA 80 m DEM the median roughness is 0.9–1.1° and the
+99th percentile is 3.8–5.3° across the three regions, and 5° is also half the 10° slope limit. Only 0.2–1.3% of
+cells saturate at 1. Rock min/mean/max: connecting-ridge 0.03/0.28/1.00, haworth 0.04/0.24/1.00,
+malapert-massif 0.04/0.22/1.00.
+
+Sources searched (2026-11-14). None gives a public rock or boulder raster for 85–90° S:
+
+| Source | Coverage / resolution | Verdict |
+|---|---|---|
+| Diviner rock abundance (Bandfield et al. 2011, JGR 116, E00H02), [GDR L3](https://ode.rsl.wustl.edu/moon/pagehelp/Content/Missions_Instruments/LRO/DIVINER/GDR_L3.htm) | 60° S–60° N only | No polar coverage |
+| LROC NAC boulder maps (Aussel et al. 2025, [doi:10.5281/zenodo.15520275](https://doi.org/10.5281/zenodo.15520275)) | 60° S–60° N only | No polar coverage |
+| Boazman et al. 2022, PSJ, [doi:10.3847/PSJ/aca590](https://doi.org/10.3847/PSJ/aca590) | Artemis sites near Shackleton | Boulder counts in the paper; no public raster found |
+| Mini-RF CPR south-polar mosaic ([PDS](https://pds-geosciences.wustl.edu/lro/lro-l-mrflro-4-cdr-v1/lromrf_0005/data/sar/mosaics/)) | 948 m/px | Rejected: coarser than the 160 m grid, swath gaps, and high CPR can mean ice as well as rocks |
+| LOLA multi-baseline roughness (PGDA product 90, Barker et al. 2023) | 1 km/px | Considered: coarser, and it measures the same thing as `roughness_deg` |
+
+Upgrade path: a polar NAC boulder-density map (like Aussel et al. 2025, extended past 60° S, or a released
+Boazman et al. product) would replace the proxy directly as a measured rock fraction. Drop `proxy` when it does.
 
 ## Shared interfaces
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-14T21:06:30Z",
+  "generated_at": "2026-11-14T21:08:07Z",
   "source_urls": [
     "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
     "https://pgda.gsfc.nasa.gov/products/90",
@@ -24,7 +24,8 @@
     "aspect_deg",
     "elev_m",
     "crater_depth_m",
-    "roughness_deg"
+    "roughness_deg",
+    "rock"
   ],
   "layer_info": {
     "slope_deg": {
@@ -76,6 +77,18 @@
       "nodata": null,
       "byte_offset": 250000,
       "byte_length": 62500
+    },
+    "rock": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 312500,
+      "byte_length": 62500,
+      "proxy": true,
+      "note": "Proxy, not measured rocks: DEM roughness (std-dev of 80 m slope over 5 x 5) / 5 deg, clipped to [0, 1]; no rock-abundance or boulder map covers 85-90 S"
     }
   }
 }

@@ -111,6 +111,19 @@ def test_compute_rejects_non_multiple_cell():
         layers.compute(plane(0, 0, 36), 0, 0, CELL, 100.0)
 
 
+def test_rock_proxy_normalizes_and_clips():
+    ref = layers.ROCK_REF_DEG
+    got = layers.rock_proxy(np.array([0.0, ref / 2, ref, 2 * ref, -1.0]))
+    np.testing.assert_array_equal(got, [0.0, 0.5, 1.0, 1.0, 0.0])
+
+
+def test_compute_rock_is_proxy_of_roughness():
+    rng = np.random.default_rng(1)
+    out, _, _ = layers.compute(rng.normal(0, 30, (36, 36)), 0.0, 0.0, CELL, 160.0)
+    np.testing.assert_allclose(out["rock"], layers.rock_proxy(out["roughness_deg"]), rtol=1e-6)
+    assert 0 <= out["rock"].min() and out["rock"].max() <= 1
+
+
 def test_write_grid_layout_and_schema(tmp_path):
     lay = {n: np.full((3, 4), i, np.float32) for i, n in enumerate(layers.LAYERS)}
     header = {
@@ -123,7 +136,10 @@ def test_write_grid_layout_and_schema(tmp_path):
     h = json.loads((tmp_path / "r.json").read_text())
     schemas.validate("grid", h)
     raw = np.frombuffer((tmp_path / "r.bin").read_bytes(), "<f4")
-    assert raw.size == 5 * 12
+    assert raw.size == len(layers.LAYERS) * 12
+    rock = h["layer_info"]["rock"]
+    assert (rock["units"], rock["proxy"]) == ("fraction", True) and "Proxy" in rock["note"]
+    assert not any("proxy" in h["layer_info"][n] for n in layers.LAYERS if n != "rock")
     for i, name in enumerate(layers.LAYERS):
         info = h["layer_info"][name]
         part = raw[info["byte_offset"] // 4 : (info["byte_offset"] + info["byte_length"]) // 4]
@@ -161,3 +177,4 @@ def test_run_end_to_end(tmp_path, monkeypatch, capsys):
     assert (h["nx"], h["ny"], h["cell_m"], h["layers"]) == (20, 20, 160, list(layers.LAYERS))
     assert region.source_url in h["source_urls"]
     assert "slope 1.1..1.1 deg" in capsys.readouterr().out
+    assert h["layer_info"]["rock"]["proxy"] is True
