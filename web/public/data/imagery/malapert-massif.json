@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-14T20:55:35Z",
+  "generated_at": "2026-11-14T21:10:39Z",
   "source_urls": [
     "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
     "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
@@ -22,8 +22,8 @@
   "width": 4096,
   "height": 4096,
   "format": "webp",
-  "row0": "y_max",
-  "nodata": 0,
+  "row0": "y_min",
+  "nodata": null,
   "webp_quality": 65,
   "source_level": 11,
   "source_pixel_m": 4.180641174316406

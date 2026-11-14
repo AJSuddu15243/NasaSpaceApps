@@ -8,7 +8,7 @@
 export type SourceUrls = string[];
 
 /**
- * Sidecar (web/public/data/imagery/{region}.json) for imagery/{region}.webp, an orbital image texture for the 3D south-pole patch. The WebP is RGB with the same grey value in every channel. Image axes: column 0 is x_min and columns grow with +x; row 0 is y_max (north-up, the usual image convention), so rows grow with -y. This is the OPPOSITE row direction to the x0/y0 raster convention in common.schema.json. Pixels are areas: pixel (col, row) spans x in [x_min + col * pixel_m, x_min + (col + 1) * pixel_m] and y in [y_max - (row + 1) * pixel_m, y_max - row * pixel_m].
+ * Sidecar (web/public/data/imagery/{region}.json) for imagery/{region}.webp, an orbital image texture for the 3D south-pole patch. The WebP is greyscale encoded as RGB; after decoding, channels may differ slightly because of lossy compression (use any one channel, or their mean). Image axes follow the x0/y0 raster convention in common.schema.json: column 0 is x_min and columns grow with +x; row 0 is y_min and rows grow with +y (so it is NOT north-up; a top-down image viewer shows it flipped vertically). Pixels are areas: pixel (col, row) spans x in [x_min + col * pixel_m, x_min + (col + 1) * pixel_m] and y in [y_min + row * pixel_m, y_min + (row + 1) * pixel_m]. validate-data checks that pixel_m * width = x_max - x_min, pixel_m * height = y_max - y_min and pixel_m >= source_pixel_m.
  */
 export interface ImageryHeader {
   /**
@@ -42,11 +42,11 @@ export interface ImageryHeader {
    */
   x_max: number;
   /**
-   * Projected y in metres of the bottom edge of the last row.
+   * Projected y in metres of the bottom edge of row 0.
    */
   y_min: number;
   /**
-   * Projected y in metres of the top edge of row 0.
+   * Projected y in metres of the top edge of the last row.
    */
   y_max: number;
   /**
@@ -58,7 +58,7 @@ export interface ImageryHeader {
    */
   width: number;
   /**
-   * Image height in pixels (rows along -y); unitless count.
+   * Image height in pixels (rows along +y); unitless count.
    */
   height: number;
   /**
@@ -66,13 +66,13 @@ export interface ImageryHeader {
    */
   format: "webp";
   /**
-   * Which y edge image row 0 sits on (no units): always y_max (north-up).
+   * Which y edge image row 0 sits on (no units): always y_min (rows grow with +y, as in common.schema.json).
    */
-  row0: "y_max";
+  row0: "y_min";
   /**
-   * Grey value (0-255, no units) meaning no imagery (shadowed gaps or no coverage), or null when every pixel is valid.
+   * Always null: every pixel is valid. Source gaps are filled from neighbouring pixels before encoding, because lossy WebP cannot keep an exact nodata value.
    */
-  nodata: number | null;
+  nodata: null;
   /**
    * Lossy WebP quality used (0-100, no units).
    */

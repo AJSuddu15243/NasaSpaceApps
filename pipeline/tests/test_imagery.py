@@ -102,8 +102,9 @@ def test_decode_turns_transparent_pixels_into_nodata():
     assert (out[0] == imagery.NODATA).all() and (out[1:] == 9).all()
 
 
-def test_mosaic_and_crop_put_north_up_and_east_right(tmp_path):
-    # Extent = 2 x 2 tiles at native pixel size, so crop is a pure copy.
+def test_mosaic_and_crop_put_row0_at_y_min_and_east_right(tmp_path):
+    # Extent = 2 x 2 tiles at native pixel size, so crop is a pure copy. WMTS rows grow with -y, so
+    # tile row 901 is the southern (min-y) half and must land at image row 0 (contract row order).
     x0 = imagery.ORIGIN_X + 1000 * SPAN11
     y1 = imagery.ORIGIN_Y - 900 * SPAN11
     ext = (x0, x0 + 2 * SPAN11, y1 - 2 * SPAN11, y1)
@@ -111,10 +112,30 @@ def test_mosaic_and_crop_put_north_up_and_east_right(tmp_path):
     out = imagery.crop(src, transform, ext, PX11)
     assert out.shape == (512, 512)
     value = lambda r, c: (r * 7 + c) % 250 + 1  # noqa: E731
-    assert out[0, 0] == value(900, 1000)  # row 0 = y_max (+y, towards 0 E)
-    assert out[0, -1] == value(900, 1001)  # columns grow with +x (90 E)
-    assert out[-1, 0] == value(901, 1000)
-    assert out[-1, -1] == imagery.NODATA  # 404 tile stays nodata
+    assert out[0, 0] == value(901, 1000)  # row 0 = y_min
+    assert out[-1, 0] == value(900, 1000)  # last row = y_max
+    assert out[-1, -1] == value(900, 1001)  # columns grow with +x
+    assert (out[:256, 256:] == imagery.NODATA).all()  # 404 tile (y_min, x_max quarter) is nodata
+
+
+def test_crop_row0_is_y_min_within_a_tile(tmp_path):
+    # One tile whose pixel row r (top-down, -y) holds r // 2 + 1: image row 0 = bottom row.
+    x0 = imagery.ORIGIN_X + 1000 * SPAN11
+    y1 = imagery.ORIGIN_Y - 900 * SPAN11
+    ext = (x0, x0 + SPAN11, y1 - SPAN11, y1)
+    ramp = np.repeat((np.arange(256) // 2 + 1).astype(np.uint8)[:, None], 256, axis=1)
+    out = imagery.crop(ramp, imagery.from_origin(x0, y1, PX11, PX11), ext, PX11)
+    assert (out[:, 0] == ramp[::-1, 0]).all() and out[0, 0] == 128
+
+
+def test_fill_nodata_grows_from_valid_neighbours():
+    grey = np.array([[10, 0, 30], [0, 0, 0], [50, 0, 0]], np.uint8)
+    out = imagery.fill_nodata(grey)
+    assert (out != imagery.NODATA).all()
+    assert (out[grey != 0] == grey[grey != 0]).all()  # valid pixels untouched
+    assert out[0, 1] == 20 and out[1, 0] == 30  # means of the valid 4-neighbours
+    with pytest.raises(ValueError, match="no valid"):
+        imagery.fill_nodata(np.zeros((2, 2), np.uint8))
 
 
 def test_crop_caps_size_and_averages_without_upsampling(tmp_path):
@@ -124,7 +145,7 @@ def test_crop_caps_size_and_averages_without_upsampling(tmp_path):
     src, transform = imagery.mosaic(ext, tmp_path, Trek())
     out = imagery.crop(src, transform, ext, PX11, max_px=128)  # 4 source px per output px
     assert out.shape == (128, 128)
-    assert out[0, 0] == (900 * 7 + 1000) % 250 + 1
+    assert out[0, 0] == (901 * 7 + 1000) % 250 + 1  # row 0 = y_min (tile row 901)
     # Never upsampled: a 100 px extent at native size gives 100 px even with a larger cap.
     small = (x0, x0 + 100 * PX11, y1 - 100 * PX11, y1)
     assert imagery.crop(src, transform, small, PX11).shape == (100, 100)
@@ -156,7 +177,7 @@ def test_run_writes_schema_valid_sidecar_and_webp(tmp_path, monkeypatch):
     head = json.loads((tmp_path / "out/imagery/demo.json").read_text())
     schemas.validate("imagery", head)
     assert head["source_urls"][0].startswith("https://trek.nasa.gov/tiles/Moon/SP/")
-    assert (head["width"], head["height"], head["row0"]) == (64, 64, "y_max")
+    assert (head["width"], head["height"], head["row0"], head["nodata"]) == (64, 64, "y_min", None)
     assert head["pixel_m"] == pytest.approx(20000 / 64)
     assert head["pixel_m"] >= head["source_pixel_m"]
     assert (head["x_min"], head["y_min"]) == (-10480, 111520)

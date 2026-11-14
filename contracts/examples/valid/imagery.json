@@ -20,8 +20,8 @@
   "width": 4096,
   "height": 4096,
   "format": "webp",
-  "row0": "y_max",
-  "nodata": 0,
+  "row0": "y_min",
+  "nodata": null,
   "webp_quality": 75,
   "source_level": 11,
   "source_pixel_m": 4.18064117431640625

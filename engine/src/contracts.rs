@@ -181,7 +181,7 @@ pub struct ValidationSet {
     pub samples: Vec<ValidationSample>,
 }
 
-/// imagery/{region}.json, sidecar of imagery/{region}.webp. Metres; image row 0 is y_max (north-up).
+/// imagery/{region}.json, sidecar of imagery/{region}.webp. Metres; image row 0 is y_min (rows grow with +y).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ImageryHeader {
@@ -201,7 +201,7 @@ pub struct ImageryHeader {
     pub height: u32,
     pub format: String,
     pub row0: String,
-    pub nodata: Option<u8>,
+    pub nodata: Option<u8>, // always null: gaps are filled before lossy encoding
     pub webp_quality: u32,
     pub source_level: u32,
     pub source_pixel_m: f64,

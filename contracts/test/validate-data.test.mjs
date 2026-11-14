@@ -86,6 +86,29 @@ describe('validateDataDir', () => {
     expect(validateDataDir(root).errors).toEqual([expect.stringMatching(/ephem\.json: \/dtype const/)]);
   });
 
+  describe('imagery sidecars', () => {
+    const putImagery = (overrides = {}, webp = true) => {
+      mkdirSync(join(root, 'imagery'), { recursive: true });
+      writeFileSync(join(root, 'imagery/demo.json'), JSON.stringify({ ...example('imagery'), ...overrides }));
+      if (webp) putBin('imagery/demo.webp', 8);
+    };
+
+    it('accepts a sidecar with its .webp and a consistent extent', () => {
+      putImagery();
+      expect(validateDataDir(root).errors).toEqual([]);
+    });
+
+    it.each([
+      ['a missing .webp', {}, false, /imagery\/demo\.json: demo\.webp is missing/],
+      ['width that does not span x', { width: 4095 }, true, /pixel_m \* width = 19995\.1171875 .*\(x extent\)/],
+      ['height that does not span y', { y_max: 131521 }, true, /pixel_m \* height = 20000 .*\(y extent\)/],
+      ['an upsampled texture', { source_pixel_m: 5 }, true, /pixel_m 4\.8828125 < source_pixel_m 5/],
+    ])('rejects %s', (_, overrides, webp, message) => {
+      putImagery(overrides, webp);
+      expect(validateDataDir(root).errors).toEqual([expect.stringMatching(message)]);
+    });
+  });
+
   it('ignores files that are neither .json nor .bin and counts them', () => {
     buildDataDir();
     putBin('texture.png', 8);

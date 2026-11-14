@@ -5,8 +5,9 @@ Its FGDC metadata states the same projection as the PGDA DEM: polar stereographi
 0, standard parallel -90 (true scale at the pole), sphere R = 1737400 m. Trek's deepest tile level
 (11) is 4.18 m/px; the 20 km patch is averaged down to at most MAX_PX pixels per side.
 
-Per config region: imagery/{region}.webp (RGB, grey in all channels, row 0 = y_max, north-up)
-plus imagery/{region}.json (extent, pixel size, citations).
+Per config region: imagery/{region}.webp (greyscale encoded as RGB; row 0 = y_min, rows grow
+with +y like every raster in common.schema.json) plus imagery/{region}.json (extent, pixel
+size, citations).
 """
 
 import json
@@ -133,7 +134,7 @@ def mosaic(ext, cache_dir, session, level=LEVEL):
 
 
 def crop(src, src_transform, ext, src_pixel_m, max_px=None):
-    """Average src onto the extent at native resolution capped at max_px; row 0 = y_max."""
+    """Average src onto the extent at native resolution capped at max_px; row 0 = y_min."""
     max_px = max_px or MAX_PX
     x_min, x_max, y_min, y_max = ext
     width = min(max_px, math.ceil((x_max - x_min) / src_pixel_m - 1e-9))
@@ -153,7 +154,35 @@ def crop(src, src_transform, ext, src_pixel_m, max_px=None):
     )
     valid = dst > 0
     # A valid average must not round to the nodata value.
-    return np.where(valid, np.clip(np.rint(dst), 1, 255), NODATA).astype(np.uint8)
+    grey = np.where(valid, np.clip(np.rint(dst), 1, 255), NODATA).astype(np.uint8)
+    return np.flipud(grey)  # dst row 0 is y_max (north-up); the contract wants row 0 = y_min
+
+
+def fill_nodata(grey: np.ndarray) -> np.ndarray:
+    """Grow valid pixels into NODATA gaps: each pass sets them to the mean of valid 4-neighbours.
+
+    Lossy WebP cannot keep an exact nodata value, so the shipped texture has none.
+    shortcut: a gap gets a blur of its rim, not real imagery (28-263 px per region in Nov 2026);
+    upgrade to a lossless format with alpha if gaps grow beyond a few pixels.
+    """
+    out = grey.astype(np.float32)
+    valid = grey != NODATA
+    if not valid.any():
+        raise ValueError("no valid imagery to fill from")
+    while not valid.all():
+        total = np.zeros_like(out)
+        count = np.zeros_like(out)
+        for axis, shift in ((0, 1), (0, -1), (1, 1), (1, -1)):
+            nb = np.roll(valid, shift, axis)
+            edge = [slice(None)] * 2
+            edge[axis] = 0 if shift == 1 else -1
+            nb[tuple(edge)] = False  # no wrap-around
+            total += np.where(nb, np.roll(out, shift, axis), 0)
+            count += nb
+        grow = ~valid & (count > 0)
+        out[grow] = total[grow] / count[grow]
+        valid = valid | grow
+    return np.clip(np.rint(out), 1, 255).astype(np.uint8)
 
 
 def encode_webp(grey: np.ndarray, max_bytes: int) -> tuple[bytes, int]:
@@ -199,8 +228,8 @@ def header(name, ext, grey, quality, generated_at):
         "width": grey.shape[1],
         "height": grey.shape[0],
         "format": "webp",
-        "row0": "y_max",
-        "nodata": NODATA,
+        "row0": "y_min",
+        "nodata": None,  # gaps filled (fill_nodata); lossy WebP cannot keep an exact nodata value
         "webp_quality": quality,
         "source_level": LEVEL,
         "source_pixel_m": pixel_m(LEVEL),
@@ -213,17 +242,18 @@ def build(name, region, out_dir: Path, cache_dir, session, max_bytes, generated_
     grey = crop(src, transform, ext, pixel_m(LEVEL))
     if not (grey != NODATA).any():
         raise ValueError(f"{name}: no imagery inside {ext}")
+    gaps = int((grey == NODATA).sum())
+    grey = fill_nodata(grey)
     body, quality = encode_webp(grey, max_bytes)
     head = header(name, ext, grey, quality, generated_at)
     schemas.validate("imagery", head)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{name}.webp").write_bytes(body)
     (out_dir / f"{name}.json").write_text(json.dumps(head, indent=2) + "\n")
-    coverage = (grey != NODATA).mean()
     print(
         f"imagery: {out_dir / name}.webp {grey.shape[1]}x{grey.shape[0]} "
         f"@ {head['pixel_m']:.3f} m, "
-        f"{len(body):,} bytes (q{quality}), {coverage:.1%} covered"
+        f"{len(body):,} bytes (q{quality}), {gaps} nodata px filled"
     )
     return len(body)
 
