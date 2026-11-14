@@ -11,9 +11,9 @@ deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a
 - **Read [`SPEC.md`](SPEC.md) first.** It is the build spec: features, stack, guardrails, simulation model,
   file contracts and workstreams. Stay inside your workstream's folder.
 - Official challenge text: [`docs/CHALLENGE.md`](docs/CHALLENGE.md).
-- Folder guides: [`pipeline/AGENTS.md`](pipeline/AGENTS.md). Task board and team roles: [`docs/TASKS.md`](docs/TASKS.md). Quality bar for every PR: [`docs/QUALITY.md`](docs/QUALITY.md).
+- Folder guides: [`pipeline/AGENTS.md`](pipeline/AGENTS.md), [`engine/AGENTS.md`](engine/AGENTS.md). Task board and team roles: [`docs/TASKS.md`](docs/TASKS.md). Quality bar for every PR: [`docs/QUALITY.md`](docs/QUALITY.md).
 - Draft plan and stack review this spec builds on: [`.agent/PLAN.md`](.agent/PLAN.md),
-  [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md).
+  [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md). Scoring + greedy design: [`.agent/GREEDY.md`](.agent/GREEDY.md).
 - Older ADC terrain grids and links: [`LunarLandingSiteNavigation/`](LunarLandingSiteNavigation/) (high-res local terrain only).
 
 ## Skills in use
