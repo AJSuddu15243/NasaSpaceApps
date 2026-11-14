@@ -1,4 +1,4 @@
-import type { Scenario } from '../shell/scenario';
+import { DEFAULT_SCENARIO, type Scenario } from '../shell/scenario';
 
 /**
  * Local persistence for named mission scenarios.
@@ -102,7 +102,7 @@ function toPayload(scenario: Scenario) {
   return {
     sites: scenario.sites, date: scenario.date, hours: scenario.hours,
     weights: { ...scenario.weights },
-    missionWeights: {},
+    missionWeights: { ...scenario.missionWeights },
     mode: scenario.mode, view: scenario.view,
   };
 }
@@ -111,7 +111,7 @@ function fromRecord(record: { slug: string; name: string; payload: ScenarioRecor
   const p = record.payload;
   return {
     slug: record.slug, name: record.name,
-    scenario: { sites: p.sites, date: p.date, hours: p.hours, weights: p.weights as unknown as Scenario['weights'], mode: p.mode as Scenario['mode'], view: p.view as Scenario['view'] },
+    scenario: { sites: p.sites, date: p.date, hours: p.hours, weights: p.weights as unknown as Scenario['weights'], missionWeights: { ...DEFAULT_SCENARIO.missionWeights, ...(p.missionWeights ?? {}) } as unknown as Scenario['missionWeights'], mode: p.mode as Scenario['mode'], view: p.view as Scenario['view'] },
     created_at: record.created_at ?? record.createdAt ?? new Date().toISOString(),
   };
 }
