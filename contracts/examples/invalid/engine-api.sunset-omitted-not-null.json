@@ -1,7 +1,7 @@
 {
   "params": {
     "battery_h": 24,
-    "survival_temp_k": 120,
+    "survival_temp_k": 233,
     "antenna_margin_deg": 2,
     "slope_limit_deg": 10,
     "step_hours": 1
