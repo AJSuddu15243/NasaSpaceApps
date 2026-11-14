@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link2, PanelLeft, PanelRight } from 'lucide-react';
+import { PanelLeft, PanelRight } from 'lucide-react';
 import { loadDemoData, type DemoData } from './data';
 import { useShell } from './store';
 import { syncRemoteScenarios } from '../scenarios/store';
@@ -70,7 +70,6 @@ export default function Navigator() {
         <h1>Compare the window. Read the horizon.</h1>
       </div>
       <div className="ws-topbar-right">
-        <ShareButton />
         <span className="ws-date">{scenario.date.slice(0, 10)} UTC</span>
         <div className="ws-mode" role="group" aria-label="Experience mode">
           <button type="button" aria-pressed={scenario.mode === 'planner'} onClick={() => setScenario({ mode: 'planner' })}>Planner</button>
@@ -85,16 +84,4 @@ export default function Navigator() {
     {load.status === 'error' && <div className="load-error" role="alert"><h2>The workspace could not load.</h2><p>{load.message}</p><Button onClick={() => retry(value => value + 1)}>Retry loading</Button></div>}
     <TooltipProvider delayDuration={250}>{panels}</TooltipProvider>
   </main>;
-}
-
-function ShareButton() {
-  const [copied, setCopied] = useState(false);
-  async function share() {
-    const url = `${window.location.origin}/app${window.location.search}`;
-    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); }
-    catch { window.prompt('Copy this scenario link:', url); }
-  }
-  return <button type="button" className="ws-share" onClick={share} aria-label={copied ? 'Scenario link copied' : 'Copy scenario link'}>
-    <Link2 size={13} aria-hidden="true" />{copied ? 'Copied' : 'Share'}
-  </button>;
 }

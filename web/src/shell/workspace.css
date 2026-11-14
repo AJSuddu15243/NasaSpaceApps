@@ -303,18 +303,6 @@
 .sc-save-form input { flex: 1; min-width: 0; height: 30px; font-size: 12px; }
 .sc-save-form .sc-hint { grid-column: 1 / -1; margin: 0; }
 
-/* ---------- topbar share ---------- */
-.ws-share {
-  display: inline-flex; align-items: center; gap: 6px;
-  min-height: 28px; padding: 4px 12px;
-  border: 1px solid var(--shell-line); border-radius: 8px;
-  background: var(--shell-card); color: var(--shell-text);
-  font: 500 12px var(--font-sans, inherit); cursor: pointer;
-  transition: border-color var(--motion-fast), background var(--motion-fast);
-}
-.ws-share:hover { border-color: var(--shell-muted); }
-.ws-share:focus-visible { outline: 2px solid var(--shell-text); outline-offset: 2px; }
-
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
