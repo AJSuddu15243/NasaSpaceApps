@@ -5,8 +5,10 @@ import re
 import warnings
 
 import jsonschema
-from referencing import Registry
+from jsonschema import FormatChecker
+from referencing import Registry, Resource
 from referencing.exceptions import NoSuchResource
+from referencing.jsonschema import DRAFT202012
 
 from .config import REPO_ROOT
 
@@ -16,6 +18,17 @@ _warned = set()
 
 def _no_network(uri):
     raise NoSuchResource(ref=uri)
+
+
+def _registry():
+    registry = Registry(retrieve=_no_network)
+    for path in sorted(SCHEMA_DIR.glob("*.schema.json")):
+        document = json.loads(path.read_text())
+        registry = registry.with_resource(
+            document.get("$id") or path.name,
+            Resource.from_contents(document, default_specification=DRAFT202012),
+        )
+    return registry
 
 
 def validate(kind: str, obj) -> None:
@@ -30,4 +43,8 @@ def validate(kind: str, obj) -> None:
     schema = json.loads(path.read_text())
     cls = jsonschema.validators.validator_for(schema)
     cls.check_schema(schema)
-    cls(schema, registry=Registry(retrieve=_no_network)).validate(obj)
+    cls(
+        schema,
+        registry=_registry(),
+        format_checker=FormatChecker(formats=["date-time", "uri"]),
+    ).validate(obj)

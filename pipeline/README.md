@@ -48,9 +48,12 @@ Coordinate shared edits to `terrain/layers.py` between PIPE-5 and PIPE-6.
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;
   missing/unknown keys fail by name. UTC timestamps are parsed to timezone-aware datetimes.
 - `binio.write_array(path, array, header)`: `.bin` plus adjacent `.json`; C-order, little-endian,
-  real numeric arrays, no precision conversion. Headers require `schema_version` (string),
-  `generated_at` (UTC ISO 8601), `source_urls` (URL list), `dtype`, `shape` (integer list), `units`
-  (string). Additional contract fields survive. `read_array(path)` returns `(array, header)`;
+  real numeric arrays, no precision conversion. Headers require `schema_version` (integer 1),
+  `generated_at` (UTC ISO 8601), `source_urls` (URL list) and `dtype`. Generic internal headers
+  also require explicit `shape` (integer list) and `units` (string). Exported tile/ephem headers
+  carry their own descriptors instead: ephem `n` + `fields` derives shape (n, len(fields)) with
+  per-column units and no top-level `units`; tile `nx` + `ny` derives shape (ny, nx) and still
+  requires `units`. Additional contract fields survive. `read_array(path)` returns `(array, header)`;
   nonempty arrays are read-only memory maps. Writes buffer byte swapping in small chunks.
 - `fetch.cached_get(url, cache_dir, *, params=None, session=None, retries=3, backoff=0.5,
   sleep=time.sleep) -> bytes`: for small API responses; cache key includes query parameters.

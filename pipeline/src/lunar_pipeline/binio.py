@@ -8,7 +8,47 @@ import numpy as np
 
 from .config import utc_datetime
 
-REQUIRED = {"schema_version", "generated_at", "source_urls", "dtype", "shape", "units"}
+REQUIRED = {"schema_version", "generated_at", "source_urls", "dtype"}
+
+
+def _units(header):
+    if "units" not in header:
+        raise ValueError("units: missing header field")
+    if not isinstance(header["units"], str) or not header["units"].strip():
+        raise ValueError("units: expected nonempty string")
+
+
+def _positive_count(header, key):
+    value = header[key]
+    if type(value) is not int or value <= 0:
+        raise ValueError(f"{key}: expected positive integer")
+    return value
+
+
+def _array_shape(header):
+    if "shape" in header:
+        _units(header)
+        shape = header["shape"]
+        if not isinstance(shape, list) or not all(type(n) is int and n >= 0 for n in shape):
+            raise ValueError("shape: expected nonnegative integer dimensions")
+        return tuple(shape)
+    if "n" in header or "fields" in header:
+        if "n" not in header or "fields" not in header:
+            raise ValueError("ephemeris: n and fields must appear together")
+        fields = header["fields"]
+        if (
+            not isinstance(fields, list)
+            or not fields
+            or not all(isinstance(field, str) for field in fields)
+        ):
+            raise ValueError("fields: expected nonempty string list")
+        return _positive_count(header, "n"), len(fields)
+    if "nx" in header or "ny" in header:
+        if "nx" not in header or "ny" not in header:
+            raise ValueError("tile: nx and ny must appear together")
+        _units(header)
+        return _positive_count(header, "ny"), _positive_count(header, "nx")
+    raise ValueError("shape: missing header field")
 
 
 def _metadata(header):
@@ -17,9 +57,8 @@ def _metadata(header):
     for key in sorted(REQUIRED - header.keys()):
         raise ValueError(f"{key}: missing header field")
     utc_datetime(header["generated_at"], "generated_at")
-    for key in ("schema_version", "units"):
-        if not isinstance(header[key], str) or not header[key].strip():
-            raise ValueError(f"{key}: expected nonempty string")
+    if type(header["schema_version"]) is not int or header["schema_version"] != 1:
+        raise ValueError("schema_version: expected integer 1")
     urls = header["source_urls"]
     if (
         not isinstance(urls, list)
@@ -27,15 +66,12 @@ def _metadata(header):
         or not all(isinstance(u, str) and u.startswith(("https://", "http://")) for u in urls)
     ):
         raise ValueError("source_urls: expected nonempty HTTP(S) URL list")
-    shape = header["shape"]
-    if not isinstance(shape, list) or not all(type(n) is int and n >= 0 for n in shape):
-        raise ValueError("shape: expected nonnegative integer dimensions")
     if not isinstance(header["dtype"], str):
         raise ValueError("dtype: expected numeric dtype name")
     dtype = np.dtype(header["dtype"])
     if dtype.kind not in "fiu" or dtype.fields or dtype.subdtype:
         raise ValueError("dtype: expected real numeric scalar dtype")
-    return dtype.newbyteorder("<"), tuple(shape)
+    return dtype.newbyteorder("<"), _array_shape(header)
 
 
 def _paths(path):

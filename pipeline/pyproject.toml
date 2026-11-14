@@ -7,7 +7,15 @@ name = "lunar-pipeline"
 version = "0.1.0"
 description = "Offline lunar terrain and ephemeris pipeline"
 requires-python = ">=3.12"
-dependencies = ["numpy", "requests", "pyyaml", "rasterio", "jsonschema"]
+dependencies = [
+    "numpy",
+    "requests",
+    "pyyaml",
+    "rasterio",
+    "jsonschema",
+    "rfc3339-validator==0.1.4",
+    "rfc3986-validator==0.1.1",
+]
 
 [dependency-groups]
 dev = ["pytest", "ruff", "pyproj"]

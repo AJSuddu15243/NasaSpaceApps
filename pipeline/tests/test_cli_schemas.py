@@ -90,6 +90,64 @@ def test_schema_remote_reference_cannot_fetch_network(tmp_path, monkeypatch):
         schemas.validate("remote", {})
 
 
+def test_local_schema_reference_resolves_sibling_definitions(tmp_path, monkeypatch):
+    monkeypatch.setattr(schemas, "SCHEMA_DIR", tmp_path)
+    (tmp_path / "common.schema.json").write_text(
+        json.dumps(
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "common.schema.json",
+                "$defs": {"positive": {"type": "integer", "minimum": 1}},
+            }
+        )
+    )
+    (tmp_path / "root.schema.json").write_text(
+        json.dumps(
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$id": "root.schema.json",
+                "type": "object",
+                "properties": {"value": {"$ref": "common.schema.json#/$defs/positive"}},
+            }
+        )
+    )
+    schemas.validate("root", {"value": 1})
+    with pytest.raises(jsonschema.ValidationError):
+        schemas.validate("root", {"value": 0})
+
+
+@pytest.mark.parametrize(
+    "fmt,valid,invalid",
+    [
+        ("date-time", "2026-11-14T00:00:00Z", "2026-99-99T00:00:00Z"),
+        ("uri", "https://example.test/source", "not a URI"),
+    ],
+)
+def test_declared_formats_are_enforced(tmp_path, monkeypatch, fmt, valid, invalid):
+    monkeypatch.setattr(schemas, "SCHEMA_DIR", tmp_path)
+    (tmp_path / "checked.schema.json").write_text(
+        json.dumps(
+            {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "string",
+                "format": fmt,
+            }
+        )
+    )
+    schemas.validate("checked", valid)
+    with pytest.raises(jsonschema.ValidationError):
+        schemas.validate("checked", invalid)
+
+
+FND_EXAMPLES = REPO_ROOT / "contracts/examples/valid"
+
+
+@pytest.mark.skipif(not FND_EXAMPLES.is_dir(), reason="FND-1 contracts not present")
+@pytest.mark.parametrize("fixture", sorted(FND_EXAMPLES.glob("*.json")), ids=lambda p: p.stem)
+def test_fnd_contract_fixtures_are_accepted(fixture):
+    schemas.validate(fixture.stem, json.loads(fixture.read_text()))
+
+
 @pytest.mark.parametrize(
     "module,command,issue",
     [
