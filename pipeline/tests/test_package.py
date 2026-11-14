@@ -74,3 +74,11 @@ def test_run_writes_manifest_and_is_idempotent(out, capsys):
     assert first["files"] == second["files"]
     text = capsys.readouterr().out
     assert "5 files" in text and f"cite {A}" in text and f"cite {B}" in text
+
+
+def test_budget_counts_the_manifest_itself(out):
+    files = sum(p.stat().st_size for p in package.shipped(out))
+    with pytest.raises(ValueError, match="exceeds"):
+        package.build(out, files + 10)  # the files fit, the files + manifest do not
+    m = package.build(out, files + 10_000)
+    assert files + len(package.encode(m)) <= files + 10_000

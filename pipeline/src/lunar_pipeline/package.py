@@ -56,13 +56,6 @@ def shipped(out: Path) -> list[Path]:
 
 def build(out: Path, budget_bytes: int) -> dict:
     files = shipped(out)
-    total = sum(p.stat().st_size for p in files)
-    if total > budget_bytes:
-        largest = sorted(files, key=lambda p: -p.stat().st_size)[:5]
-        top = ", ".join(f"{p.relative_to(out).as_posix()} {p.stat().st_size:,}" for p in largest)
-        raise ValueError(
-            f"{out}: {total:,} bytes exceeds the {budget_bytes:,} budget; largest: {top}"
-        )
     manifest = {
         "schema_version": 1,
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -77,15 +70,27 @@ def build(out: Path, budget_bytes: int) -> dict:
         ],
     }
     schemas.validate("manifest", manifest)
+    # The manifest is shipped too, so its own bytes count against the budget.
+    total = sum(f["bytes"] for f in manifest["files"]) + len(encode(manifest))
+    if total > budget_bytes:
+        largest = sorted(manifest["files"], key=lambda f: -f["bytes"])[:5]
+        top = ", ".join(f"{f['path']} {f['bytes']:,}" for f in largest)
+        raise ValueError(
+            f"{out}: {total:,} bytes exceeds the {budget_bytes:,} budget; largest: {top}"
+        )
     return manifest
+
+
+def encode(manifest: dict) -> bytes:
+    return (json.dumps(manifest, indent=2) + "\n").encode()
 
 
 def run(cfg: Config) -> None:
     out = cfg.paths.out
     budget = int(cfg.data_budget_mb * 1_000_000)  # decimal MB: the stricter reading of "25 MB"
     manifest = build(out, budget)
-    (out / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n")
-    total = sum(f["bytes"] for f in manifest["files"])
+    (out / MANIFEST).write_bytes(encode(manifest))
+    total = sum(f["bytes"] for f in manifest["files"]) + (out / MANIFEST).stat().st_size
     cites = dict.fromkeys(u for f in manifest["files"] for u in f["source_urls"])
     print(
         f"package: {len(manifest['files'])} files, {total:,} / {budget:,} bytes "
