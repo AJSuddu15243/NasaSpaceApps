@@ -181,7 +181,7 @@ def run(cfg: Config, *, session=None, sleep=time.sleep) -> None:
             geo[t0] = horizons.parse(body, t0, WINDOW_HOURS), horizons.request_url(t0, stop)
         for site_id, region in cfg.regions.items():
             lat, lon = region.lat, region.lon
-            samples, urls = [], []
+            samples, urls = [], [region.source_url]  # site lat/lon source, then Horizons
             for t0 in WINDOWS:
                 stop = t0 + (WINDOW_HOURS - 1) * HOUR
                 azel = {}
