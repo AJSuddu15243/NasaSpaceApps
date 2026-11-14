@@ -20,7 +20,9 @@ export function parseCustomSite(id: string): { lat: number; lon: number } | null
   const decode = (sign: string, value: string) => (sign === 'm' ? -1 : 1) * Number(value.replace('d', '.'));
   const lat = decode(match[1], match[2]);
   const lon = decode(match[3], match[4]);
-  return lat >= -90 && lat <= -80 && lon >= -180 && lon <= 180 ? { lat, lon } : null;
+  // 180 is the same meridian as -180; canonical form is -180.
+  const canonicalLon = lon === 180 ? -180 : lon;
+  return lat >= -90 && lat <= -80 && canonicalLon >= -180 && canonicalLon < 180 ? { lat, lon: canonicalLon } : null;
 }
 
 export function validateCoordinates(latText: string, lonText: string): { lat: number; lon: number } | string {
@@ -30,5 +32,6 @@ export function validateCoordinates(latText: string, lonText: string): { lat: nu
   const lon = Number(lonText);
   if (lat < -90 || lat > -80) return 'Latitude must be from 90°S to 80°S.';
   if (lon < -180 || lon > 180) return 'Longitude must be from 180°W to 180°E.';
-  return { lat, lon };
+  // Contract lon_deg is [-180, 180): 180 is written as -180 so one place has one id.
+  return { lat, lon: lon === 180 ? -180 : lon };
 }
