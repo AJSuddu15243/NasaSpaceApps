@@ -1,7 +1,12 @@
-"""PIPE-3: terrain-fetch implementation belongs here; MOON_ME, metres, degrees, UTC."""
+"""PIPE-3: terrain-fetch. Moon Trek / QuickMap serve rendered tiles, not numeric heights for an
+extent (see pipeline/README.md "Terrain sources"), so analysis terrain comes from PGDA LOLA."""
 
 from lunar_pipeline.config import Config
+from lunar_pipeline.terrain import pgda
 
 
 def run(cfg: Config) -> None:
-    print("terrain-fetch: not implemented yet (PIPE-3)")
+    path = pgda.fetch(cfg)
+    pgda.describe(path)
+    pgda.check(path, cfg)
+    print(f"terrain-fetch: verified {path}")
