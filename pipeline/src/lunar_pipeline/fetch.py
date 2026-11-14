@@ -34,21 +34,46 @@ def _options(retries, backoff):
         raise ValueError("retries and backoff must be nonnegative")
 
 
+def _valid(validate, body):
+    try:
+        validate(body)
+    except ValueError:
+        return False
+    return True
+
+
 def cached_get(
-    url, cache_dir, *, params=None, session=None, retries=3, backoff=0.5, sleep=time.sleep
+    url,
+    cache_dir,
+    *,
+    params=None,
+    session=None,
+    retries=3,
+    backoff=0.5,
+    sleep=time.sleep,
+    validate=None,
 ) -> bytes:
-    """Cache small API responses by prepared URL (including encoded query parameters)."""
+    """Cache small API responses by prepared URL (including encoded query parameters).
+
+    validate(body) raises ValueError for a bad body (e.g. an API error sent with HTTP 200). A bad
+    response raises before it is cached; a cached body that fails is deleted and fetched again.
+    """
     _options(retries, backoff)
     key_url = requests.Request("GET", url, params=params).prepare().url
     cache = Path(cache_dir) / (hashlib.sha256(key_url.encode()).hexdigest() + ".cache")
     if cache.exists():
-        return cache.read_bytes()
+        body = cache.read_bytes()
+        if validate is None or _valid(validate, body):
+            return body
+        cache.unlink()
     client = session or requests.Session()
     try:
         with _get(
             client, url, params=params, retries=retries, backoff=backoff, sleep=sleep
         ) as response:
             body = response.content
+        if validate is not None:
+            validate(body)
         cache.parent.mkdir(parents=True, exist_ok=True)
         partial = cache.with_suffix(".part")
         partial.write_bytes(body)

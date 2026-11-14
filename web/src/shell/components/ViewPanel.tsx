@@ -1,4 +1,6 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
+import { LunarScene, type CameraMode } from '../../scene';
+import { TerrainShadingControls } from '../../scene/shaders';
 import type { Scenario, View } from '../scenario';
 import type { DemoData } from '../data';
 import { Badge, Button } from '../ui';
@@ -12,6 +14,9 @@ const MoonGlobeView = lazy(() => import('../../features/globe/MoonGlobeView').th
 const labels: Record<View, string> = { '3d': '3D terrain', panorama: 'Horizon panorama', map: 'Polar map', globe: 'Live globe' };
 
 export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void }) {
+  const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
+  const [contoursEnabled, setContoursEnabled] = useState(false);
+  const isThreeD = scenario.view === '3d';
   const markers = scenario.sites.flatMap((id, index) => {
     const site = data.sites.find(item => item.id === id);
     const coords = site ?? parseCustomSite(id);
@@ -39,7 +44,27 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="empty-caption"><span className="eyebrow">LIVE GLOBE</span><h3>Loading the Moon…</h3><p>The globe view streams in on demand to keep the workspace light.</p></div></div>}>
       <MoonGlobeView markers={globeMarkers} timeLabel={scenario.date.slice(0, 16).replace('T', ' ') + ' UTC'} />
       <p className="scene-caption"><span className="eyebrow">LUNAR SURFACE</span> LROC colour mosaic and LOLA elevation, NASA SVS. Numbered pins are your scenario sites; S/E mark the sub-solar and sub-Earth points from the ephemeris table at the scenario time.</p>
-    </Suspense> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
+    </Suspense> : isThreeD ? <>
+      <div className="terrain-scene-toolbar">
+        <p className="hint">Drag to orbit. Double-click the canvas or use the button to fly to the south pole.</p>
+        <TerrainShadingControls contoursEnabled={contoursEnabled} onContoursEnabledChange={setContoursEnabled} />
+        <Button
+          variant="outline"
+          onClick={() => setCameraMode(mode => mode === 'orbit' ? 'south-pole' : 'orbit')}
+        >
+          {cameraMode === 'orbit' ? 'Fly to south pole' : 'Return to globe'}
+        </Button>
+      </div>
+      <div className="terrain-scene">
+        <LunarScene
+          cameraMode={cameraMode}
+          onCameraModeChange={setCameraMode}
+          contoursEnabled={contoursEnabled}
+          aria-label="Interactive lunar south-pole terrain scene"
+        />
+      </div>
+      <p className="scene-caption"><span className="eyebrow">SOUTH POLAR REGION</span> Synthetic terrain preview for SCN-1. Elevation and lighting are illustrative until pipeline and ephemeris data are connected.</p>
+    </> : <div className={`terrain-empty terrain-${scenario.view}`} key={scenario.view}>
       <div className="viewport-meta"><span>MOON_ME · 80–90°S</span><span>UTC {scenario.date.slice(0, 16).replace('T', ' ')}</span></div>
       <svg className="lunar-outline" viewBox="0 0 480 380" fill="none" role="img" aria-label={`Illustrative ${labels[scenario.view]} with ${markers.length} selected site markers`}>
         <defs><radialGradient id="surface" cx="48%" cy="44%"><stop offset="0" stopColor="#343941"/><stop offset=".6" stopColor="#1c2026"/><stop offset="1" stopColor="#0a0c10"/></radialGradient><filter id="soft"><feGaussianBlur stdDeviation="12"/></filter></defs>
