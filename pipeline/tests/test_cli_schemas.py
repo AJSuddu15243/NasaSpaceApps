@@ -8,14 +8,28 @@ from lunar_pipeline import schemas
 from lunar_pipeline.__main__ import COMMANDS, main
 from lunar_pipeline.config import REPO_ROOT
 
+# Implemented network stages are replaced by an offline marker; their own tests cover them.
+IMPLEMENTED = {"terrain-fetch": "terrain.trek"}
+
+
+@pytest.fixture
+def offline_stages(monkeypatch):
+    from importlib import import_module
+
+    for command, module in IMPLEMENTED.items():
+        stub = lambda cfg, command=command: print(f"{command}: dispatched")  # noqa: E731
+        monkeypatch.setattr(import_module(f"lunar_pipeline.{module}"), "run", stub)
+
 
 @pytest.mark.parametrize("command", [*COMMANDS, "all"])
-def test_registered_command_cannot_be_unreachable(command, capsys):
+def test_registered_command_cannot_be_unreachable(command, offline_stages, capsys):
     main([command])
     lines = capsys.readouterr().out.splitlines()
     expected = list(COMMANDS) if command == "all" else [command]
     assert [line.split(":")[0] for line in lines] == expected
-    assert all("not implemented yet (PIPE-" in line for line in lines)
+    for line in lines:
+        stub = line.split(":")[0] not in IMPLEMENTED
+        assert ("not implemented yet (PIPE-" in line) if stub else line.endswith(": dispatched")
 
 
 def test_help_cannot_hide_commands(capsys):
@@ -52,7 +66,7 @@ def test_schema_name_cannot_escape_contract_directory():
         schemas.validate("../secret", {})
 
 
-def test_all_cannot_reorder_stages_or_omit_imagery(capsys):
+def test_all_cannot_reorder_stages_or_omit_imagery(offline_stages, capsys):
     main(["all"])
     assert [line.split(":")[0] for line in capsys.readouterr().out.splitlines()] == [
         "ephem",
@@ -153,7 +167,6 @@ def test_fnd_contract_fixtures_are_accepted(fixture):
     [
         ("horizons", "horizons", "PIPE-2"),
         ("coords", "coords", "PIPE-4"),
-        ("terrain.pgda", "pgda", "PIPE-3"),
     ],
 )
 def test_helper_stubs_expose_downstream_entrypoint(module, command, issue, capsys):
