@@ -56,6 +56,6 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
       <div className="empty-caption"><p>Visual orientation only. Real LOLA terrain, horizon masks, and ephemeris vectors are not connected in this preview.</p></div>
     </div>}
     <div className="view-footer"><span><i className="legend-dot sun"/> Sun / power</span><span><i className="legend-dot earth"/> Earth / communications</span></div>
-    <div className="method-note"><h3>Read the horizon, then the window.</h3><p>At the lunar south pole, nearby terrain can block the Sun or Earth. Compare sites over the same time window before drawing conclusions.</p></div>
+    <details className="method-note"><summary>Read the horizon, then the window.</summary><p>At the lunar south pole, nearby terrain can block the Sun or Earth. Compare sites over the same time window before drawing conclusions.</p></details>
   </section>;
 }

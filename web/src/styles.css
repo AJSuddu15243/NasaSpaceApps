@@ -114,3 +114,11 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;op
 .mode-switch button{min-height:34px;padding:6px 14px;font-size:11px}
 .site-row{min-height:2.7rem}
 .selected-sites button{min-height:2.3rem}
+.method-note{margin-top:14px;padding:0 4px 2px;border-top:1px solid hsl(var(--border)/.6)}
+.method-note summary{cursor:pointer;font-size:12px;font-weight:500;color:var(--shell-muted);padding:8px 0;list-style:none;display:flex;align-items:center;gap:6px;transition:color var(--motion-fast) var(--ease-standard)}
+.method-note summary::before{content:'›';font-family:var(--font-data);transition:transform var(--motion-fast) var(--ease-standard)}
+.method-note[open] summary::before{transform:rotate(90deg)}
+.method-note summary:hover{color:var(--shell-text)}
+.method-note p{margin:0 0 10px;font-size:11px;line-height:1.65;color:var(--shell-muted);max-width:640px}
+.scene-caption{margin-top:8px;font-size:10px;line-height:1.5}
+.view-footer{margin-top:8px}
