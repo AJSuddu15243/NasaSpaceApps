@@ -1,11 +1,13 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { ChevronRight, Search } from 'lucide-react';
 import type { Site } from '../../contracts/sites';
 import { customSiteId, MAX_SELECTED_SITES, parseCustomSite, searchSites, validateCoordinates } from './sites';
-import './site-picker.css';
 
 const categoryLabel: Record<Site['category'], string> = {
   artemis3: 'Artemis III candidates', clps: 'CLPS regions', intl: 'International missions', apollo: 'Apollo references',
 };
+
+const coordsText = (lat: number, lon: number) => `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'} · ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
 
 export function SitePicker({ sites, selected, onChange }: { sites: readonly Site[]; selected: readonly string[]; onChange: (ids: string[]) => void }) {
   const [query, setQuery] = useState('');
@@ -38,19 +40,59 @@ export function SitePicker({ sites, selected, onChange }: { sites: readonly Site
     const site = sites.find(item => item.id === id);
     if (site) return site.name;
     const custom = parseCustomSite(id);
-    return custom ? `${Math.abs(custom.lat).toFixed(2)}°S · ${custom.lon.toFixed(2)}°E` : id;
+    return custom ? coordsText(custom.lat, custom.lon) : id;
   };
 
-  return <section className="site-picker" aria-labelledby="site-picker-heading">
-    <div className="site-picker-title"><div><span className="eyebrow">01 / SELECT</span><h2 id="site-picker-heading">Landing sites</h2></div><span className="site-count" aria-label={`${selected.length} of ${MAX_SELECTED_SITES} sites selected`}><b>{selected.length}</b> / {MAX_SELECTED_SITES}</span></div>
-    <div className="selected-sites" aria-label="Selected sites">{selected.map((id, index) => <button type="button" key={id} onClick={() => toggle(id)} aria-label={`Remove ${selectedName(id)}`}><span>{String(index + 1).padStart(2, '0')}</span>{selectedName(id)}<b aria-hidden="true">×</b></button>)}</div>
-    <label className="site-search"><span className="sr-only">Search sites</span><span aria-hidden="true">⌕</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search mission or region" /></label>
-    <div className="site-catalogue">{matches.length === 0 ? <p className="site-empty">No sites match “{query}”.</p> : (Object.keys(categoryLabel) as Site['category'][]).map(category => {
-      const options = matches.filter(site => site.category === category);
-      return options.length ? <fieldset key={category}><legend>{categoryLabel[category]} <span>{options.length}</span></legend>{options.map(site => <label className="site-row" key={site.id}><input type="checkbox" checked={selectedSet.has(site.id)} disabled={atLimit && !selectedSet.has(site.id)} onChange={() => toggle(site.id)} /><span className="site-marker" aria-hidden="true"/><span><strong>{site.name}</strong><small>{Math.abs(site.lat).toFixed(2)}°S · {site.lon.toFixed(2)}°E</small></span></label>)}</fieldset> : null;
-    })}</div>
-    <button type="button" className="custom-toggle" aria-expanded={customOpen} onClick={() => setCustomOpen(value => !value)}><span>＋</span> Custom coordinates <b>{customOpen ? 'Close' : 'Add'}</b></button>
-    {customOpen && <form className="custom-site" onSubmit={addCustom} noValidate><label>Latitude (°)<input inputMode="decimal" value={lat} onChange={event => setLat(event.target.value)} placeholder="−85.000" /></label><label>Longitude (°)<input inputMode="decimal" value={lon} onChange={event => setLon(event.target.value)} placeholder="45.000" /></label><button type="submit" disabled={atLimit}>Add point</button></form>}
-    <p className="site-feedback" role="status" aria-live="polite">{feedback || (atLimit ? 'Four-site comparison limit reached.' : 'Select curated sites or add a south-pole coordinate.')}</p>
-  </section>;
+  return <div className="sp">
+    <div className="ws-scroll">
+      <div className="sp-selected" aria-label="Selected sites">
+        {selected.length === 0
+          ? <span className="sp-empty-chips">No sites selected</span>
+          : selected.map((id, index) => <button type="button" key={id} className="sp-chip" onClick={() => toggle(id)} aria-label={`Remove ${selectedName(id)}`}>
+              <span className="sp-chip-idx">{String(index + 1).padStart(2, '0')}</span>
+              <span className="sp-chip-name">{selectedName(id)}</span>
+              <span className="sp-chip-x" aria-hidden="true">×</span>
+            </button>)}
+      </div>
+
+      <label className="sp-search">
+        <Search size={13} aria-hidden="true" />
+        <span className="sr-only">Search sites</span>
+        <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search sites" />
+      </label>
+
+      <div className="sp-groups">
+        {matches.length === 0 && <p className="sp-feedback">No sites match “{query}”.</p>}
+        {(Object.keys(categoryLabel) as Site['category'][]).map(category => {
+          const options = matches.filter(site => site.category === category);
+          if (!options.length) return null;
+          return <div key={category} role="group" aria-label={categoryLabel[category]}>
+            <p className="sp-group-label">{categoryLabel[category]}</p>
+            {options.map(site => {
+              const pressed = selectedSet.has(site.id);
+              return <button type="button" key={site.id} className="sp-row" aria-pressed={pressed} disabled={atLimit && !pressed} onClick={() => toggle(site.id)}>
+                <span className="sp-dot" aria-hidden="true" />
+                <span className="sp-row-text">
+                  <span className="sp-row-name">{site.name}</span>
+                  {site.note && <span className="sp-note">{site.note}</span>}
+                </span>
+                <span className="sp-row-coords">{coordsText(site.lat, site.lon)}</span>
+              </button>;
+            })}
+          </div>;
+        })}
+      </div>
+
+      <details className="sp-custom" open={customOpen} onToggle={event => setCustomOpen((event.target as HTMLDetailsElement).open)}>
+        <summary><ChevronRight size={13} aria-hidden="true" /> Custom coordinates</summary>
+        <form onSubmit={addCustom} noValidate>
+          <label>Latitude (°)<input inputMode="decimal" value={lat} onChange={event => setLat(event.target.value)} placeholder="−85.000" /></label>
+          <label>Longitude (°)<input inputMode="decimal" value={lon} onChange={event => setLon(event.target.value)} placeholder="45.000" /></label>
+          <button type="submit" className="ui-button ui-button-outline" disabled={atLimit}>Add</button>
+        </form>
+      </details>
+
+      <p className="sp-feedback" role="status" aria-live="polite">{feedback || (atLimit ? 'Four-site comparison limit reached.' : 'South of 80°S only.')}</p>
+    </div>
+  </div>;
 }
