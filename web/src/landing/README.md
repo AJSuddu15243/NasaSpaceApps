@@ -1,32 +1,31 @@
-# LND-2 · Landing hero
+# Landing (`/`)
 
-The root route presents Lunar Window with a stylised south-pole approach and an
-immediate handoff to the app. The Moon is procedural: no terrain texture or mission
-data is downloaded, and the directional light is visual only.
+One fixed WebGL Moon, a scroll-scrubbed eight-chapter story, and a dive into `/app`.
+Design references: Ascenta Studio (Last Dept., Basalte, Nival, Ciel) and fojcikdominik.com.
 
-## Performance and fallbacks
+| File | Role |
+|---|---|
+| `LandingPage.tsx` | Chrome (pill nav, status bar, rail, loader), chapters, Lenis scroll, dive |
+| `story.ts` | Pure maths: chapter keys, easing, Moon-fixed frame, site list, polar projection (unit-tested) |
+| `MoonStage.tsx` | R3F stage: Lunar-Lambert Moon shader, LOLA cap, stars, Earth, site rings + projected labels |
+| `textures.ts` | Loads `public/textures/moon/manifest.json` with real byte progress (no three.js import) |
 
-- The copy, static Moon and navigator action render in the initial application bundle.
-- The R3F/Three.js scene is a separate lazy chunk and never blocks the action.
-- Reduced motion, data-saver, unavailable WebGL, four or fewer logical CPUs, and
-  four GiB or less reported memory use the static render.
-- Animated devices cap pixel ratio at 1.5 and stop rendering after the 2.2 s approach.
+## Data on this page
+- Moon: NASA SVS CGI Moon Kit LROC colour + LOLA elevation (`public/textures/moon_*.jpg`).
+- Sites: region centres from `pipeline/config.yaml`; heights from PIPE-3. A test checks both match.
+- Numbers in the copy come from PIPE-2 / PIPE-3 checks (±1.59° Sun latitude, ±6.86° Earth latitude, 43,824 rows, 80 m grid).
+- The Sun on this page is illustrative (one turn per synodic month); the navigator uses the Horizons table.
+
+## Real south-pole relief (do this once, on the machine with the DEM)
+    cd pipeline && make terrain-fetch
+    python ../web/scripts/make-polar-cap.py data/raw/LDEM_80S_80MPP_ADJ.TIF
+Commit `web/public/textures/moon/south-cap-normal-2048.jpg` and the updated `manifest.json`.
+The shader samples it in the DEM's own polar-stereographic grid (`story.polarStereo` is the tested twin).
+
+## Tuning
+Camera, tilt, Sun and overlay strength per chapter: `KEYS` in `story.ts`. Copy: `LandingPage.tsx`.
+Reduced motion snaps chapters; no WebGL2 or save-data shows a static Moon.
 
 ## Verify
-
-From the web folder, run:
-
-    pnpm exec eslint src/landing src/main.tsx
-    pnpm typecheck
-    pnpm test
-    pnpm build
-    pnpm test:browser
-
-The browser checks include the 2.5 s interaction budget, Axe WCAG rules, navigator
-handoff, reduced motion, the static fallback and mobile overflow.
-
-## Limits
-
-This hero is intentionally stylised, not a terrain or ephemeris visualization. LND-3
-owns the longer problem/method story below it. Real terrain remains in the app and
-data workstreams.
+    pnpm typecheck && pnpm lint && pnpm test && pnpm build
+    PLAYWRIGHT_CHROMIUM_EXECUTABLE=<chrome> pnpm test:browser src/landing
