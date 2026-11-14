@@ -58,7 +58,7 @@ export interface GridHeader {
    *
    * @minItems 1
    */
-  layers: ("mask" | "slope_deg" | "elev_m" | "crater_depth_m" | "rock")[];
+  layers: ("mask" | "slope_deg" | "aspect_deg" | "elev_m" | "crater_depth_m" | "roughness_deg" | "rock")[];
   /**
    * Storage description of each layer, keyed by layer name; its keys equal `layers`.
    */
@@ -76,12 +76,26 @@ export interface GridHeader {
       units?: "deg";
       components?: 1;
     };
+    /**
+     * Compass direction the slope faces (downhill), degrees clockwise from local north in [0, 360); 0 where the cell is flat (slope 0).
+     */
+    aspect_deg?: GridLayerInfo & {
+      units?: "deg";
+      components?: 1;
+    };
     elev_m?: GridLayerInfo & {
       units?: "m";
       components?: 1;
     };
     crater_depth_m?: GridLayerInfo & {
       units?: "m";
+      components?: 1;
+    };
+    /**
+     * Standard deviation of slope (degrees) over a 5 x 5 window of 80 m cells; the rock-distribution proxy input (PIPE-6).
+     */
+    roughness_deg?: GridLayerInfo & {
+      units?: "deg";
       components?: 1;
     };
     rock?: GridLayerInfo & {

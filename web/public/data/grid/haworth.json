@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T20:42:44Z",
+  "source_urls": [
+    "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+    "https://pgda.gsfc.nasa.gov/products/90",
+    "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+  ],
+  "region": "haworth",
+  "crs": "polar-stereo-south",
+  "crs_params": {
+    "lat_0": -90,
+    "lon_0": 0,
+    "radius_m": 1737400.0
+  },
+  "x0": -47920.0,
+  "y0": 80560.0,
+  "cell_m": 160,
+  "nx": 125,
+  "ny": 125,
+  "bins": 64,
+  "layers": [
+    "slope_deg",
+    "aspect_deg",
+    "elev_m",
+    "crater_depth_m",
+    "roughness_deg"
+  ],
+  "layer_info": {
+    "slope_deg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "deg",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 0,
+      "byte_length": 62500
+    },
+    "aspect_deg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "deg",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 62500,
+      "byte_length": 62500
+    },
+    "elev_m": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "m",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 125000,
+      "byte_length": 62500
+    },
+    "crater_depth_m": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "m",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 187500,
+      "byte_length": 62500
+    },
+    "roughness_deg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "deg",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 250000,
+      "byte_length": 62500
+    }
+  }
+}

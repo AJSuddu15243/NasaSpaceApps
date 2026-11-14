@@ -22,7 +22,7 @@
     "layers": {
       "description": "Layers present in the binary, in file order (no units). A layer without data (e.g. rock before a source is confirmed) is left out.",
       "type": "array",
-      "items": { "type": "string", "enum": ["mask", "slope_deg", "elev_m", "crater_depth_m", "rock"] },
+      "items": { "type": "string", "enum": ["mask", "slope_deg", "aspect_deg", "elev_m", "crater_depth_m", "roughness_deg", "rock"] },
       "minItems": 1,
       "uniqueItems": true
     },
@@ -39,8 +39,10 @@
           ]
         },
         "slope_deg": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "deg" }, "components": { "const": 1 } } }] },
+        "aspect_deg": { "description": "Compass direction the slope faces (downhill), degrees clockwise from local north in [0, 360); 0 where the cell is flat (slope 0).", "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "deg" }, "components": { "const": 1 } } }] },
         "elev_m": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "m" }, "components": { "const": 1 } } }] },
         "crater_depth_m": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "m" }, "components": { "const": 1 } } }] },
+        "roughness_deg": { "description": "Standard deviation of slope (degrees) over a 5 x 5 window of 80 m cells; the rock-distribution proxy input (PIPE-6).", "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "deg" }, "components": { "const": 1 } } }] },
         "rock": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "fraction" }, "components": { "const": 1 } } }] }
       }
     }
