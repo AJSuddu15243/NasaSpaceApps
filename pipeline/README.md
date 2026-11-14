@@ -66,6 +66,13 @@ az/el from each config site (0 m on the 1737.4 km sphere), two 30-day hourly win
 Jul 2028). Each run also recomputes them from PIPE-2 sub-points and fails above 0.1 deg (measured
 0.006 deg). Handoff for ENG-2 / EPH-2: `notes/pipe-7.md`.
 
+`make tiles` (PIPE-4) cuts the DEM per config region into float32 tiles (contract `tile`; rows grow
+with +y, so the DEM is flipped; cells are block means snapped to DEM pixel edges):
+- far field ±`max_distance_km` at `far_field_m` → `pipeline/data/tiles/{region}_240m.bin` (pipeline-only:
+  ~6 MB each, mask-builder input);
+- near field ±10 km at `near_field_m` → `web/public/data/tiles/{region}_80m.bin` (shipped, 250 KB each).
+`coords.to_xy` / `to_latlon` convert lat/lon ↔ south polar stereographic metres (R = 1737.4 km).
+
 ## Shared interfaces
 
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;
