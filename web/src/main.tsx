@@ -2,8 +2,8 @@ import { Component, lazy, StrictMode, Suspense, useEffect, useState, type Compon
 import { createRoot } from 'react-dom/client';
 import { useShell } from './shell/store';
 import { writeScenario } from './shell/scenario';
-import { Home } from './shell/Home';
 import { Button } from './shell/ui';
+import { LandingPage } from './landing/LandingPage';
 import './styles.css';
 // Optional WEB-2 stylesheet: an eager glob is empty until that workstream is present.
 import.meta.glob('./design/styles.css', { eager: true });
@@ -24,7 +24,7 @@ function App() {
   if (path === '/design' && Design) return <Suspense fallback={<p role="status">Loading design reference…</p>}><Design/></Suspense>;
   return <><a className="skip-link" href="#main">Skip to content</a><header className="app-header"><a className="wordmark" href="/" onClick={e => { e.preventDefault(); navigate('/'); }}>Lunar Window<span>LUNAR LANDING SITE NAVIGATOR</span></a><nav aria-label="Main navigation"><a href="/app" aria-current={path === '/app' || path === '/app/' ? 'page' : undefined} onClick={e => { if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate('/app'); } }}>Workspace</a>{Design && <a href="/design">Design</a>}<Button variant="outline" onClick={copyLink}>Share scenario</Button></nav></header>
     {share && <div className="share-notice"><p role="status">{share}</p>{shareUrl && <input aria-label="Scenario link" value={shareUrl} readOnly onFocus={event => event.target.select()}/>}<Button variant="ghost" onClick={() => { setShare(''); setShareUrl(''); }}>Dismiss</Button></div>}
-    <Suspense fallback={<main id="main" className="workspace" role="status">Loading workspace…</main>}>{path === '/' ? <Home/> : path === '/app' || path === '/app/' ? <Navigator/> : <main id="main" className="workspace"><h1>Page not found</h1><p>This address is not part of the navigator.</p><Button onClick={() => navigate('/app')}>Open workspace</Button></main>}</Suspense>
+    <Suspense fallback={<main id="main" className="workspace" role="status">Loading workspace…</main>}>{path === '/' ? <LandingPage onOpen={() => navigate('/app')}/> : path === '/app' || path === '/app/' ? <Navigator/> : <main id="main" className="workspace"><h1>Page not found</h1><p>This address is not part of the navigator.</p><Button onClick={() => navigate('/app')}>Open workspace</Button></main>}</Suspense>
     <footer className="app-footer"><span>NASA Space Apps project · independent team prototype</span><span>UTC throughout · synthetic demonstration data</span></footer>
   </>;
 }
