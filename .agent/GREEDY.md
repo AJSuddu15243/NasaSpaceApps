@@ -1,6 +1,6 @@
 # Design: Weighted scoring + greedy top-N areas (ENG-6, ENG-7)
 
-> **Design agreed with Ananth 2026-11-14 (decisions 1–5 below).** Nothing is implemented yet; implementation needs his go-ahead.
+> **Design agreed with Ananth 2026-11-14 (decisions 1–5 below).** ENG-6 `score_cells` (steps 1–2) is implemented in `engine/src/score.rs`; the rest needs his go-ahead.
 > Contracts: `SPEC.md` (engine API, grid format). Issues: #21 (ENG-6), #22 (ENG-7).
 
 ## Why this can be built now
@@ -23,7 +23,7 @@ ENG-5    ─► cold_frac ──────────────────
 | Slope | `slope_deg` | `1 − slope / slope_max` | **hard limit**: `slope > slope_max` → cell excluded (default 10°) |
 | Crater depth | `crater_depth_m` | `1 − clamp(depth / depth_ref, 0, 1)` | `depth_ref = 50 m` (decided) |
 | Rock | `rock` | `1 − clamp(rock / rock_ref, 0, 1)` | weight defaults to 0; `rock_ref` set once PIPE-6 picks a source |
-| Thermal | `cold_frac` = `h_below_survival / hours` | `1 − cold_frac` | from ENG-5; survival temp default still open (FND-1 example 120 K vs ENG-5 suggestion 233 K) |
+| Thermal | `cold_frac` = `h_below_survival / hours` | `1 − cold_frac` | from ENG-5; survival temp default **233 K / −40 °C** (decided 6) |
 
 **Decided (1): hybrid.** Scores and ranking use the fixed ranges above, so a score means the same in every
 region. Min-max is used only to stretch heatmap colours for display (SCN-4); it never feeds the score.
@@ -70,7 +70,9 @@ for w in cands:
 
 ## Contract gap in SPEC
 `top_areas(scores, window_cells, n)` can't work as written: it also needs `nx, ny, cell_m` and `exclusion_m`.
-Proposed: `top_areas(scores, nx, ny, cell_m, window_cells, exclusion_m, n) -> Area[]`. Needs a SPEC update.
+**Decided (Ananth, 2026-11-14):** `top_areas(scores, header: GridHeader, window_cells, exclusion_m, n) -> Area[]`;
+the header gives `nx, ny, x0, y0, cell_m` and the CRS for `Area.lat/lon`. Engine-only PR; the PR body flags the
+web/contracts owners that SPEC, the engine-api schema and TS types need the matching update.
 The same gap hits `grid_scores(grid, ...)`: raw `.bin` bytes carry no `nx, ny` or layer offsets, so it also needs
 the `GridHeader`. ENG-1 stubs keep SPEC's signatures until the team agrees (see the ENG-1 PR).
 
@@ -91,4 +93,15 @@ the `GridHeader`. ENG-1 stubs keep SPEC's signatures until the team agrees (see 
 4. ~~Default weights~~: **decided, power-first** (sun 0.35, earth 0.25, slope 0.20, thermal 0.10, crater 0.10, rock 0).
 5. ~~Window validity~~: **decided, all cells valid**; empty result → "no landable area" UI state.
 
-Still open: `rock_ref` (after PIPE-6); the SPEC `top_areas` signature change (team sign-off).
+6. ~~Survival temperature default~~: **decided, 233 K** (electronics/battery survival). The default lives in
+   the web `Params` (`web/src/engine/mock.ts` has 100 K, contract examples 120 K): flagged for the web owner.
+7. ~~ENG-6 scope~~: **decided, pure scoring first.** `score.rs::score_cells(layers, weights, slope_limit_deg)`
+   is built and tested on hand-made layers now; `grid_scores` (per-cell metrics on the 64-bin masks) is wired
+   once ENG-4 (sun/earth) and PIPE-5 (slope/crater) land.
+8. ~~`grid_scores` signature~~: **decided, `grid_scores(grid, header, ephem, t_start, hours, weights, params)`**
+   (limits live in `Params`). Same engine-only PR rule as `top_areas`.
+9. ~~"Without copying"~~: **decided, one copy is fine**: return `Vec<f32>`, wasm-bindgen copies it once into a
+   `Float32Array` (~4 MB at 1000×1000). A view into WASM memory goes stale when memory grows.
+10. PSR flag is its own export, `psr_flags(grid, header) -> Uint8Array` (time-independent, once per region).
+
+Still open: `rock_ref` (after PIPE-6); SPEC / schema text for the new `top_areas` signature (web owner).

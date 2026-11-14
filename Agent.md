@@ -18,7 +18,7 @@ deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a
 
 ## Active Work
 
-Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress** (ENG-1 merged). Scope and details are in
+Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress** (ENG-1 merged, ENG-6 scoring in review). Scope and details are in
 the [Active Work section of `.agent/PLAN.md`](.agent/PLAN.md#active-work).
 
 Other agents: coordinate with Ananth before implementing a duplicate simulator or modifying the simulation
