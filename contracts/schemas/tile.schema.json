@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tile.schema.json",
+  "title": "TileHeader",
+  "description": "Header (web/public/data/tiles/{region}_{res}m.json) for a raw terrain height tile handed from the pipeline to the engine's mask builder. The binary is nx * ny little-endian float32 heights, row-major; file length is nx * ny * 4 bytes. Axis and index convention: see x0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "source_urls", "region", "crs", "crs_params", "x0", "y0", "cell_m", "nx", "ny", "dtype", "units", "nodata", "height_reference_radius_m"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/generated_at" },
+    "source_urls": { "$ref": "common.schema.json#/$defs/source_urls" },
+    "region": { "$ref": "common.schema.json#/$defs/slug", "description": "Region id (no units); the file name is {region}_{res}m." },
+    "crs": { "$ref": "common.schema.json#/$defs/crs" },
+    "crs_params": { "$ref": "common.schema.json#/$defs/crs_params" },
+    "x0": { "$ref": "common.schema.json#/$defs/x0" },
+    "y0": { "$ref": "common.schema.json#/$defs/y0" },
+    "cell_m": { "$ref": "common.schema.json#/$defs/cell_m" },
+    "nx": { "$ref": "common.schema.json#/$defs/nx" },
+    "ny": { "$ref": "common.schema.json#/$defs/ny" },
+    "dtype": { "description": "Element type of the binary (no units): IEEE 754 binary32, little-endian.", "type": "string", "const": "float32" },
+    "units": { "description": "Unit of the stored heights: metres.", "type": "string", "const": "m" },
+    "nodata": { "description": "Stored value in metres that marks a missing cell, or null when every cell is valid.", "type": ["number", "null"] },
+    "height_reference_radius_m": { "description": "Radius in metres of the sphere the heights are measured from; a cell's distance from the Moon's centre is this plus its height.", "type": "number", "const": 1737400 }
+  }
+}

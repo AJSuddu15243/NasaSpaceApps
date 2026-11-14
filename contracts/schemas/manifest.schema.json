@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "manifest.schema.json",
+  "title": "Manifest",
+  "description": "Inventory of every shipped data file (web/public/data/manifest.json). Sources are cited per file, so there is no top-level source_urls.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "files"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/generated_at" },
+    "files": {
+      "description": "One entry per shipped file, excluding manifest.json itself.",
+      "type": "array",
+      "items": {
+        "title": "ManifestFile",
+        "description": "One shipped data file.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "bytes", "sha256", "source_urls"],
+        "properties": {
+          "path": { "description": "Path relative to web/public/data/ with forward slashes (no units), e.g. masks/shackleton-rim.json.", "type": "string", "pattern": "^(?!/)(?!.*//)(?!.*(^|/)\\.\\.?(/|$))[A-Za-z0-9._/-]+$" },
+          "bytes": { "description": "File size in bytes.", "type": "integer", "minimum": 0 },
+          "sha256": { "description": "SHA-256 of the file contents as 64 lower-case hex characters (no units).", "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "source_urls": { "$ref": "common.schema.json#/$defs/source_urls" }
+        }
+      }
+    }
+  }
+}

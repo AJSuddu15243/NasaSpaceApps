@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://ssd.jpl.nasa.gov/api/horizons.api"
+  ],
+  "site_id": "example-polar-site",
+  "lat": -89.5,
+  "lon": -137.25,
+  "elev_m": 1250.5,
+  "samples": []
+}

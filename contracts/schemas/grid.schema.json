@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "grid.schema.json",
+  "title": "GridHeader",
+  "description": "Header (web/public/data/grid/{region}.json) for the heatmap layer stack {region}.bin. The binary is the layers in the order of `layers`, back to back, each described by layer_info. Axis and index convention: see x0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "source_urls", "region", "crs", "crs_params", "x0", "y0", "cell_m", "nx", "ny", "bins", "layers", "layer_info"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/generated_at" },
+    "source_urls": { "$ref": "common.schema.json#/$defs/source_urls" },
+    "region": { "$ref": "common.schema.json#/$defs/slug", "description": "Region id (no units); equals the file name." },
+    "crs": { "$ref": "common.schema.json#/$defs/crs" },
+    "crs_params": { "$ref": "common.schema.json#/$defs/crs_params" },
+    "x0": { "$ref": "common.schema.json#/$defs/x0" },
+    "y0": { "$ref": "common.schema.json#/$defs/y0" },
+    "cell_m": { "$ref": "common.schema.json#/$defs/cell_m" },
+    "nx": { "$ref": "common.schema.json#/$defs/nx" },
+    "ny": { "$ref": "common.schema.json#/$defs/ny" },
+    "bins": { "description": "Azimuth bins per cell in the mask layer (unitless count). Bin b covers azimuth b * (360 / bins) degrees clockwise from local north.", "type": "integer", "const": 64 },
+    "layers": {
+      "description": "Layers present in the binary, in file order (no units). A layer without data (e.g. rock before a source is confirmed) is left out.",
+      "type": "array",
+      "items": { "type": "string", "enum": ["mask", "slope_deg", "elev_m", "crater_depth_m", "rock"] },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "layer_info": {
+      "description": "Storage description of each layer, keyed by layer name; its keys equal `layers`.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mask": {
+          "description": "Terrain horizon elevation per azimuth bin, stored as int16 hundredths of a degree with components = bins.",
+          "allOf": [
+            { "$ref": "#/$defs/layer" },
+            { "type": "object", "properties": { "dtype": { "const": "int16" }, "scale": { "const": 0.01 }, "offset": { "const": 0 }, "units": { "const": "deg" } } }
+          ]
+        },
+        "slope_deg": { "$ref": "#/$defs/layer" },
+        "elev_m": { "$ref": "#/$defs/layer" },
+        "crater_depth_m": { "$ref": "#/$defs/layer" },
+        "rock": { "$ref": "#/$defs/layer" }
+      }
+    }
+  },
+  "$defs": {
+    "layer": {
+      "title": "GridLayerInfo",
+      "description": "How one layer is stored. The value for cell index i (= row * nx + col) and component c is the little-endian element at byte_offset + (i * components + c) * itemsize, and its physical value is stored * scale + offset.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dtype", "scale", "offset", "units", "components", "nodata", "byte_offset", "byte_length"],
+      "properties": {
+        "dtype": { "description": "Stored element type (no units); itemsize is 1, 2, 2 and 4 bytes.", "type": "string", "enum": ["uint8", "int16", "uint16", "float32"] },
+        "scale": { "description": "Multiplier from stored value to physical value, in `units` per stored count.", "type": "number", "exclusiveMinimum": 0 },
+        "offset": { "description": "Added after scaling, in `units`.", "type": "number" },
+        "units": { "description": "Unit of the physical value, e.g. deg, m, fraction.", "type": "string", "minLength": 1 },
+        "components": { "description": "Values per cell (unitless count): bins for the mask layer, 1 for scalar layers.", "type": "integer", "minimum": 1 },
+        "nodata": { "description": "STORED value (before scale and offset) that marks a missing cell, or null when every cell is valid.", "type": ["number", "null"] },
+        "byte_offset": { "description": "Offset in bytes of the layer's first element from the start of the .bin.", "type": "integer", "minimum": 0 },
+        "byte_length": { "description": "Length of the layer in bytes: nx * ny * components * itemsize.", "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

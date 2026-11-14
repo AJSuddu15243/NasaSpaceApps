@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://ssd.jpl.nasa.gov/api/horizons.api"
+  ],
+  "site_id": "example-polar-site",
+  "lat": -89.5,
+  "lon": -137.25,
+  "elev_m": 1250.5,
+  "samples": [
+    {
+      "t_iso": "2026-01-01T00:00:00Z",
+      "sun_az": 360,
+      "sun_el": 1.2,
+      "earth_az": 359.9,
+      "earth_el": -0.4
+    },
+    {
+      "t_iso": "2026-01-01T01:00:00Z",
+      "sun_az": 13.01,
+      "sun_el": 1.19,
+      "earth_az": 0,
+      "earth_el": -0.41
+    }
+  ]
+}

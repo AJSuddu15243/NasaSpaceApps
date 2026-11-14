@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ephem.schema.json",
+  "title": "EphemHeader",
+  "description": "Header (web/public/data/ephem.json) for the Sun/Earth reference table ephem.bin. The binary is n rows x 6 little-endian float32, row-major, in the order of `fields`; row k is the instant t0_iso + k * step_hours; file length is n * 24 bytes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "source_urls", "t0_iso", "step_hours", "n", "fields", "dtype"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/generated_at" },
+    "source_urls": { "$ref": "common.schema.json#/$defs/source_urls" },
+    "t0_iso": { "$ref": "common.schema.json#/$defs/utc_iso", "description": "Instant of row 0, UTC ISO 8601 with Z." },
+    "step_hours": { "description": "Time between consecutive rows in hours.", "type": "number", "const": 1 },
+    "n": { "description": "Number of rows (unitless count).", "type": "integer", "minimum": 1 },
+    "fields": {
+      "description": "Column order of each row. sun_lat, sun_lon: sub-solar point in degrees; earth_lat, earth_lon: sub-Earth point in degrees; both in the Moon-fixed mean-Earth frame, longitude east-positive in [-180, 180). sun_dist_km, earth_dist_km: distance from the Moon's centre to the body's centre in kilometres.",
+      "type": "array",
+      "items": { "type": "string", "enum": ["sun_lat", "sun_lon", "sun_dist_km", "earth_lat", "earth_lon", "earth_dist_km"] },
+      "const": ["sun_lat", "sun_lon", "sun_dist_km", "earth_lat", "earth_lon", "earth_dist_km"]
+    },
+    "dtype": { "description": "Element type of ephem.bin (no units): IEEE 754 binary32, little-endian.", "type": "string", "const": "float32" }
+  }
+}

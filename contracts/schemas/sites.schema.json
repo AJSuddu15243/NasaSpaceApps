@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sites.schema.json",
+  "title": "Sites",
+  "description": "Curated landing sites (web/public/data/sites.json). Hand-curated, so it is a bare array without the generated-file envelope; each site cites its own source.",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "title": "Site",
+    "description": "One curated landing site.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "name", "lat", "lon", "category", "note", "source_url"],
+    "properties": {
+      "id": { "$ref": "common.schema.json#/$defs/slug", "description": "Unique site id (no units); also the file name in masks/{id}.json and validation/{id}.json." },
+      "name": { "description": "Display name (no units).", "type": "string", "minLength": 1 },
+      "lat": { "$ref": "common.schema.json#/$defs/lat_deg" },
+      "lon": { "$ref": "common.schema.json#/$defs/lon_deg" },
+      "category": {
+        "description": "Site group (no units): Artemis III candidate region, CLPS lander, international mission, or Apollo (equatorial contrast).",
+        "type": "string",
+        "enum": ["artemis3", "clps", "intl", "apollo"]
+      },
+      "note": { "description": "One-line plain-language note shown in the UI (no units); may be empty.", "type": "string" },
+      "source_url": { "description": "URL of the source the coordinates were taken from (no units).", "type": "string", "format": "uri" }
+    }
+  }
+}
