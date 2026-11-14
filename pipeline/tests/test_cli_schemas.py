@@ -13,6 +13,7 @@ IMPLEMENTED = {
     "terrain-fetch": "terrain.trek",
     "tiles": "terrain.tiles",
     "layers": "terrain.layers",
+    "imagery": "terrain.imagery",
     "package": "package",
 }
 

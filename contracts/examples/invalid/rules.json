@@ -170,5 +170,17 @@
   "grid.rock-multiple-components.json": {
     "rule": "const",
     "path": "/layer_info/rock/components"
+  },
+  "imagery.width-over-4096.json": {
+    "rule": "maximum",
+    "path": "/width"
+  },
+  "imagery.row0-y-max.json": {
+    "rule": "const",
+    "path": "/row0"
+  },
+  "imagery.nodata-zero.json": {
+    "rule": "type",
+    "path": "/nodata"
   }
 }

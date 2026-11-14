@@ -3,6 +3,7 @@
 export type { Area, EngineApiTypes, Metrics, Params, Weights } from './engine-api';
 export type { EphemHeader, SourceUrls } from './ephem';
 export type { CrsParams, GridHeader, GridLayerInfo } from './grid';
+export type { ImageryHeader } from './imagery';
 export type { Manifest, ManifestFile } from './manifest';
 export type { SiteMask } from './site-mask';
 export type { Site, Sites } from './sites';

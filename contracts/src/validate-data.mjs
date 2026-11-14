@@ -1,5 +1,5 @@
 // Validates every file under web/public/data/ (and the same layout under mock/) against its contract,
-// and checks each .bin's byte length against its JSON header.
+// checks each .bin's byte length against its JSON header, and each imagery sidecar's .webp and extent.
 // Usage: node src/validate-data.mjs [data-dir]
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
@@ -19,6 +19,7 @@ export const PATHS = [
   { pattern: /^grid\/[^/]+\.json$/, kind: 'grid', idField: 'region' },
   { pattern: /^tiles\/[^/]+\.json$/, kind: 'tile' },
   { pattern: /^validation\/[^/]+\.json$/, kind: 'validation', idField: 'site_id' },
+  { pattern: /^imagery\/[^/]+\.json$/, kind: 'imagery', idField: 'region' },
   { pattern: /^manifest\.json$/, kind: 'manifest' },
 ];
 
@@ -73,6 +74,17 @@ export function validateDataDir(dir = DEFAULT_DIR) {
     if (contract.kind === 'tile') {
       const expected = `${data.region}_${data.cell_m}m.json`;
       if (basename(rel) !== expected) errors.push(`${rel}: tile file name must be ${expected}`);
+    }
+    if (contract.kind === 'imagery') {
+      const webp = rel.replace(/\.json$/, '.webp');
+      if (!existsSync(join(dir, webp))) errors.push(`${rel}: ${basename(webp)} is missing`);
+      // 1 mm: pixel_m is a binary fraction in practice, so real sidecars match exactly.
+      for (const [axis, size, lo, hi] of [['x', 'width', 'x_min', 'x_max'], ['y', 'height', 'y_min', 'y_max']]) {
+        if (Math.abs(data.pixel_m * data[size] - (data[hi] - data[lo])) > 1e-3) {
+          errors.push(`${rel}: pixel_m * ${size} = ${data.pixel_m * data[size]} but ${hi} - ${lo} = ${data[hi] - data[lo]} (${axis} extent)`);
+        }
+      }
+      if (data.pixel_m < data.source_pixel_m) errors.push(`${rel}: pixel_m ${data.pixel_m} < source_pixel_m ${data.source_pixel_m} (upsampled)`);
     }
     if (!(contract.kind in BIN_BYTES)) continue;
     const declared = BIN_BYTES[contract.kind](data);

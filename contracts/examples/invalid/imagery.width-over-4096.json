@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml"
+  ],
+  "attribution": "LROC NAC south-pole mosaic: NASA/GSFC/Arizona State University; via NASA Moon Trek",
+  "region": "demo",
+  "crs": "polar-stereo-south",
+  "crs_params": {
+    "lat_0": -90,
+    "lon_0": 0,
+    "radius_m": 1737400
+  },
+  "x_min": -10480,
+  "x_max": 9520,
+  "y_min": 111520,
+  "y_max": 131520,
+  "pixel_m": 4.8828125,
+  "width": 8192,
+  "height": 4096,
+  "format": "webp",
+  "row0": "y_min",
+  "nodata": null,
+  "webp_quality": 75,
+  "source_level": 11,
+  "source_pixel_m": 4.18064117431640625
+}

@@ -110,6 +110,21 @@ binaries and imagery. It fails on an uncited file or when the folder exceeds `da
 raw bytes; Vercel compresses on the fly, so no `.br` files). It prints the distinct citations for LND-4.
 Run it last, after every data PR has merged.
 
+`make imagery` (PIPE-10) writes `web/public/data/imagery/{region}.webp` + `.json` (contract
+`imagery`): LROC NAC south-pole mosaic (`LRO_NAC_AvgMosaic_SPole855_1mp`, 1 m/px to 85.5 S) from the
+Moon Trek WMTS `https://trek.nasa.gov/tiles/Moon/SP/<layer>/1.0.0/WMTSCapabilities.xml`. Same
+projection as the PGDA DEM (FGDC metadata: polar stereographic, lon 0, true scale at -90, R 1737.4
+km). Trek's deepest level is 11 (4.18 m/px; 12 is 404), ~19 x 19 PNG tiles per region, cached in
+`data/cache/trek/` (~2.5 min first run). Extent = the PIPE-4 near-field tile footprint (+-10 km,
+80 m DEM pixel edges), averaged to 4096 x 4096 (4.88 m/px). Image row 0 is `y_min` (rows grow with +y, the
+common.schema.json raster convention, not north-up), col 0 is `x_min`. The few source nodata pixels
+(28-263 per region) are filled from their neighbours, so `nodata` is null. Greyscale encoded as RGB
+WebP (lossy: decoded channels may differ slightly); quality steps down until each file is
+<= min(4 MB, 6 MB / regions).
+Check against the DEM: a sun-free slope model (brightness ~ gx, gy, |g|) fits r = 0.91 / 0.82 /
+0.94 (connecting-ridge / haworth / malapert) as delivered, against the 80 m DEM window in contract
+row order (row 0 = y_min), vs <= 0.30 / 0.44 / 0.79 for the best of the 7 other flips/rotations.
+
 ## Shared interfaces
 
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;

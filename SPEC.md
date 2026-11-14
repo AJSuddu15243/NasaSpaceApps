@@ -88,6 +88,7 @@ The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per 
 | `grid/{region}.bin` + `.json` | `grid` |
 | `tiles/{region}_{res}m.bin` + `.json` | `tile` |
 | `validation/{site_id}.json` | `validation` |
+| `imagery/{region}.webp` + `.json` | `imagery` |
 | `manifest.json` | `manifest` |
 
 - `mock/`: same layout and schemas, fake values (owned by W3).
