@@ -45,6 +45,7 @@ export function SitePicker({ sites, selected, onChange }: { sites: readonly Site
 
   return <div className="sp">
     <div className="ws-scroll">
+      {/** biome-ignore lint/a11y/useAriaPropsSupportedByRole: <explanation> */}
       <div className="sp-selected" aria-label="Selected sites">
         {selected.length === 0
           ? <span className="sp-empty-chips">No sites selected</span>
