@@ -14,8 +14,25 @@ pnpm install
 pnpm db:up          # docker compose: postgres:16-alpine on :5432
 pnpm db:generate    # regenerate SQL migrations after schema changes
 pnpm db:migrate     # apply migrations
+pnpm api            # scenarios API on :8787 (needs the db running)
 cp .env.example .env # DATABASE_URL (defaults already match compose)
 ```
+
+## API
+
+`node src/api.ts` (zero-dependency `node:http`, CORS open for local dev):
+
+| Route | Purpose |
+|---|---|
+| `GET /api/scenarios` | list saved scenarios (newest first, max 50) |
+| `GET /api/scenarios/:slug` | fetch one |
+| `POST /api/scenarios` | `{ name, payload }` → saved record (same-name resave updates) |
+| `DELETE /api/scenarios/:slug` | remove |
+
+The web app mirrors saves to this API when reachable: `web/vite.config.ts`
+proxies `/api` → `localhost:8787` in dev, `VITE_API_URL` overrides the base in
+any build, and `localStorage` remains the synchronous fallback so `/app`
+works fully offline.
 
 ## Schema
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link2, PanelLeft, PanelRight } from 'lucide-react';
 import { loadDemoData, type DemoData } from './data';
 import { useShell } from './store';
+import { syncRemoteScenarios } from '../scenarios/store';
 import { Button } from './ui';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup, type ImperativePanelHandle } from '../design';
 import { useMediaQuery } from './useMediaQuery';
@@ -24,6 +25,8 @@ export default function Navigator() {
   const rightRef = useRef<ImperativePanelHandle>(null);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
+
+  useEffect(() => { void syncRemoteScenarios(); }, []);
 
   useEffect(() => {
     const controller = new AbortController();

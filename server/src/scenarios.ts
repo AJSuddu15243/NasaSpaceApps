@@ -68,7 +68,8 @@ function toRecord(row: typeof scenarios.$inferSelect): ScenarioRecord {
     name: row.name,
     payload: {
       sites: row.sites,
-      date: row.landingDateUtc,
+      // pg returns "YYYY-MM-DD HH:MM:SS+00"; the web contract wants ISO-8601 Z.
+      date: new Date(row.landingDateUtc).toISOString(),
       hours: row.durationHours,
       weights: w.engine ?? {},
       missionWeights: w.mission ?? {},
