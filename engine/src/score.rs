@@ -4,7 +4,7 @@ use crate::Weights;
 
 /// Crater depth at which the crater factor reaches 0 (decided, GREEDY.md decision 3).
 pub const DEPTH_REF_M: f64 = 50.0;
-// shortcut: rock layer is treated as a 0–1 fraction, set the real rock_ref once PIPE-6 picks a source.
+// shortcut: rock ships as a 0–1 DEM roughness proxy (PIPE-6), so ROCK_REF = 1.0; set a real rock_ref when a measured rock layer replaces the proxy.
 pub const ROCK_REF: f64 = 1.0;
 
 /// Per-cell factor layers in physical units, row-major, all the same length. NaN = no data.

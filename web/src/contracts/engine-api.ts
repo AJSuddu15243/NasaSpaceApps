@@ -64,7 +64,7 @@ export interface Weights {
    */
   crater: number;
   /**
-   * Weight of low rock abundance (unitless); 0 while the rock layer has no data.
+   * Weight of low rock abundance (unitless); defaults to 0 because the rock layer is a terrain-roughness proxy, not measured rocks.
    */
   rock: number;
   /**

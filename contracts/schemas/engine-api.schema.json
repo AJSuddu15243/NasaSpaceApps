@@ -38,7 +38,7 @@
         "earth": { "description": "Weight of Earth contact (unitless).", "type": "number", "minimum": 0 },
         "slope": { "description": "Weight of low slope (unitless).", "type": "number", "minimum": 0 },
         "crater": { "description": "Weight of shallow crater depth (unitless).", "type": "number", "minimum": 0 },
-        "rock": { "description": "Weight of low rock abundance (unitless); 0 while the rock layer has no data.", "type": "number", "minimum": 0 },
+        "rock": { "description": "Weight of low rock abundance (unitless); defaults to 0 because the rock layer is a terrain-roughness proxy, not measured rocks.", "type": "number", "minimum": 0 },
         "thermal": { "description": "Weight of benign thermal exposure (unitless).", "type": "number", "minimum": 0 }
       }
     },
