@@ -200,11 +200,36 @@ pub struct ImageryHeader {
     pub width: u32,
     pub height: u32,
     pub format: String,
-    pub row0: String,
-    pub nodata: Option<u8>, // always null: gaps are filled before lossy encoding
+    pub row0: ImageRow0,
+    /// Always null (schema `type: null`): gaps are filled before lossy encoding. `()` rejects numbers.
+    pub nodata: Option<()>,
     pub webp_quality: u32,
     pub source_level: u32,
     pub source_pixel_m: f64,
+}
+
+/// imagery row0: the only allowed value is "y_min".
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ImageRow0 {
+    YMin,
+}
+
+#[cfg(test)]
+mod imagery_tests {
+    use super::ImageryHeader;
+
+    fn parse(path: &str) -> Result<ImageryHeader, serde_json::Error> {
+        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../contracts/examples/");
+        serde_json::from_str(&std::fs::read_to_string(format!("{dir}{path}")).unwrap())
+    }
+
+    #[test]
+    fn imagery_header_matches_contract_examples() {
+        parse("valid/imagery.json").expect("valid example parses");
+        assert!(parse("invalid/imagery.nodata-zero.json").is_err());
+        assert!(parse("invalid/imagery.row0-y-max.json").is_err());
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
