@@ -143,6 +143,7 @@ def test_run_writes_schema_valid_file_and_second_run_is_cache_only(tmp_path, mon
     ]
     assert doc["samples"][0]["sun_az"] == pytest.approx(32.870166412)
     assert doc["samples"][3]["earth_el"] == pytest.approx(10.303392937)
-    assert len(doc["source_urls"]) == 3
+    assert len(doc["source_urls"]) == 4
+    assert doc["source_urls"][0] == region.source_url
     validate.run(cfg, session=transport, sleep=pauses.append)
     assert transport.calls == 3  # cached: no new requests, no pauses
