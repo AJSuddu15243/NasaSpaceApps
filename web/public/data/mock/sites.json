@@ -1,0 +1,5 @@
+[
+  {"id":"example-haworth","name":"Example Haworth","lat":-87.5,"lon":-5,"category":"artemis3","note":"Illustrative location only; not verified mission data.","source_url":"https://science.nasa.gov/moon/"},
+  {"id":"example-ridge","name":"Example ridge","lat":-89.4,"lon":90,"category":"artemis3","note":"Illustrative location only; not verified mission data.","source_url":"https://science.nasa.gov/moon/"},
+  {"id":"example-nobile","name":"Example Nobile rim","lat":-85.1,"lon":35.2,"category":"artemis3","note":"Illustrative location only; not verified mission data.","source_url":"https://science.nasa.gov/moon/"}
+]
