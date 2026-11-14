@@ -1,0 +1,6 @@
+.section-title { margin: 2rem 0 1rem; font-family: var(--font-data); font-size: var(--type-sm); font-weight: 400; }
+.skip-link { position: fixed; top: -5rem; left: 1rem; z-index: 10; padding: 1rem; color: hsl(var(--primary-foreground)); background: hsl(var(--primary)); }
+.skip-link:focus { top: 1rem; }
+.motion-sample { padding: 0.5rem; margin-bottom: 0.75rem; background: hsl(var(--muted)); transition-property: background-color; transition-timing-function: var(--ease-standard); font-size: var(--type-xs); }
+.motion-sample:hover { background: hsl(var(--accent)); }
+@media (prefers-reduced-motion: reduce) { .motion-sample { transition-duration: 0ms !important; } }

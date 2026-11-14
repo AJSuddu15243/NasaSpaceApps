@@ -1,0 +1,5 @@
+@import './tokens.css';
+:focus-visible { outline-color: hsl(var(--ring)); }
+button, a, input, select { transition: background-color var(--motion-fast) var(--ease-standard); }
+code, output, .font-mono { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+::selection { background: hsl(var(--foreground)); color: hsl(var(--background)); }
