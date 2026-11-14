@@ -1,0 +1,15 @@
+{
+  "name": "lunar-engine",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "lunar_engine_bg.wasm",
+    "lunar_engine.js",
+    "lunar_engine.d.ts"
+  ],
+  "main": "lunar_engine.js",
+  "types": "lunar_engine.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
