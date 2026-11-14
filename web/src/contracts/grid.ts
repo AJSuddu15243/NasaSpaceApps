@@ -72,10 +72,22 @@ export interface GridHeader {
       offset?: 0;
       units?: "deg";
     };
-    slope_deg?: GridLayerInfo;
-    elev_m?: GridLayerInfo;
-    crater_depth_m?: GridLayerInfo;
-    rock?: GridLayerInfo;
+    slope_deg?: GridLayerInfo & {
+      units?: "deg";
+      components?: 1;
+    };
+    elev_m?: GridLayerInfo & {
+      units?: "m";
+      components?: 1;
+    };
+    crater_depth_m?: GridLayerInfo & {
+      units?: "m";
+      components?: 1;
+    };
+    rock?: GridLayerInfo & {
+      units?: "fraction";
+      components?: 1;
+    };
   };
 }
 /**

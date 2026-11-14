@@ -33,7 +33,7 @@ Any other `.json` or `.bin` in the folder fails `validate-data`; other file type
 | `masks/{site_id}.json` | `site-mask` (`id` = file name) | none |
 | `ephem.json` | `ephem` | `ephem.bin`, `n * 24` bytes |
 | `grid/{region}.json` | `grid` (`region` = file name) | `grid/{region}.bin`, sum of `layer_info[*].byte_length` |
-| `tiles/{region}_{res}m.json` | `tile` | same name `.bin`, `nx * ny * 4` bytes |
+| `tiles/{region}_{res}m.json` | `tile` (`region` and `cell_m` determine the file name) | same name `.bin`, `nx * ny * 4` bytes |
 | `validation/{site_id}.json` | `validation` (`site_id` = file name) | none |
 | `manifest.json` | `manifest` | none |
 | (not a file) | `engine-api`: `Params`, `Weights`, `Metrics`, `Area` | **PROPOSED**, see below |
@@ -66,7 +66,8 @@ Any other `.json` or `.bin` in the folder fails `validate-data`; other file type
   has one entry per layer: physical value = stored × `scale` + `offset`; the element for cell `i`, component
   `c` is at `byte_offset + (i * components + c) * itemsize`; `nodata` is a STORED value. The `mask` layer is
   int16 with scale 0.01 deg and `components = bins = 64`. A layer with no data (rock, until a source is
-  confirmed) is left out of `layers`.
+  confirmed) is left out of `layers`. Scalar layers have one component: slope uses `deg`, elevation and
+  crater depth use `m`, and rock uses `fraction`.
 
 ## Gotchas for whoever produces these files
 - A north-up GeoTIFF has row 0 at the largest y. This contract has row 0 at the smallest y, so flip the rows

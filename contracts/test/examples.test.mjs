@@ -43,3 +43,13 @@ describe('projection formula in common.schema.json', () => {
     }
   });
 });
+
+// Gap: rejection-only tests could pass if an entire scalar layer were forbidden.
+it.each([['slope_deg', 'deg'], ['elev_m', 'm'], ['crater_depth_m', 'm'], ['rock', 'fraction']])(
+  'accepts scalar layer %s with its documented units', (name, units) => {
+    const grid = read('valid', 'grid.json');
+    grid.layers = [name];
+    grid.layer_info = { [name]: { ...grid.layer_info.slope_deg, units, byte_offset: 0 } };
+    expect(validate('grid', grid)).toEqual([]);
+  },
+);

@@ -38,10 +38,10 @@
             { "type": "object", "properties": { "dtype": { "const": "int16" }, "scale": { "const": 0.01 }, "offset": { "const": 0 }, "units": { "const": "deg" } } }
           ]
         },
-        "slope_deg": { "$ref": "#/$defs/layer" },
-        "elev_m": { "$ref": "#/$defs/layer" },
-        "crater_depth_m": { "$ref": "#/$defs/layer" },
-        "rock": { "$ref": "#/$defs/layer" }
+        "slope_deg": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "deg" }, "components": { "const": 1 } } }] },
+        "elev_m": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "m" }, "components": { "const": 1 } } }] },
+        "crater_depth_m": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "m" }, "components": { "const": 1 } } }] },
+        "rock": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "fraction" }, "components": { "const": 1 } } }] }
       }
     }
   },

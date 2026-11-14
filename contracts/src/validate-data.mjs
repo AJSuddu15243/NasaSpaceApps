@@ -70,6 +70,10 @@ export function validateDataDir(dir = DEFAULT_DIR) {
     if (contract.idField && data[contract.idField] !== basename(rel, '.json')) {
       errors.push(`${rel}: ${contract.idField} "${data[contract.idField]}" does not match the file name`);
     }
+    if (contract.kind === 'tile') {
+      const expected = `${data.region}_${data.cell_m}m.json`;
+      if (basename(rel) !== expected) errors.push(`${rel}: tile file name must be ${expected}`);
+    }
     if (!(contract.kind in BIN_BYTES)) continue;
     const declared = BIN_BYTES[contract.kind](data);
     const bin = rel.replace(/\.json$/, '.bin');

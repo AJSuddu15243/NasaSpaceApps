@@ -138,5 +138,37 @@
   "engine-api.area-missing-radius.json": {
     "rule": "required",
     "path": "/areas/0"
+  },
+  "grid.slope_deg-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/slope_deg/units"
+  },
+  "grid.slope_deg-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/slope_deg/components"
+  },
+  "grid.elev_m-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/elev_m/units"
+  },
+  "grid.elev_m-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/elev_m/components"
+  },
+  "grid.crater_depth_m-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/crater_depth_m/units"
+  },
+  "grid.crater_depth_m-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/crater_depth_m/components"
+  },
+  "grid.rock-wrong-units.json": {
+    "rule": "const",
+    "path": "/layer_info/rock/units"
+  },
+  "grid.rock-multiple-components.json": {
+    "rule": "const",
+    "path": "/layer_info/rock/components"
   }
 }

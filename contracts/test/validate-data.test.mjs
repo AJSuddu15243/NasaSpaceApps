@@ -94,3 +94,33 @@ describe('validateDataDir', () => {
     expect(result.ignored).toEqual(['texture.png']);
   });
 });
+
+// Attack: a correct byte length must not hide a tile with the wrong identity or resolution.
+describe.each(['', 'mock/'])('tile paths under %s', (prefix) => {
+  it.each(['other_240m', 'demo_120m', 'demo'])('rejects mismatched tile name %s', (name) => {
+    put(`${prefix}tiles/${name}.json`, 'tile');
+    putBin(`${prefix}tiles/${name}.bin`, 24);
+    expect(validateDataDir(root).errors).toEqual([expect.stringMatching(/tile file name must be demo_240m.json/)]);
+  });
+
+  it('accepts a hyphenated region and fractional resolution', () => {
+    const rel = `${prefix}tiles/south-pole_12.5m.json`;
+    put(rel, 'tile');
+    writeFileSync(join(root, rel), JSON.stringify({ ...example('tile'), region: 'south-pole', cell_m: 12.5 }));
+    putBin(`${prefix}tiles/south-pole_12.5m.bin`, 24);
+    expect(validateDataDir(root).errors).toEqual([]);
+  });
+
+  it.each(['ephem.bin', 'grid/demo.bin', 'tiles/demo_240m.bin'])('rejects oversized %s', (name) => {
+    buildDataDir(prefix);
+    const rel = `${prefix}${name}`;
+    putBin(rel, readFileSync(join(root, rel)).length + 1);
+    expect(validateDataDir(root).errors).toEqual([expect.stringContaining(`${rel}:`)]);
+  });
+
+  it('reports malformed JSON instead of throwing', () => {
+    put(`${prefix}sites.json`, 'sites');
+    writeFileSync(join(root, `${prefix}sites.json`), '{');
+    expect(validateDataDir(root).errors).toEqual([expect.stringContaining('not valid JSON')]);
+  });
+});
