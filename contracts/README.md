@@ -35,6 +35,7 @@ Any other `.json` or `.bin` in the folder fails `validate-data`; other file type
 | `grid/{region}.json` | `grid` (`region` = file name) | `grid/{region}.bin`, sum of `layer_info[*].byte_length` |
 | `tiles/{region}_{res}m.json` | `tile` (`region` and `cell_m` determine the file name) | same name `.bin`, `nx * ny * 4` bytes |
 | `validation/{site_id}.json` | `validation` (`site_id` = file name) | none |
+| `imagery/{region}.json` | `imagery` (`region` = file name) | `imagery/{region}.webp` (not length-checked; row 0 = `y_max`) |
 | `manifest.json` | `manifest` | none |
 | (not a file) | `engine-api`: `Params`, `Weights`, `Metrics`, `Area` | **PROPOSED**, see below |
 

@@ -66,6 +66,17 @@ az/el from each config site (0 m on the 1737.4 km sphere), two 30-day hourly win
 Jul 2028). Each run also recomputes them from PIPE-2 sub-points and fails above 0.1 deg (measured
 0.006 deg). Handoff for ENG-2 / EPH-2: `notes/pipe-7.md`.
 
+`make imagery` (PIPE-10) writes `web/public/data/imagery/{region}.webp` + `.json` (contract
+`imagery`): LROC NAC south-pole mosaic (`LRO_NAC_AvgMosaic_SPole855_1mp`, 1 m/px to 85.5 S) from the
+Moon Trek WMTS `https://trek.nasa.gov/tiles/Moon/SP/<layer>/1.0.0/WMTSCapabilities.xml`. Same
+projection as the PGDA DEM (FGDC metadata: polar stereographic, lon 0, true scale at -90, R 1737.4
+km). Trek's deepest level is 11 (4.18 m/px; 12 is 404), ~19 x 19 PNG tiles per region, cached in
+`data/cache/trek/` (~2.5 min first run). Extent = the PIPE-4 near-field tile footprint (+-10 km,
+80 m DEM pixel edges), averaged to 4096 x 4096 (4.88 m/px). Image row 0 is `y_max` (north-up),
+col 0 is `x_min`. RGB grey WebP; quality steps down until each file is <= min(4 MB, 6 MB / regions).
+Check against the DEM: a sun-free slope model (brightness ~ gx, gy, |g|) fits r = 0.91 / 0.82 /
+0.94 (connecting-ridge / haworth / malapert) as-is vs <= 0.79 for any flip or rotation, best lag 0.
+
 ## Shared interfaces
 
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;

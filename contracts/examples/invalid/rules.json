@@ -170,5 +170,9 @@
   "grid.rock-multiple-components.json": {
     "rule": "const",
     "path": "/layer_info/rock/components"
+  },
+  "imagery.width-over-4096.json": {
+    "rule": "maximum",
+    "path": "/width"
   }
 }

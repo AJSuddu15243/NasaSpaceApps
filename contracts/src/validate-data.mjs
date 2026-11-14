@@ -19,6 +19,7 @@ export const PATHS = [
   { pattern: /^grid\/[^/]+\.json$/, kind: 'grid', idField: 'region' },
   { pattern: /^tiles\/[^/]+\.json$/, kind: 'tile' },
   { pattern: /^validation\/[^/]+\.json$/, kind: 'validation', idField: 'site_id' },
+  { pattern: /^imagery\/[^/]+\.json$/, kind: 'imagery', idField: 'region' },
   { pattern: /^manifest\.json$/, kind: 'manifest' },
 ];
 

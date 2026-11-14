@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "imagery.schema.json",
+  "title": "ImageryHeader",
+  "description": "Sidecar (web/public/data/imagery/{region}.json) for imagery/{region}.webp, an orbital image texture for the 3D south-pole patch. The WebP is RGB with the same grey value in every channel. Image axes: column 0 is x_min and columns grow with +x; row 0 is y_max (north-up, the usual image convention), so rows grow with -y. This is the OPPOSITE row direction to the x0/y0 raster convention in common.schema.json. Pixels are areas: pixel (col, row) spans x in [x_min + col * pixel_m, x_min + (col + 1) * pixel_m] and y in [y_max - (row + 1) * pixel_m, y_max - row * pixel_m].",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "source_urls", "attribution", "region", "crs", "crs_params", "x_min", "x_max", "y_min", "y_max", "pixel_m", "width", "height", "format", "row0", "nodata", "webp_quality", "source_level", "source_pixel_m"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "generated_at": { "$ref": "common.schema.json#/$defs/generated_at" },
+    "source_urls": { "$ref": "common.schema.json#/$defs/source_urls" },
+    "attribution": { "description": "Credit line to show wherever the image is displayed (no units).", "type": "string", "minLength": 1 },
+    "region": { "$ref": "common.schema.json#/$defs/slug", "description": "Region id (no units); equals the file name." },
+    "crs": { "$ref": "common.schema.json#/$defs/crs" },
+    "crs_params": { "$ref": "common.schema.json#/$defs/crs_params" },
+    "x_min": { "description": "Projected x in metres of the left edge of column 0.", "type": "number" },
+    "x_max": { "description": "Projected x in metres of the right edge of the last column.", "type": "number" },
+    "y_min": { "description": "Projected y in metres of the bottom edge of the last row.", "type": "number" },
+    "y_max": { "description": "Projected y in metres of the top edge of row 0.", "type": "number" },
+    "pixel_m": { "description": "Pixel size in projected metres, the same along x and y: (x_max - x_min) / width.", "type": "number", "exclusiveMinimum": 0 },
+    "width": { "description": "Image width in pixels (columns along +x); unitless count.", "type": "integer", "minimum": 1, "maximum": 4096 },
+    "height": { "description": "Image height in pixels (rows along -y); unitless count.", "type": "integer", "minimum": 1, "maximum": 4096 },
+    "format": { "description": "Image file format (no units).", "type": "string", "const": "webp" },
+    "row0": { "description": "Which y edge image row 0 sits on (no units): always y_max (north-up).", "type": "string", "const": "y_max" },
+    "nodata": { "description": "Grey value (0-255, no units) meaning no imagery (shadowed gaps or no coverage), or null when every pixel is valid.", "type": ["integer", "null"], "minimum": 0, "maximum": 255 },
+    "webp_quality": { "description": "Lossy WebP quality used (0-100, no units).", "type": "integer", "minimum": 0, "maximum": 100 },
+    "source_level": { "description": "WMTS tile matrix level the pixels were read from (no units).", "type": "integer", "minimum": 0 },
+    "source_pixel_m": { "description": "Pixel size in metres of the source tiles at source_level; pixel_m >= this (never upsampled).", "type": "number", "exclusiveMinimum": 0 }
+  }
+}

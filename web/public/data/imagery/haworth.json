@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T20:55:35Z",
+  "source_urls": [
+    "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
+    "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
+    "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+  ],
+  "attribution": "LRO LROC NAC Image Mosaic, S Pole, Avg Merge (LRO_NAC_AvgMosaic_SPole85.5_1mp): NASA/GSFC/Arizona State University (LROC), USGS / NASA Lunar Mapping and Modeling Project; tiles via NASA Moon Trek (trek.nasa.gov)",
+  "region": "haworth",
+  "crs": "polar-stereo-south",
+  "crs_params": {
+    "lat_0": -90,
+    "lon_0": 0,
+    "radius_m": 1737400.0
+  },
+  "x_min": -48000.0,
+  "x_max": -28000.0,
+  "y_min": 80480.0,
+  "y_max": 100480.0,
+  "pixel_m": 4.8828125,
+  "width": 4096,
+  "height": 4096,
+  "format": "webp",
+  "row0": "y_max",
+  "nodata": 0,
+  "webp_quality": 65,
+  "source_level": 11,
+  "source_pixel_m": 4.180641174316406
+}

@@ -181,6 +181,32 @@ pub struct ValidationSet {
     pub samples: Vec<ValidationSample>,
 }
 
+/// imagery/{region}.json, sidecar of imagery/{region}.webp. Metres; image row 0 is y_max (north-up).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct ImageryHeader {
+    pub schema_version: u32,
+    pub generated_at: String,
+    pub source_urls: Vec<String>,
+    pub attribution: String,
+    pub region: String,
+    pub crs: String,
+    pub crs_params: CrsParams,
+    pub x_min: f64,
+    pub x_max: f64,
+    pub y_min: f64,
+    pub y_max: f64,
+    pub pixel_m: f64,
+    pub width: u32,
+    pub height: u32,
+    pub format: String,
+    pub row0: String,
+    pub nodata: Option<u8>,
+    pub webp_quality: u32,
+    pub source_level: u32,
+    pub source_pixel_m: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct ManifestFile {
