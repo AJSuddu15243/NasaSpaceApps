@@ -1,5 +1,5 @@
 import { parseSites, parseMask, parseEphem } from './validation';
-import type { SiteMask } from './contracts/site-mask';
+import type { SiteMask } from '../contracts/site-mask';
 export async function loadDemoData(signal: AbortSignal, request: typeof fetch = fetch) {
   async function resource(path: string) {
     const response = await request(`/data/mock/${path}`, { signal });

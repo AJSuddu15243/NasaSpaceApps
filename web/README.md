@@ -39,10 +39,9 @@ NASA data. Mock metrics are fixed presentation fixtures; they are available only
 the documented 336 h demo window and never recomputed for a different date or mission
 length. Unsupported scenarios show “No computed results” instead of stale numbers.
 
-The temporary contract snapshot in `src/shell/contracts/` is copied byte-for-byte
-from FND-1 PR #65. After that PR merges, imports should move to `src/contracts/` and
-the snapshot should be removed. The engine adapter is isolated in `src/engine/index.ts`
-so ENG-9 can replace the mock without changing UI callers.
+This PR is stacked on FND-1 PR #65 and imports its generated types and schemas
+directly. The engine adapter is isolated in `src/engine/index.ts` so ENG-9 can
+replace the mock without changing UI callers.
 
 ## Integration boundaries
 

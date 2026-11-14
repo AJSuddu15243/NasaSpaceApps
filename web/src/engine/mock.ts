@@ -1,5 +1,5 @@
-import type { Params, Metrics } from '../shell/contracts/engine-api';
-import type { SiteMask } from '../shell/contracts/site-mask';
+import type { Params, Metrics } from '../contracts/engine-api';
+import type { SiteMask } from '../contracts/site-mask';
 import type { DemoData } from '../shell/data';
 import { parseMetrics } from '../shell/validation';
 export const MOCK_DATE = '2026-11-14T12:00:00.000Z';

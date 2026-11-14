@@ -1,4 +1,4 @@
-import type { Weights } from './contracts/engine-api';
+import type { Weights } from '../contracts/engine-api';
 export type View = '3d' | 'panorama' | 'map';
 export type Mode = 'planner' | 'explorer';
 export interface Scenario { sites: string[]; date: string; hours: number; weights: Weights; mode: Mode; view: View }
