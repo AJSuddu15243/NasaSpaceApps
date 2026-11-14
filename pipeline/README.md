@@ -103,6 +103,13 @@ Sources searched (2026-11-14). None gives a public rock or boulder raster for 85
 Upgrade path: a polar NAC boulder-density map (like Aussel et al. 2025, extended past 60° S, or a released
 Boazman et al. product) would replace the proxy directly as a measured rock fraction. Drop `proxy` when it does.
 
+`make package` (PIPE-9) writes `web/public/data/manifest.json` (contract `manifest`): every shipped file
+(dotfiles and the manifest itself excluded) with bytes, SHA-256 and `source_urls`, taken from the file's
+own JSON, from each `sites.json` entry's `source_url`, or from the sibling `{stem}.json` header for
+binaries and imagery. It fails on an uncited file or when the folder exceeds `data_budget_mb` (decimal MB,
+raw bytes; Vercel compresses on the fly, so no `.br` files). It prints the distinct citations for LND-4.
+Run it last, after every data PR has merged.
+
 ## Shared interfaces
 
 - `config.load_config(path=None) -> Config`: frozen dataclasses and read-only region mapping;
