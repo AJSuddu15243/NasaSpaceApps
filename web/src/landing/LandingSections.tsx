@@ -53,12 +53,12 @@ const steps = [
     index: '03',
     eyebrow: 'EVERY SITE IS A TRADE-OFF',
     title: 'Power versus communication.',
-    body: 'More sunlight usually means less Earth contact, and vice versa. The question is never “is this site good” — it is “good for which window”.',
+    body: 'More sunlight usually means less Earth contact, and vice versa — so the right site depends on the window.',
   },
   {
     index: '04',
     eyebrow: 'LUNAR WINDOW',
-    title: 'We map the window, not the hope.',
+    title: 'Map the whole launch window.',
     body: 'Lunar Window compares candidate sites across dates using real terrain horizons and sky geometry — then shows its work.',
     cta: true,
   },
@@ -167,7 +167,7 @@ export function LandingSections({ onOpen, diveRef }: { onOpen: () => void; diveR
     </section>
 
     <section className="landing-team-section" aria-labelledby="team-title">
-      <Reveal><p className="landing-eyebrow">TEAM</p><h2 id="team-title">Four disciplines, one inspectable scenario.</h2><p className="team-note">Role initials are used until the team publishes its preferred names and portraits.</p></Reveal>
+      <Reveal><p className="landing-eyebrow">TEAM</p><h2 id="team-title">Four disciplines, one inspectable scenario.</h2></Reveal>
       <div className="team-grid">
         {team.map(([initials, role, description]) => <Reveal key={initials} className="team-card">
           <span className="team-initial">{initials}</span>

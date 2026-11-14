@@ -37,6 +37,10 @@ export interface SiteMask {
    */
   elev_m: number;
   /**
+   * Compass direction the site slope faces (downhill), degrees clockwise from local north in [0, 360); optional until the mask builder (ENG-3 / PIPE-8) writes it.
+   */
+  aspect_deg?: number;
+  /**
    * Terrain slope at the site in degrees from horizontal, in [0, 90].
    */
   slope_deg: number;

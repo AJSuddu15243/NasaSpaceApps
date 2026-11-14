@@ -54,11 +54,11 @@ export interface GridHeader {
    */
   bins: 64;
   /**
-   * Layers present in the binary, in file order (no units). A layer without data (e.g. rock before a source is confirmed) is left out.
+   * Layers present in the binary, in file order (no units). A layer without data is left out.
    *
    * @minItems 1
    */
-  layers: ("mask" | "slope_deg" | "elev_m" | "crater_depth_m" | "rock")[];
+  layers: ("mask" | "slope_deg" | "aspect_deg" | "elev_m" | "crater_depth_m" | "roughness_deg" | "rock")[];
   /**
    * Storage description of each layer, keyed by layer name; its keys equal `layers`.
    */
@@ -76,6 +76,13 @@ export interface GridHeader {
       units?: "deg";
       components?: 1;
     };
+    /**
+     * Compass direction the slope faces (downhill), degrees clockwise from local north in [0, 360); 0 where the cell is flat (slope 0).
+     */
+    aspect_deg?: GridLayerInfo & {
+      units?: "deg";
+      components?: 1;
+    };
     elev_m?: GridLayerInfo & {
       units?: "m";
       components?: 1;
@@ -84,6 +91,16 @@ export interface GridHeader {
       units?: "m";
       components?: 1;
     };
+    /**
+     * Standard deviation of slope (degrees) over a 5 x 5 window of 80 m cells; the rock-distribution proxy input (PIPE-6).
+     */
+    roughness_deg?: GridLayerInfo & {
+      units?: "deg";
+      components?: 1;
+    };
+    /**
+     * Rock-distribution factor in [0, 1] (fraction; 0 = smooth, 1 = rough). Until a polar rock-abundance or boulder raster exists it is a DEM roughness proxy, flagged with proxy: true.
+     */
     rock?: GridLayerInfo & {
       units?: "fraction";
       components?: 1;
@@ -146,4 +163,12 @@ export interface GridLayerInfo {
    * Length of the layer in bytes: nx * ny * components * itemsize.
    */
   byte_length: number;
+  /**
+   * True when the layer is a stand-in derived from other data, not a measurement of the quantity it names (no units). Absent means false.
+   */
+  proxy?: boolean;
+  /**
+   * Short plain-language note on how the layer was derived (no units), e.g. what a proxy stands in for.
+   */
+  note?: string;
 }

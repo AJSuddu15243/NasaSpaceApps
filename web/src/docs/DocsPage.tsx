@@ -62,11 +62,6 @@ export function DocsPage() {
   }, [query]);
 
   return <div className="docs-page">
-    <a className="skip-link" href="#docs-main">Skip to content</a>
-    <header className="docs-header">
-      <a className="docs-wordmark" href="/">Lunar Window</a>
-      <Badge>Documentation</Badge>
-    </header>
     <div className="docs-layout">
       <aside className="docs-sidebar" aria-label="Documentation sections">
         <nav className="docs-nav">
@@ -77,9 +72,8 @@ export function DocsPage() {
           <nav>{nav.map(item => <a key={item.id} href={`#${item.id}`}>{item.label}</a>)}</nav>
         </details>
       </aside>
-      <main id="docs-main" className="docs-main">
+      <main id="main" className="docs-main">
         <div className="docs-hero">
-          <p className="docs-eyebrow">LUNAR LANDING SITE NAVIGATOR</p>
           <h1>How the navigator works.</h1>
           <p>Concepts, mission workflow, data sources and the glossary — written for teammates, judges and students. Everything here describes the real system; synthetic demo data is labelled wherever it appears.</p>
         </div>

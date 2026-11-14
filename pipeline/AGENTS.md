@@ -42,7 +42,7 @@ pipeline/
 |---|---|---|
 | `ephem.bin`, `ephem.json` | `ephem` | SPEC: ephem |
 | `tiles/{region}_{res}m.bin` + `.json` | `terrain` | raw float32 little-endian heights (m) + header |
-| `grid/{region}.bin` + `.json` | `layers` + `masks` | SPEC: grid (mask, slope_deg, elev_m, crater_depth_m, rock) |
+| `grid/{region}.bin` + `.json` | `layers` + `masks` | SPEC: grid (mask, slope_deg, aspect_deg, elev_m, crater_depth_m, roughness_deg, rock) |
 | `masks/{site_id}.json` | `masks` | SPEC: masks |
 | `validation/{site_id}.json` | `validate` | `{ site_id, samples: [{ t_iso, sun_az, sun_el, earth_az, earth_el }] }` |
 | `manifest.json` | `package` | `{ schema_version, generated_at, files: [{ path, bytes, sha256, source_urls }] }` |
