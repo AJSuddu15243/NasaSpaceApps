@@ -61,6 +61,11 @@ for an extent?
 in `terrain/pgda.py`), prints its metadata and runs physics checks; a second run only re-hashes.
 The pin is trust-on-first-use: PGDA publishes no checksum. Facts and gotchas: `notes/pipe-3.md`.
 
+`make validate` writes `web/public/data/validation/{site_id}.json`: JPL Horizons apparent Sun/Earth
+az/el from each config site (0 m on the 1737.4 km sphere), two 30-day hourly windows (Jan 2026,
+Jul 2028). Each run also recomputes them from PIPE-2 sub-points and fails above 0.1 deg (measured
+0.006 deg). Handoff for ENG-2 / EPH-2: `notes/pipe-7.md`.
+
 `make package` (PIPE-9) writes `web/public/data/manifest.json` (contract `manifest`): every shipped file
 (dotfiles and the manifest itself excluded) with bytes, SHA-256 and `source_urls`, taken from the file's
 own JSON, from each `sites.json` entry's `source_url`, or from the sibling `{stem}.json` header for

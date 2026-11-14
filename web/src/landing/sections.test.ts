@@ -5,7 +5,7 @@ const source = readFileSync(new URL('./LandingSections.tsx', import.meta.url), '
 
 describe('landing story contract', () => {
   it('contains the required story, evidence and handoff sections', () => {
-    for (const heading of ['HOW IT WORKS', 'THE PRODUCT', 'VALIDATION', 'TEAM', 'PRIMARY RESOURCES']) {
+    for (const heading of ['THE PROBLEM', 'THE PRODUCT', 'MISSION WALKTHROUGH', 'TECHNOLOGY', 'TEAM', 'PRIMARY RESOURCES']) {
       expect(source).toContain(heading);
     }
     expect(source).toContain('Compare landing sites');
@@ -18,7 +18,7 @@ describe('landing story contract', () => {
     for (const word of ['seamless', 'revolutionize', 'unlock', 'cutting-edge', 'harness', 'leverage', 'empower', 'game-changer', 'delve']) {
       expect(source.toLowerCase()).not.toContain(word);
     }
-    expect(source).toContain('NEXT');
-    expect(source).toContain('Planned timeline view');
+    expect(source).toContain('LIVE PREVIEW');
+    expect(source).toContain('Synthetic demo data');
   });
 });

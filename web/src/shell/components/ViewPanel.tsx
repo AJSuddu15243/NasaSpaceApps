@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { LunarScene, type CameraMode } from '../../scene';
 import { TerrainShadingControls } from '../../scene/shaders';
 import type { Scenario, View } from '../scenario';
@@ -6,7 +6,13 @@ import type { DemoData } from '../data';
 import { Badge, Button } from '../ui';
 import { polarPoint } from '../viewGeometry';
 import { parseCustomSite } from '../../features/sites/sites';
-const labels: Record<View, string> = { '3d': '3D terrain', panorama: 'Horizon panorama', map: 'Polar map' };
+import { ephemAt } from '../../features/globe/ephem';
+import type { GlobeMarker } from '../../features/globe/MoonGlobeView';
+
+const MoonGlobeView = lazy(() => import('../../features/globe/MoonGlobeView').then(m => ({ default: m.MoonGlobeView })));
+
+const labels: Record<View, string> = { '3d': '3D terrain', panorama: 'Horizon panorama', map: 'Polar map', globe: 'Live globe' };
+
 export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data: DemoData; change: (patch: Partial<Scenario>) => void }) {
   const [cameraMode, setCameraMode] = useState<CameraMode>('orbit');
   const [contoursEnabled, setContoursEnabled] = useState(false);
@@ -16,12 +22,29 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
     const coords = site ?? parseCustomSite(id);
     return coords ? [{ ...polarPoint(coords.lat, coords.lon), name: site?.name ?? 'Custom point', index }] : [];
   });
+  const ephem = ephemAt(data.table, scenario.date);
+  const globeMarkers: GlobeMarker[] = [
+    ...scenario.sites.flatMap((id, index) => {
+      const site = data.sites.find(item => item.id === id);
+      const coords = site ?? parseCustomSite(id);
+      if (!coords) return [];
+      return [{ lat: coords.lat, lng: coords.lon, name: site?.name ?? 'Custom point', index, kind: 'site' as const, note: site?.note }];
+    }),
+    ...(ephem ? [
+      { lat: ephem.sunLat, lng: ephem.sunLon, name: 'Sub-solar point', index: -1, kind: 'sun' as const, distanceKm: ephem.sunDistKm },
+      { lat: ephem.earthLat, lng: ephem.earthLon, name: 'Sub-Earth point', index: -1, kind: 'earth' as const, distanceKm: ephem.earthDistKm },
+    ] : []),
+  ];
+  const isGlobe = scenario.view === 'globe';
   return <section className="view-panel" aria-labelledby="view-heading">
-    <div className="view-toolbar"><div><span className="eyebrow">02 / OBSERVE</span><h2 id="view-heading">South pole environment</h2></div><Badge>Illustrative layer</Badge></div>
+    <div className="view-toolbar"><div><span className="eyebrow">02 / OBSERVE</span><h2 id="view-heading">South pole environment</h2></div><Badge>{isGlobe ? 'LROC imagery' : 'Illustrative layer'}</Badge></div>
     <div className="view-switch" role="group" aria-label="Environment view">
-      {(Object.keys(labels) as View[]).map(view => <Button key={view} variant={view === scenario.view ? 'secondary' : 'ghost'} aria-pressed={view === scenario.view} onClick={() => change({ view })}>{labels[view]}</Button>)}
+      {(Object.keys(labels) as View[]).map(view => <Button key={view} variant={view === scenario.view ? 'secondary' : 'ghost'} className="view-tab" aria-pressed={view === scenario.view} onClick={() => change({ view })}>{labels[view]}</Button>)}
     </div>
-    {isThreeD ? <>
+    {isGlobe ? <Suspense fallback={<div className="terrain-empty"><div className="empty-caption"><span className="eyebrow">LIVE GLOBE</span><h3>Loading the Moon…</h3><p>The globe view streams in on demand to keep the workspace light.</p></div></div>}>
+      <MoonGlobeView markers={globeMarkers} timeLabel={scenario.date.slice(0, 16).replace('T', ' ') + ' UTC'} />
+      <p className="scene-caption"><span className="eyebrow">LUNAR SURFACE</span> LROC colour mosaic and LOLA elevation, NASA SVS. Numbered pins are your scenario sites; S/E mark the sub-solar and sub-Earth points from the ephemeris table at the scenario time.</p>
+    </Suspense> : isThreeD ? <>
       <div className="terrain-scene-toolbar">
         <p className="hint">Drag to orbit. Double-click the canvas or use the button to fly to the south pole.</p>
         <TerrainShadingControls contoursEnabled={contoursEnabled} onContoursEnabledChange={setContoursEnabled} />
@@ -58,6 +81,6 @@ export function ViewPanel({ scenario, data, change }: { scenario: Scenario; data
       <div className="empty-caption"><p>Visual orientation only. Real LOLA terrain, horizon masks, and ephemeris vectors are not connected in this preview.</p></div>
     </div>}
     <div className="view-footer"><span><i className="legend-dot sun"/> Sun / power</span><span><i className="legend-dot earth"/> Earth / communications</span></div>
-    <div className="method-note"><h3>Read the horizon, then the window.</h3><p>At the lunar south pole, nearby terrain can block the Sun or Earth. Compare sites over the same time window before drawing conclusions.</p></div>
+    <details className="method-note"><summary>Read the horizon, then the window.</summary><p>At the lunar south pole, nearby terrain can block the Sun or Earth. Compare sites over the same time window before drawing conclusions.</p></details>
   </section>;
 }
