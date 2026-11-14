@@ -63,16 +63,18 @@ export function createSouthPoleTerrainGeometry(
       const xM = tile.x0M + sourceColumn * tile.cellM;
       const zM = tile.y0M + sourceRow * tile.cellM;
       const elevationM = tile.elevationM[sourceIndex] * verticalExaggeration;
-      const nx = xM / MOON_RADIUS_M;
-      const ny = -1;
-      const nz = zM / MOON_RADIUS_M;
-      const length = Math.hypot(nx, ny, nz);
+      const rhoSquared = xM * xM + zM * zM;
+      const fourRadiusSquared = 4 * MOON_RADIUS_M * MOON_RADIUS_M;
+      const denominator = fourRadiusSquared + rhoSquared;
+      const surfaceX = fourRadiusSquared * xM / denominator;
+      const surfaceY = -MOON_RADIUS_M * (fourRadiusSquared - rhoSquared) / denominator;
+      const surfaceZ = fourRadiusSquared * zM / denominator;
       const distance = radius + elevationM / MOON_RADIUS_M;
       const outputIndex = (row * columns + column) * 3;
 
-      positions[outputIndex] = (nx / length) * distance;
-      positions[outputIndex + 1] = (ny / length) * distance;
-      positions[outputIndex + 2] = (nz / length) * distance;
+      positions[outputIndex] = surfaceX / MOON_RADIUS_M * distance;
+      positions[outputIndex + 1] = surfaceY / MOON_RADIUS_M * distance;
+      positions[outputIndex + 2] = surfaceZ / MOON_RADIUS_M * distance;
     }
   }
 
@@ -85,11 +87,11 @@ export function createSouthPoleTerrainGeometry(
       const bottomRight = bottomLeft + 1;
 
       indices[indexOffset] = topLeft;
-      indices[indexOffset + 1] = bottomLeft;
-      indices[indexOffset + 2] = topRight;
+      indices[indexOffset + 1] = topRight;
+      indices[indexOffset + 2] = bottomLeft;
       indices[indexOffset + 3] = topRight;
-      indices[indexOffset + 4] = bottomLeft;
-      indices[indexOffset + 5] = bottomRight;
+      indices[indexOffset + 4] = bottomRight;
+      indices[indexOffset + 5] = bottomLeft;
       indexOffset += 6;
     }
   }
