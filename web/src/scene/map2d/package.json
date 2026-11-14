@@ -1,0 +1,19 @@
+{
+  "name": "scn-7-polar-map-view",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test geometry.test.ts PolarMapView.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "three": "^0.181.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/three": "^0.181.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.2.0"
+  }
+}
