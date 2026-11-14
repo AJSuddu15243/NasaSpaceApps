@@ -4,11 +4,17 @@ How AI coding agents (Claude Code and others) work in this repo.
 
 ## Project
 
-NASA Space Apps work. Current track: **Lunar Landing Site Navigation**: find safe routes from an
-Artemis III candidate landing site to a target site, using NASA height and slope grids.
-Code and data are in [`LunarLandingSiteNavigation/`](LunarLandingSiteNavigation/). The data sources are listed in
-[`LunarLandingSiteNavigation/RESOURCES.md`](LunarLandingSiteNavigation/RESOURCES.md).
-Active plan and task checklist: [`.agent/PLAN.md`](.agent/PLAN.md) (Moon Base Location Sim, **draft, not final**).
+NASA Space Apps 2026: **Lunar Landing Site Navigator**. Compare south-pole landing sites and dates by Sun and
+Earth position against the real terrain horizon (solar power, thermal exposure, direct-to-Earth comms), with a
+deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a three.js front end.
+- Team proposal: [`docs/PROPOSAL.md`](docs/PROPOSAL.md) (wins if it disagrees with the spec).
+- **Read [`SPEC.md`](SPEC.md) first.** It is the build spec: features, stack, guardrails, simulation model,
+  file contracts and workstreams. Stay inside your workstream's folder.
+- Official challenge text: [`docs/CHALLENGE.md`](docs/CHALLENGE.md).
+- Folder guides: [`pipeline/AGENTS.md`](pipeline/AGENTS.md). Task board and team roles: [`docs/TASKS.md`](docs/TASKS.md). Quality bar for every PR: [`docs/QUALITY.md`](docs/QUALITY.md).
+- Draft plan and stack review this spec builds on: [`.agent/PLAN.md`](.agent/PLAN.md),
+  [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md).
+- Older ADC terrain grids and links: [`LunarLandingSiteNavigation/`](LunarLandingSiteNavigation/) (high-res local terrain only).
 
 ## Skills in use
 
