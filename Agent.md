@@ -8,6 +8,7 @@ NASA Space Apps work. Current track: **Lunar Landing Site Navigation**: find saf
 Artemis III candidate landing site to a target site, using NASA height and slope grids.
 Code and data are in [`LunarLandingSiteNavigation/`](LunarLandingSiteNavigation/). The data sources are listed in
 [`LunarLandingSiteNavigation/RESOURCES.md`](LunarLandingSiteNavigation/RESOURCES.md).
+Active plan and task checklist: [`.agent/PLAN.md`](.agent/PLAN.md) (Moon Base Location Sim).
 
 ## Skills in use
 
