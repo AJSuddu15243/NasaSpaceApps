@@ -55,7 +55,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
         </div>
         <p className="landing-disclaimer">Independent NASA Space Apps prototype · no mission recommendation</p>
       </div>
-      <div className={`landing-visual ${sceneReady ? 'scene-ready' : ''}`} aria-label={mode === 'flight' ? 'Animated approach to the lunar south pole' : 'Static lunar south-pole view'}>
+      <div role="img" className={`landing-visual ${sceneReady ? 'scene-ready' : ''}`} aria-label={mode === 'flight' ? 'Animated approach to the lunar south pole' : 'Static lunar south-pole view'}>
         <div className="static-moon" aria-hidden="true"><span /></div>
         {mode === 'flight' && <Suspense fallback={null}><MoonScene onReady={() => setSceneReady(true)} /></Suspense>}
         <div className="landing-coordinate" aria-hidden="true"><span>SOUTH POLE</span><strong>90° S</strong></div>
