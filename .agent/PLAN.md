@@ -1,5 +1,7 @@
 # Plan: Moon Base Location Sim
 
+> **⚠️ DRAFT — not the final plan.** This is just what we've worked out so far. Expect anything here to change as the team decides.
+
 ## Goal
 Test many candidate moon base sites at the same time and rank them using a **deterministic** simulation that runs
 in the browser. The globe is rendered in WebGL with three.js. Output is a heatmap of good landing *areas*
