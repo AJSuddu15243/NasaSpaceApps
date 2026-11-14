@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T12:00:00Z",
+  "source_urls": [
+    "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+  ],
+  "region": "demo",
+  "crs": "polar-stereo-south",
+  "crs_params": {
+    "lat_0": -90,
+    "lon_0": 0,
+    "radius_m": 1737400
+  },
+  "x0": 0,
+  "y0": 0,
+  "cell_m": 240,
+  "nx": 1,
+  "ny": 1,
+  "bins": 64,
+  "layers": [
+    "mask"
+  ],
+  "layer_info": {
+    "mask": {
+      "dtype": "int16",
+      "scale": 0.01,
+      "offset": 0,
+      "units": "deg",
+      "components": 64,
+      "nodata": null,
+      "byte_offset": 0,
+      "byte_length": 128
+    }
+  }
+}
