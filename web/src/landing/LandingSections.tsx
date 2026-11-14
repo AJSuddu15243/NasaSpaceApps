@@ -146,11 +146,8 @@ export function LandingSections({ onOpen, diveRef }: { onOpen: () => void; diveR
         <iframe src="/app" title="Lunar Window workspace — live preview" loading="lazy" tabIndex={-1} aria-hidden="true" />
         <div className="app-frame-bar"><span><i /> LIVE PREVIEW</span><span>Synthetic demo data · no landing recommendation</span></div>
       </Reveal>
-    </section>
-
-    <section className="landing-walkthrough" aria-labelledby="walkthrough-title">
-      <Reveal><p className="landing-eyebrow">MISSION WALKTHROUGH</p><h2 id="walkthrough-title">From candidate to comparison in four moves.</h2></Reveal>
-      <div className="walk-grid">
+      <Reveal><p className="landing-eyebrow">MISSION WALKTHROUGH</p></Reveal>
+      <div className="walk-grid walk-compact">
         {walkthrough.map(([index, title, body]) => <Reveal key={index} className="walk-step">
           <span className="walk-index">{index}</span>
           <h3>{title}</h3>
