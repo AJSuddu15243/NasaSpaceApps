@@ -1,7 +1,7 @@
 """PIPE-4: crop the PGDA DEM into raw float32 height tiles + JSON header (contract `tile`).
 
-Per config region: a far-field tile (+-max_distance_km at far_field_m) for the native mask builder,
-kept pipeline-only in pipeline/data/tiles/ (about 6 MB each, over the shipped budget), and a
+Per config region: a far-field tile (+-(max_distance_km + FAR_MARGIN_M) at far_field_m) for the
+native mask builder, kept pipeline-only in pipeline/data/tiles/ (about 7.5 MB each), and a
 near-field tile (+-NEAR_HALF_M at near_field_m) shipped to web/public/data/tiles/ for the 3D patch.
 """
 
@@ -17,6 +17,9 @@ from lunar_pipeline.binio import write_array
 from lunar_pipeline.config import Config
 from lunar_pipeline.terrain import pgda
 
+# Heatmap cells sit up to ~14 km (grid corner) from the tile centre; without the margin their rays
+# stop at the tile edge after ~139 km instead of max_distance_km.
+FAR_MARGIN_M = 15_000
 NEAR_HALF_M = 10_000  # agreed with Ananth 2026-11-14: +-10 km, 250 x 250 cells at 80 m
 
 
@@ -89,7 +92,7 @@ def run(cfg: Config) -> None:
         for name, region in cfg.regions.items():
             cx, cy = (float(v) for v in coords.to_xy(region.lat, region.lon))
             for out, half, cell in (
-                (far_dir, cfg.terrain.max_distance_km * 1000, far),
+                (far_dir, cfg.terrain.max_distance_km * 1000 + FAR_MARGIN_M, far),
                 (near_dir, NEAR_HALF_M, near),
             ):
                 tile, x0, y0 = cut(ds, cx, cy, half, cell)

@@ -1,6 +1,8 @@
 # Design: Weighted scoring + greedy top-N areas (ENG-6, ENG-7)
 
-> **Design agreed with Ananth 2026-11-14 (decisions 1–5 below).** ENG-6 `score_cells` (steps 1–2) is implemented in `engine/src/score.rs`; the rest needs his go-ahead.
+> **Design agreed with Ananth 2026-11-14 (decisions 1–10 below). Implemented:** ENG-6 in `engine/src/score.rs`
+> (`score_cells`, `cell_factors`, `grid_fracs`, `scores_from_fracs`, `psr_flags`), ENG-7 in `engine/src/greedy.rs`
+> (`window_cells`, `top_areas`, `nearby_better`, `window_factors`); WASM exports + typed wrappers in `web/src/engine/index.ts`.
 > Contracts: `SPEC.md` (engine API, grid format). Issues: #21 (ENG-6), #22 (ENG-7).
 
 ## Why this can be built now
@@ -38,10 +40,17 @@ score[c] = Σ wᵢ·fᵢ[c] / Σ wᵢ        if valid[c]
 - Dividing by `Σ wᵢ` keeps scores in [0, 1] whatever the sliders add up to. All weights 0 → error, not NaN grid.
 - A factor with weight 0 is ignored entirely, so "rock: no data" (NaN layer) doesn't exclude anything.
 - PSR flag is a **separate `u8` layer**, not a score factor (sun% already ~0 there). Rule from #21:
-  mask above `90 − |lat| + 1.54 + 0.27` degrees in every azimuth bin. Needs masks, so it's built with ENG-4.
+  mask above `90 − |lat| + 1.59 + 0.272` degrees in every azimuth bin (`psr_flags`, Err when the grid has no mask layer).
+  1.59 = max |sub-solar lat| in the shipped 2026–2030 ephem table (1.588; the textbook 1.54 flagged 4 lit cells as PSR),
+  0.272 = largest solar disk radius.
+- Night-survival gate (Ananth, 2026-11-14): after `score_cells`, a cell is NaN when `longest_dark_h > battery_h`; `battery_h = 0`
+  turns it off. **The heatmap default is gate off** (see "Results on the real grids").
 
 ## Step 3: Window average = "is the whole base footprint good?" (ENG-7)
-- Base footprint is a `k × k` cell window, `k = ceil(base_m / cell_m)`. Default `base_m = 400` (k = 5 at 80 m cells). Window score = mean of `score` inside.
+- Base footprint is a `k × k` cell window, **`k` = the smallest odd integer ≥ `base_m / cell_m`** (clarified
+  2026-11-14: odd so the window has a centre cell for `Area.x_m/y_m`, never smaller than the base). Default
+  `base_m = 400`: **k = 3 (480 m) at the shipped 160 m grid cells**, 5 at 80 m, 3 at 240 m. `window_cells(base_m, cell_m)`
+  computes it. Window score = mean of `score` inside. Windows that cross the grid edge are invalid.
 - A window is **valid only if every cell in it is valid** (decided): a base can't straddle a cliff edge. If no window
   is valid, return an empty list; the UI shows a "no landable area" state (WEB-11).
 - Computed with two summed-area tables (sum of scores, count of invalid cells) → O(1) per window,
@@ -65,8 +74,15 @@ for w in cands:
 
 ## Step 5: `nearby_better(site, radius_m)` (ENG-7)
 - Among valid windows whose centre is within `radius_m` of `site`, return the best one (ties: nearer, then index).
-- Return `{ cell, dist_m, delta: per-factor (best − site) }` → powers "1.2 km away gets +18% sunlight".
-- If the site's own window is invalid (e.g. on a steep slope), still return the best nearby, flagged `site_valid: false`.
+- Return `{ x_m, y_m, lat, lon, dist_m, score, site_score, site_valid, delta: {sun, earth, slope, crater, rock, thermal} }`
+  (`delta` = best − site window means of the normalised factors) → powers "1.2 km away gets +18% sunlight", or `null`
+  when no window qualifies. The site is the grid cell containing its (x, y); distances are from that cell's centre,
+  Euclidean in projected metres, `radius_m` in metres. The site is compared through its **own 64-bin grid window**, not
+  its 360-bin card metrics, so deltas are not a bin-count artefact.
+- If the site's own window is invalid (e.g. on a steep slope), still return the best nearby, flagged `site_valid: false`
+  (`site_score: null`); factor deltas are still given (factors are computed past the slope limit, only the score excludes).
+- `window_factors(grid, header, fracs, params, k, x_m, y_m)` returns the same factor means for any area or site
+  (why it ranked), so `Area` needs no `factors` field.
 
 ## Contract gap in SPEC
 `top_areas(scores, window_cells, n)` can't work as written: it also needs `nx, ny, cell_m` and `exclusion_m`.
@@ -88,7 +104,7 @@ the `GridHeader`. ENG-1 stubs keep SPEC's signatures until the team agrees (see 
 
 ## Decisions
 1. ~~Normalisation~~: **decided, hybrid** (fixed ranges for scores, min-max for display colours only).
-2. ~~Base footprint + exclusion radius~~: **decided, 400 m footprint (5×5 cells at 80 m) / 2 km exclusion**; both adjustable in the UI.
+2. ~~Base footprint + exclusion radius~~: **decided, 400 m footprint (3×3 = 480 m at the shipped 160 m cells, 5×5 at 80 m; see step 3) / 2 km exclusion**; both adjustable in the UI.
 3. ~~`depth_ref`~~: **decided, 50 m**. `rock_ref` deferred until PIPE-6 picks a source.
 4. ~~Default weights~~: **decided, power-first** (sun 0.35, earth 0.25, slope 0.20, thermal 0.10, crater 0.10, rock 0).
 5. ~~Window validity~~: **decided, all cells valid**; empty result → "no landable area" UI state.
@@ -104,4 +120,26 @@ the `GridHeader`. ENG-1 stubs keep SPEC's signatures until the team agrees (see 
    `Float32Array` (~4 MB at 1000×1000). A view into WASM memory goes stale when memory grows.
 10. PSR flag is its own export, `psr_flags(grid, header) -> Uint8Array` (time-independent, once per region).
 
-Still open: `rock_ref` (after PIPE-6); SPEC / schema text for the new `top_areas` signature (web owner).
+11. ~~Split the time simulation from weights~~: **decided, `grid_fracs` + `scores_from_fracs`** (amends 8).
+    `grid_fracs(grid, header, ephem, t_start_h, hours, params) -> Float32Array` (4 per cell: sun_frac, earth_frac,
+    cold_frac, longest_dark_h; same `metrics::window` inner fn as site cards on each cell's 64-bin mask) runs once per
+    time window; `scores_from_fracs(grid, header, fracs, weights, params)` re-scores on every slider move.
+    `grid_scores(grid, header, ephem, t_start_h, hours, weights, params)` = both. `t_start_h` = hours since ephem t0.
+    Battery gate in `scores_from_fracs`, `battery_h = 0` = off.
+
+## Results on the real grids (2026-11-14, 14 days from 2026-01-02T12Z, default weights, 400 m base, 2 km exclusion)
+`cargo test --release --test grid_real -- --ignored --nocapture`. 125 × 125 cells at 160 m, k = 3.
+
+| Region | Valid, gate off | Valid, battery 48 h | Valid, 24 h | PSR | #1 area (lat, lon, score) |
+|---|---|---|---|---|---|
+| haworth | 55.5% | 14.9% | 4.0% | 0.2% | −86.8740, −22.9955, 0.622 |
+| connecting-ridge | 28.9% | 0.9% | 0.7% | 1.4% | −89.4456, −137.1211, 0.557 |
+| malapert-massif | 14.0% | 2.0% | 1.6% | 0.0% | −85.9762, 1.8779, 0.624 |
+
+81–97% of cells have a dark run > 48 h in this window, so a 48 h gate blanks the heatmap (connecting-ridge keeps
+2 areas). **Default for the heatmap: gate off** (`GRID_PARAMS.battery_h = 0` in `web/src/engine/index.ts`); site
+cards still show `survives_night`. Timing: `grid_fracs` ≈ 0.4 s native release, ≈ 0.75 s WASM (node) per region;
+`scores_from_fracs` ≈ 1 ms; `top_areas` < 1 ms. WASM and native top-3 agree.
+
+Still open: `rock_ref` (after PIPE-6); SPEC / engine-api schema / TS text for the new `grid_scores`, `grid_fracs`,
+`scores_from_fracs`, `top_areas`, `nearby_better`, `window_factors`, `psr_flags` signatures (web/contracts owners).

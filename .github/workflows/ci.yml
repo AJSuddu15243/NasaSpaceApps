@@ -27,3 +27,56 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+
+  engine:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v4
+
+      # rustup (preinstalled) reads engine/rust-toolchain.toml: 1.100.0 + wasm32 + clippy + rustfmt.
+      - run: rustup show active-toolchain
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+
+      - name: Install wasm-pack 0.15.1 (release binary)
+        run: |
+          curl -sSfL https://github.com/wasm-bindgen/wasm-pack/releases/download/v0.15.1/wasm-pack-v0.15.1-x86_64-unknown-linux-musl.tar.gz \
+            | tar -xz --strip-components=1 -C "$HOME/.cargo/bin" --wildcards '*/wasm-pack'
+          wasm-pack --version
+
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo clippy --target wasm32-unknown-unknown -- -D warnings
+      - run: cargo test
+      - run: ./build.sh  # fails over the 1.5 MB wasm budget
+
+      # Non-blocking: committed pkg/ should match a fresh build, but Linux vs macOS bytes are unproven.
+      - name: pkg/ freshness (non-blocking)
+        continue-on-error: true
+        run: git diff --stat --exit-code -- ../web/src/engine/pkg
+
+  contracts:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: contracts/package.json  # packageManager pnpm@10.8.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm check
+      - run: pnpm validate-data

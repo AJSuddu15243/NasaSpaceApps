@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-14T21:08:07Z",
+  "generated_at": "2026-11-15T04:15:57Z",
   "source_urls": [
     "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
     "https://pgda.gsfc.nasa.gov/products/90",
@@ -14,13 +14,13 @@
   "region": "malapert-massif",
   "crs": "polar-stereo-south",
   "crs_params": {
-    "lat_0": -90,
-    "lon_0": 0,
+    "lat_0": -90.0,
+    "lon_0": 0.0,
     "radius_m": 1737400.0
   },
   "x0": -10400.0,
   "y0": 111600.0,
-  "cell_m": 160,
+  "cell_m": 160.0,
   "nx": 125,
   "ny": 125,
   "bins": 64,
@@ -34,13 +34,25 @@
     "sun_avg",
     "earth_avg",
     "psr",
-    "ice_favorability"
+    "ice_favorability",
+    "mask"
   ],
   "layer_info": {
+    "mask": {
+      "dtype": "int16",
+      "scale": 0.01,
+      "offset": 0.0,
+      "units": "deg",
+      "components": 64,
+      "nodata": null,
+      "byte_offset": 625000,
+      "byte_length": 2000000,
+      "note": "Horizon elevation per bin = max over 4 rays across the bin, terrain to 150 km on the 1737.4 km sphere"
+    },
     "slope_deg": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "deg",
       "components": 1,
       "nodata": null,
@@ -49,8 +61,8 @@
     },
     "aspect_deg": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "deg",
       "components": 1,
       "nodata": null,
@@ -59,8 +71,8 @@
     },
     "elev_m": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "m",
       "components": 1,
       "nodata": null,
@@ -69,8 +81,8 @@
     },
     "crater_depth_m": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "m",
       "components": 1,
       "nodata": null,
@@ -79,8 +91,8 @@
     },
     "roughness_deg": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "deg",
       "components": 1,
       "nodata": null,
@@ -89,8 +101,8 @@
     },
     "rock": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "fraction",
       "components": 1,
       "nodata": null,
@@ -101,8 +113,8 @@
     },
     "sun_avg": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "fraction",
       "components": 1,
       "nodata": null,
@@ -112,8 +124,8 @@
     },
     "earth_avg": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "fraction",
       "components": 1,
       "nodata": null,
@@ -123,8 +135,8 @@
     },
     "psr": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "fraction",
       "components": 1,
       "nodata": null,
@@ -134,11 +146,11 @@
     },
     "ice_favorability": {
       "dtype": "float32",
-      "scale": 1,
-      "offset": 0,
+      "scale": 1.0,
+      "offset": 0.0,
       "units": "fraction",
       "components": 1,
-      "nodata": -9999,
+      "nodata": -9999.0,
       "byte_offset": 562500,
       "byte_length": 62500,
       "note": "Cannon & Britt 2020 ice favorability model, native 591 m; nearest-neighbour reprojection, not measured ice abundance"

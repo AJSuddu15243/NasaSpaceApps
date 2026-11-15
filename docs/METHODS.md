@@ -62,21 +62,44 @@ For a scenario (set of sites + date/window + weights):
    Sun clears the local horizon mask. Produces sunlit hours and longest darkness.
 3. **Earth visibility** — same geometry against the sub-Earth point: Earth-visible
    hours, longest blackout, and direct-to-Earth contact windows.
-4. **Thermal estimate** — equilibrium-temperature proxy from solar exposure and
-   assumed surface properties (see Assumptions).
+4. **Thermal estimate** — instantaneous radiative-equilibrium temperature from solar
+   exposure, surface slope/aspect and assumed surface properties (see Assumptions).
 5. **Scoring** — a weighted combination of the above metrics with per-metric
    status (good / marginal / poor) and an explainable comparison table.
 
 ## Assumptions (stated wherever they matter)
 
-- **No lunar atmosphere**: the horizon is terrain plus the lunar disk only.
-- **No thermal inertia model yet**: temperature is an equilibrium estimate, not a
-  transient simulation (ENG-5).
-- **Rock layer is a proxy** until a polar rock distribution source is confirmed
-  (PIPE-6).
-- **Synthetic demonstration data**: until the pipeline's real outputs are
-  packaged, `web/public/data/mock/` supplies stand-ins. The UI labels synthetic
-  values explicitly and never presents them as measurements.
+- **No lunar atmosphere**: the horizon is terrain plus the lunar sphere only; no refraction.
+- **Horizon masks** (native `masks` bin, ENG-3):
+  - The observer stands **2 m above the DEM surface** (`--observer-m 2`, a CLI flag, not stored in the mask
+    file). Without it, bilinear sampling makes a site shade itself.
+  - Rays march great circles on the 1737.4 km sphere out to **150 km** (`--max-km`), so far mountains set the
+    horizon (SPEC guardrail 4). The far tiles are ±165 km (150 km + a 15 km margin for off-centre heatmap
+    cells), so every ray runs the full distance: the shortest ends at its last 240 m sample, **149.8 km**, in
+    all 3 regions (it was 139.3–139.8 km with ±150 km tiles; the bin warns if a ray stops at a tile edge).
+  - **Fixed step = the cell size of the tile being sampled** (80 m near tile, then 240 m far tile). The first
+    sample is one step out. Measured 2026-11-14 (release, 8 threads, Apple-silicon laptop): **~10 s per region**
+    (15,625 grid cells + its site, ~1,530 cells/s), so the growing step was not needed.
+  - **Each bin is a sector max**: the highest elevation over 4 sub-rays spread across the bin (360 bins per
+    curated site, 64 per grid cell). This errs towards less Sun and Earth, the safe side.
+- **Time steps**: windows are sampled at a **fixed step** (`step_hours`, default 1 h, from the hourly Horizons
+  table), each sample weighted by the step. Sunset and Earthset times are interpolated between samples.
+  Dark and blackout runs are clipped at the window edges.
+- **Solar**: lit = fraction of the Sun's 0.53° disk above the mask line at the Sun's azimuth. **Lunar eclipses
+  are folded in**: lit is multiplied by the part of the Sun's disk not covered by the Earth (geometric disk
+  overlap; no penumbra or limb-darkening model).
+- **Direct-to-Earth**: Earth's centre must clear the mask plus an antenna margin. **A DSN station is assumed to
+  see the Moon, and relays are ignored.**
+- **Thermal: simplified, no thermal inertia.** Instantaneous radiative equilibrium,
+  T = ((1 − A) · S · max(0, n·ŝ) · lit / (ε σ))^¼, A = 0.12, ε = 0.95, S = 1361 W/m² × (1 AU / r)², n from
+  the DEM slope and aspect. **Shadowed ground is floored at 40 K** (the real night surface is warmer, so cold
+  extremes are bounded, not modelled). Diviner measurements are the reference where available.
+- **Night-survival (battery) gate**: a site "survives the night" when its longest dark run is no longer than
+  `battery_h` (default 48 h; `0` turns the gate off). On the heatmap the gate is **off by default**: a 48 h gate
+  blanks 81–97% of cells over the 14-day demo window (`.agent/GREEDY.md`).
+- **Rock layer is a proxy** (DEM roughness), weight 0 by default, labelled as a proxy (PIPE-6).
+- **Synthetic demonstration data**: `web/public/data/mock/` supplies stand-ins for `demo-*` sites. The UI labels
+  synthetic values explicitly and never presents them as measurements.
 - Ephemeris is tabulated hourly (2026–2030); a live "now" mode and
   Astronomy-Engine fallback are planned (EPH-1/EPH-2).
 
@@ -85,11 +108,13 @@ For a scenario (set of sites + date/window + weights):
 - Contract validation: every data file is schema-checked against
   `contracts/schemas/` (`contracts/src/validate-data.mjs`); unknown or missing
   fields are rejected at the engine boundary.
-- Accuracy validation: `pipeline validate` produces JPL Horizons topocentric
-  Sun/Earth az/el samples per curated site for comparison against engine output
-  (PIPE-7, in progress — PR #86).
-- Until the validation set lands, illumination/contact numbers should be read as
-  *demonstration-grade*, not flight-grade.
+- Accuracy validation: `pipeline validate` writes JPL Horizons topocentric Sun/Earth az/el samples for 3
+  curated sites (`web/public/data/validation/`). The engine's geometry matches all 4,320 samples to under
+  0.01° for the Sun and 0.02° for Earth (`engine/tests/geometry_validation.rs`, azimuth compared as a direction).
+- Determinism: the engine hashes its outputs (FNV-1a 64); golden hashes from the WASM build are checked in CI
+  (`web/src/engine/engine.test.ts`).
+- Lighting, contact and thermal numbers are *demonstration-grade*, not flight-grade: the masks and thermal model
+  carry the simplifications listed above.
 
 ## Citations
 

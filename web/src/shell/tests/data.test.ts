@@ -14,15 +14,13 @@ import gridSchema from '../../../../contracts/schemas/grid.schema.json';
 const root = resolve('public/data/mock');
 const json = (path: string) => JSON.parse(readFileSync(join(root, path), 'utf8'));
 const bytes = (path: string) => new Uint8Array(readFileSync(join(root, path))).buffer;
-const request: typeof fetch = async input => {
-  const path = String(input).replace('/data/mock/', '');
-  return new Response(readFileSync(join(root, path)));
-};
-it('loads contract-shaped synthetic fixtures through the actual loader and adapter', async () => {
+const request: typeof fetch = async input => new Response(readFileSync(join(resolve('public/data'), String(input).replace('/data/', ''))));
+it('loads the real ephemeris and masks plus the synthetic demo fixtures through the actual loader and adapter', async () => {
   const data = await loadDemoData(new AbortController().signal, request);
   const mask = data.masks.get('demo-ridge-a')!;
   const metrics = site_metrics(mask, data.table, '2026-11-14T12:00:00.000Z', 336, MOCK_PARAMS);
-  expect(metrics.pct_lit).toBe(82); expect(data.table.rows.length).toBe(337 * 6);
+  expect(metrics.pct_lit).toBe(82); expect(data.table.rows.length).toBe(43_824 * 6);
+  expect([...data.masks.keys()].filter(id => !id.startsWith('demo-')).sort()).toEqual(['connecting-ridge', 'haworth', 'malapert-massif']);
   metrics.pct_lit = 0;
   expect(site_metrics(mask, data.table, '2026-11-14T12:00:00.000Z', 336, MOCK_PARAMS).pct_lit).toBe(82);
   expect(() => site_metrics(mask, data.table, '2030-01-01T00:00:00Z', 336, MOCK_PARAMS)).toThrow(UnavailableScenario);

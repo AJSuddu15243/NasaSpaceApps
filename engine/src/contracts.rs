@@ -102,6 +102,11 @@ pub enum GridLayer {
     CraterDepthM,
     RoughnessDeg,
     Rock,
+    // Long-term science layers appended by the pipeline's `science` stage; the engine carries them through unread.
+    SunAvg,
+    EarthAvg,
+    Psr,
+    IceFavorability,
 }
 
 /// physical = stored * scale + offset; element (cell i, component c) is at
