@@ -57,15 +57,15 @@ export function AskPanel({ context, onClose, onReplay }: { context: string; onCl
     return ask(item.label);
   };
 
-  return <section className="hud ask-panel" aria-label="Ask AI">
+  return <section className="hud ask-panel" aria-label="Solgaleo assistant">
     <header className="ask-head">
-      <span className="ask-title"><Sparkles size={14} /> Ask AI</span>
+      <span className="ask-title"><Sparkles size={14} /> Solgaleo</span>
       <button type="button" aria-label="Close assistant" onClick={onClose}><X size={15} /></button>
     </header>
-    <p className="ask-context">Knows what is on your screen — sites, date, view and telemetry.</p>
+    <p className="ask-context">Lunar copilot · knows what is on your screen — sites, date, view and telemetry.</p>
     <ActionSearchBar
       items={items}
-      label="Ask AI"
+      label="Solgaleo"
       placeholder="Ask about the Moon, terrain, sunlight…"
       onQueryChange={q => { queryRef.current = q; setQuery(q); }}
       onSelect={onSelect}
