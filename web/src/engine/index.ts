@@ -9,6 +9,7 @@ import type { Area, Params, Metrics, Weights } from '../contracts/engine-api';
 import type { GridHeader } from '../contracts/grid';
 import type { SiteMask } from '../contracts/site-mask';
 import type { DemoData } from '../shell/data';
+import type { Scenario } from '../shell/scenario';
 import { parseMetrics } from '../shell/validation';
 
 export { MOCK_PARAMS, UnavailableScenario };
@@ -68,6 +69,16 @@ export function outputHash(data: ArrayBufferView): string {
   if (!ready) throw new UnavailableScenario('The simulation engine has not loaded.');
   if (data instanceof Float32Array) return wasm.output_hash_f32(data);
   return wasm.output_hash(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+}
+
+/** Determinism hash over the cards' Metrics, in card order (engine metrics_hash: canonical f64 bytes). */
+export function metricsHash(metrics: Metrics[]): string {
+  return call(() => wasm.metrics_hash(metrics));
+}
+
+/** Params for real (non demo-*) site cards: battery and survival from the scenario, 2° antenna margin, 1 h step. */
+export function siteParams(scenario: Pick<Scenario, 'batteryH' | 'survivalK' | 'slopeLimit'>): Params {
+  return { battery_h: scenario.batteryH, survival_temp_k: scenario.survivalK, antenna_margin_deg: 2, slope_limit_deg: scenario.slopeLimit, step_hours: 1 };
 }
 
 // --- Grid scoring + greedy (ENG-6/7). Heavy: gridFracs simulates every cell (~0.75 s WASM in node for 125 x 125 x 336 h),

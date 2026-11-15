@@ -67,7 +67,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
   const state = useRef<StageState>({ chapter: 0, stepped: false, diveStart: null, hovered: null });
   const copyRefs = useRef<(HTMLElement | null)[]>([]);
   const labelRefs = useRef<(HTMLElement | null)[]>([]);
-  const railRef = useRef<HTMLSpanElement>(null);
   const lenisRef = useRef<Lenis | null>(null);
   const [textures, setTextures] = useState<MoonTextures | null>(null);
   const [progress, setProgress] = useState(0);
@@ -88,8 +87,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
     if (diving) entryStatusRef.current?.focus();
     else entryTriggerRef.current?.focus();
   }, [diving]);
-  const [clock, setClock] = useState(() => new Date().toISOString().slice(11, 19));
-
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     state.current.stepped = reduced;
@@ -126,7 +123,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
         el.style.transform = `translate3d(0, ${((1 - o) * (i < chapter ? -28 : 28)).toFixed(1)}px, 0)`;
         el.style.visibility = o < 0.01 ? 'hidden' : 'visible';
       });
-      if (railRef.current) railRef.current.style.transform = `scaleY(${(chapter / (CHAPTERS.length - 1)).toFixed(4)})`;
       const nearest = Math.round(chapter);
       if (nearest !== lastActive) { lastActive = nearest; setActive(nearest); }
       const d = illustrativeDate(sampleStage(chapter).sunLon).toISOString().slice(0, 10).replaceAll('-', '.');
@@ -134,8 +130,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
-    const timer = setInterval(() => setClock(new Date().toISOString().slice(11, 19)), 1000);
-    return () => { cancelAnimationFrame(frame); clearInterval(timer); lenis?.destroy(); };
+    return () => { cancelAnimationFrame(frame); lenis?.destroy() };
   }, []);
 
   const onSiteHover = useCallback((id: string | null) => { state.current.hovered = id; setHovered(id); }, []);
@@ -205,16 +200,8 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       <nav className="lw-pill" aria-label="Story chapters">
         {NAV.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={CHAPTERS[active].id === id ? 'true' : undefined} onClick={e => { e.preventDefault(); scrollTo(id); }}>{label}</a>)}
       </nav>
-      <button type="button" className="lw-cta-pill" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Open navigator <span aria-hidden="true">↗</span></button>
+      <button type="button" className="lw-cta" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Open navigator <span aria-hidden="true">↗</span></button>
     </header>
-
-    <div className="lw-rail" aria-hidden="true"><span ref={railRef} /></div>
-
-    <footer className="lw-statusbar" aria-hidden="true">
-      <span><i className="dot" /> N° {String(active).padStart(2, '0')} / {String(CHAPTERS.length - 1).padStart(2, '0')} — {CHAPTERS[active].label.toUpperCase()}</span>
-      <span className="lw-hint" key={active}>{CHAPTERS[active].hint}</span>
-      <span>UTC {clock}</span>
-    </footer>
 
     <main id="main" className="lw-story" tabIndex={-1} inert={diving}>
       <Chapter index={0} id="top" copyRefs={copyRefs}>
@@ -230,7 +217,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={1} id="pole" copyRefs={copyRefs}>
-        <p className="micro">01 / The pole</p>
         <h2 id="pole-title">At the pole, the Sun <em>skims</em> the horizon.</h2>
         <p className="body">From 2026 to 2030 the Sun never strays more than 1.59° from the lunar equator. Stand at the pole and it circles just above the ground, so a 1 km ridge 30 km away is enough to put a lander in shadow.</p>
         <dl className="stats">
@@ -241,7 +227,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={2} id="time" copyRefs={copyRefs}>
-        <p className="micro">02 / Time</p>
         <h2 id="time-title">The same crater, two weeks later, is a <em>different</em> site.</h2>
         <p className="body">Light sweeps once around the pole every 29.5 days. A launch slip moves arrival into a different part of that cycle, so power and darkness change even when the coordinates don’t.</p>
         <div className="readout">
@@ -252,7 +237,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={3} id="sites" className="align-right" copyRefs={copyRefs}>
-        <p className="micro">03 / Sites</p>
         <h2 id="sites-title">Three Artemis regions. <em>One</em> comparison.</h2>
         <ol className="site-list">
           {SITES.map((site, i) => <li key={site.id} className={hovered === site.id ? 'is-hot' : ''} onMouseEnter={() => onSiteHover(site.id)} onMouseLeave={() => onSiteHover(null)}>
@@ -266,7 +250,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={4} id="earth" copyRefs={copyRefs}>
-        <p className="micro">04 / Earth</p>
         <h2 id="earth-title">Earth hangs on the <em>horizon</em>.</h2>
         <p className="body">Libration swings Earth up to 6.86° north or south over a month. From a polar site that can lift it clear of a ridge, or drop it behind one and cut direct-to-Earth contact.</p>
         <dl className="stats">
@@ -276,7 +259,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={5} id="method" copyRefs={copyRefs}>
-        <p className="micro">05 / Method</p>
         <h2 id="method-title">Real data in. One <em>repeatable</em> answer out.</h2>
         <ul className="ledger">
           {LEDGER.map(([name, what, source, status]) => <li key={name}>
@@ -289,7 +271,6 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={6} id="team" className="align-right" copyRefs={copyRefs}>
-        <p className="micro">06 / Team</p>
         <h2 id="team-title">Five people. <em>One</em> scenario.</h2>
         <ul className="team">
           {TEAM.map(([name, role, line]) => <li key={name}><strong>{name}</strong><span className="micro">{role}</span><p>{line}</p></li>)}
@@ -297,16 +278,15 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={7} id="enter" className="align-center" copyRefs={copyRefs}>
-        <p className="micro">07 / Enter</p>
         <h2 id="enter-title">Pick a site. Move the date.<br /><em>Read the horizon.</em></h2>
         <button type="button" className="btn-solid btn-large" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Enter the navigator <span aria-hidden="true">↗</span></button>
         <p className="fine">NASA Space Apps 2026 · independent team prototype, not a mission recommendation.</p>
-        <p className="fine links">
+        <nav className="source-links" aria-label="Data sources">
           <a href="https://quickmap.lroc.asu.edu/" target="_blank" rel="noreferrer">LROC QuickMap ↗</a>
           <a href="https://trek.nasa.gov/moon/" target="_blank" rel="noreferrer">NASA Moon Trek ↗</a>
           <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noreferrer">JPL Horizons ↗</a>
           <a href="https://pgda.gsfc.nasa.gov/products/90" target="_blank" rel="noreferrer">PGDA LOLA ↗</a>
-        </p>
+        </nav>
         {credit && <p className="fine credit">{credit.replace(/ Run scripts\S* [^.]*\./, '')}</p>}
       </Chapter>
     </main>
