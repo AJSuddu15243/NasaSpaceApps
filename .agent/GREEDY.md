@@ -110,7 +110,7 @@ the `GridHeader`. Implemented with these signatures in #120; the engine-api sche
 5. ~~Window validity~~: **decided, all cells valid**; empty result → "no landable area" UI state.
 
 6. ~~Survival temperature default~~: **decided, 233 K** (electronics/battery survival). The default lives in
-   the web `Params`: `GRID_PARAMS` and the contract examples use 233 K; the compare cards still pass `MOCK_PARAMS` (100 K, 48 h) for every site, real ones included, until `SITE_PARAMS` lands (planned, P0).
+   the web `Params`: `GRID_PARAMS` and the contract examples use 233 K; the compare cards use `siteParams(scenario)` (233 K, 48 h by default, editable in Planner); `MOCK_PARAMS` (100 K) is for demo-* fixtures only.
 7. ~~ENG-6 scope~~: **decided, pure scoring first.** `score.rs::score_cells(layers, weights, slope_limit_deg)`
    was built and tested on hand-made layers first; `grid_scores` (per-cell metrics on the 64-bin masks) is now wired
    on ENG-4 (sun/earth) and PIPE-5 (slope/crater).
