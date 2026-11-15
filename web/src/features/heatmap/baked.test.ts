@@ -80,15 +80,21 @@ describe('baked engine heatmap', () => {
     const pool = createPool({ module: new WebAssembly.Module(wasmBytes), size: 1, makeWorker: () => { const w = new HandlerWorker(); workers.push(w); return w; } });
     const unbaked = '2026-11-14T12:00:00.000Z'; // the app's default date
     const notFound = (async () => new Response(null, { status: 404 })) as unknown as typeof fetch;
-    expect(await regionFracs('haworth', grid, START, 336, table, () => true, () => pool, request)).toMatchObject({ source: 'baked' });
-    const live = await regionFracs('haworth', grid, unbaked, 336, table, () => true, () => pool, notFound);
+    expect(await regionFracs('haworth', grid, START, 336, table, 233, () => true, () => pool, request)).toMatchObject({ source: 'baked' });
+    const live = await regionFracs('haworth', grid, unbaked, 336, table, 233, () => true, () => pool, notFound);
     expect(live?.source).toBe('live');
     expect(live?.fracs).toEqual(wasm.grid_fracs(grid.bytes!, grid.header, table.rows, hoursSinceT0(unbaked), 336, GRID_PARAMS));
-    expect(await regionFracs('haworth', grid, unbaked, 24, table, () => true, () => pool, notFound)).toMatchObject({ source: 'live' });
+    expect(await regionFracs('haworth', grid, unbaked, 24, table, 233, () => true, () => pool, notFound)).toMatchObject({ source: 'live' });
     // The ephem table and grid bytes cross to the worker once per pool, not once per call.
     expect(workers[0].sent.flatMap(m => m.type === 'set' ? [m.key] : [])).toEqual(['grid:haworth', 'ephem']);
-    expect(await regionFracs('haworth', grid, unbaked, 336, table, () => false, () => pool, notFound)).toBeNull();
-    expect(await regionFracs('haworth', grid, unbaked, 336, undefined, () => true, () => pool, notFound)).toBeNull();
+    // A survival temperature other than the baked 233 K runs live, and its cold_frac follows the engine at that temperature.
+    const cold = await regionFracs('haworth', grid, START, 336, table, 100, () => true, () => pool, request);
+    expect(cold?.source).toBe('live');
+    const cold100 = wasm.grid_fracs(grid.bytes!, grid.header, table.rows, hoursSinceT0(START), 336, { ...GRID_PARAMS, survival_temp_k: 100 });
+    expect(cold?.fracs).toEqual(cold100);
+    expect(cold100).not.toEqual(wasm.grid_fracs(grid.bytes!, grid.header, table.rows, hoursSinceT0(START), 336, GRID_PARAMS));
+    expect(await regionFracs('haworth', grid, unbaked, 336, table, 233, () => false, () => pool, notFound)).toBeNull();
+    expect(await regionFracs('haworth', grid, unbaked, 336, undefined, 233, () => true, () => pool, notFound)).toBeNull();
     (await pool).terminate();
   });
 

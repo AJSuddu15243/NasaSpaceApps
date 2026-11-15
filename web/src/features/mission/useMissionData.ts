@@ -51,6 +51,8 @@ export function useMissionData(): MissionData {
 }
 
 type Factors = ReturnType<typeof gridFactors>;
+const ENGINE_KEYS = ['sun', 'earth', 'slope', 'crater', 'rock', 'thermal'] as const;
+export const ZERO_WEIGHTS = 'Every engine weight is 0: give at least one factor a weight to rank areas.';
 /** `window` = engine grid_fracs columns for the arrival window (absent on the preview). `computing` = the preview is showing
  * while the engine request for this window is still in flight (false once it lands or failed). */
 export interface RegionResult { grid: Grid; scores: Float32Array; areas: PreviewArea[]; factors: Factors; source: ScoreSource; window?: WindowFracs; computing?: boolean; error?: string }
@@ -75,15 +77,17 @@ function cached(p: EnginePool, key: string, value: unknown) {
 
 /** grid_fracs for one region's window: baked when that start was baked, else live on the worker pool. Null when the
  * window is no longer wanted, a newer request superseded it, or there is no ephem table. */
-export async function regionFracs(region: GridRegion, grid: Grid, start: string, hours: number, table: DemoData['table'] | undefined,
+export async function regionFracs(region: GridRegion, grid: Grid, start: string, hours: number, table: DemoData['table'] | undefined, survivalK: number,
   wanted: () => boolean = () => true, getPool: () => Promise<EnginePool> = enginePool, request: typeof fetch = fetch): Promise<{ fracs: Float32Array; source: EngineSource } | null> {
-  const baked = await loadBakedFracs(region, start, hours, grid.header.nx * grid.header.ny, GRID_PARAMS, request).catch(() => null);
+  // cold_frac depends on the survival temperature; loadBakedFracs returns null unless it matches the bake (233 K).
+  const params = { ...GRID_PARAMS, survival_temp_k: survivalK };
+  const baked = await loadBakedFracs(region, start, hours, grid.header.nx * grid.header.ny, params, request).catch(() => null);
   if (baked) return { fracs: baked, source: 'baked' };
   if (!table || !grid.bytes || !wanted()) return null;
   // shortcut: ~0.65 s per region per 336 h in a worker, linear in hours; cap or chunk long windows if 8760 h runs get used.
   const t_start_h = (Date.parse(start) - Date.parse(table.header.t0_iso)) / 3_600_000;
   const p = await getPool();
-  const fracs = await p.latest<Float32Array>(`fracs:${region}`, 'grid_fracs', [cached(p, `grid:${region}`, grid.bytes), grid.header, cached(p, 'ephem', table.rows), t_start_h, hours, GRID_PARAMS]);
+  const fracs = await p.latest<Float32Array>(`fracs:${region}`, 'grid_fracs', [cached(p, `grid:${region}`, grid.bytes), grid.header, cached(p, 'ephem', table.rows), t_start_h, hours, params]);
   return fracs && { fracs, source: 'live' };
 }
 
@@ -112,10 +116,13 @@ export function engineResult(grid: Grid, preview: Factors, fracs: Float32Array, 
 
 /** Suitability per region for the arrival window [date + delay, + hours). Engine scores come from baked grid_fracs when
  * that start was baked, else from grid_fracs on the worker pool; the JS preview shows until they arrive (source says which). */
-export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scenario: Pick<Scenario, 'weights' | 'ice' | 'slopeLimit' | 'date' | 'hours' | 'delay'>, table?: DemoData['table']) {
-  const { weights, ice, slopeLimit, hours } = scenario;
+export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scenario: Pick<Scenario, 'weights' | 'ice' | 'slopeLimit' | 'date' | 'hours' | 'delay' | 'survivalK'>, table?: DemoData['table']) {
+  const { ice, slopeLimit, hours, survivalK } = scenario;
+  // Keyed on the values: the store hands out a new weights object on every scenario change (playhead, heat layer).
+  const weightKey = ENGINE_KEYS.map(k => scenario.weights[k]).join(',');
+  const weights = useMemo((): Weights => { const [sun, earth, slope, crater, rock, thermal] = weightKey.split(',').map(Number); return { sun, earth, slope, crater, rock, thermal }; }, [weightKey]);
   const start = scenarioInstant({ date: scenario.date, delay: scenario.delay });
-  const key = `${start}|${hours}`;
+  const key = `${start}|${hours}|${survivalK}`;
   const factors = useMemo(() => Object.fromEntries(Object.entries(grids).map(([region, grid]) => [region, gridFactors(grid!)])) as Partial<Record<GridRegion, Factors>>, [grids]);
   const [engine, setEngine] = useState<Partial<Record<GridRegion, EngineFracs>>>({});
   useEffect(() => {
@@ -125,18 +132,20 @@ export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scena
       if (!grid?.bytes) continue;
       // A table-less failure for this window is stale once the table is here: drop it so the live run reads "computing".
       if (table) setEngine(value => { const e = value[region]; if (!e || e.key !== key || !('failed' in e)) return value; const next = { ...value }; delete next[region]; return next; });
-      regionFracs(region, grid, start, hours, table, () => current)
+      regionFracs(region, grid, start, hours, table, survivalK, () => current)
         // No ephem table (still loading or failed) and no baked file → preview, not "computing" forever; a later table re-runs this.
         .then(r => { if (current && (r || !table)) setEngine(value => ({ ...value, [region]: r ? { key, ...r } : { key, failed: true } })); })
         .catch((error: unknown) => { console.warn(`engine heatmap for ${region} unavailable; showing the preview`, error); if (current) setEngine(value => ({ ...value, [region]: { key, failed: true } })); });
     }
     return () => { current = false; };
-  }, [grids, table, start, hours, key]);
+  }, [grids, table, start, hours, survivalK, key]);
   return useMemo(() => {
     const out: Partial<Record<GridRegion, RegionResult>> = {};
     for (const region of GRID_REGIONS) {
       const grid = grids[region]; const f = factors[region];
       if (!grid || !f) continue;
+      // The engine rejects an all-zero weight sum; ice alone is display-only, so there is nothing to rank.
+      if (ENGINE_KEYS.every(k => weights[k] === 0)) { out[region] = { grid, scores: new Float32Array(grid.header.nx * grid.header.ny).fill(NaN), factors: f, areas: [], source: 'preview', computing: false, error: ZERO_WEIGHTS }; continue; }
       const e = engine[region];
       if (e?.key === key && 'fracs' in e) {
         try { out[region] = engineResult(grid, f, e.fracs, weights, slopeLimit, e.source); continue; }

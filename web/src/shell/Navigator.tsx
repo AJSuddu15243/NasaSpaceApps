@@ -52,6 +52,9 @@ export default function Navigator() {
   const [feedback, setFeedback] = useState('');
   const [askOpen, setAskOpen] = useState(false);
   const [solgCast, setSolgCast] = useState(false);
+  // Every explicit heat request (dock, preset, weight drag) re-settles the layer, even when scenario.heat is unchanged.
+  const [heatPick, setHeatPick] = useState(0);
+  const [shownHeat, setShownHeat] = useState<HeatLayer | null>(null);
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
   useEffect(() => {
@@ -99,6 +102,7 @@ export default function Navigator() {
   const inspect = useCallback((id: string, layer?: AnalysisLayer) => { setScenario({ focus: id, layer: layer ?? scenario.layer ?? 'terrain' }); setCompareOpen(false); setAnalysisOpen(false); setFeedback(''); if (narrow) setLeftOpen(false); }, [setScenario, scenario.layer, narrow]);
   const closeAnalysis = useCallback(() => setScenario({ focus: undefined, layer: undefined, view: 'globe' }), [setScenario]);
   const chooseHeat = (heat: HeatLayer) => {
+    if (region || !focused) setHeatPick(n => n + 1);
     if (region) setScenario({ heat }, true);
     else if (!focused) setScenario({ heat, focus: 'connecting-ridge', layer: scenario.layer ?? 'terrain' });
     else { setFeedback('No measured heatmap covers this point. Choose a surveyed region.'); return; }
@@ -148,7 +152,7 @@ export default function Navigator() {
     { label: 'Ephemeris · JPL Horizons table + Astronomy Engine', detail: mission.demo.data ? `${mission.demo.data.table.header.n.toLocaleString('en-US')} H` : '', status: mission.demo.status },
     { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.filter(site => site.category !== 'demo').length} SITES` : '', status: mission.sites.status },
   ];
-  const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => setScenario(patch, replace), [setScenario]);
+  const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => { if ('heat' in patch) setHeatPick(n => n + 1); setScenario(patch, replace); }, [setScenario]);
   const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);
   const finishBoot = useCallback(() => setBooted(true), []);
   const globeOnline = useCallback(() => setGlobeReady(true), []);
@@ -192,7 +196,7 @@ export default function Navigator() {
     {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
@@ -216,7 +220,7 @@ export default function Navigator() {
 
     <nav className="hud hud-dock" aria-label="Heatmap layers and tools" data-tour="layers">
       <div className="dock-layers" role="group" aria-label="Heatmap layer">
-        {HEAT_LAYERS.map(key => <button type="button" key={key} aria-pressed={!!region && scenario.heat === key} onClick={() => chooseHeat(key)} title={LAYERS[key].label}><i style={{ background: LAYERS[key].ramp[2] }} />{LAYERS[key].short}</button>)}
+        {HEAT_LAYERS.map(key => <button type="button" key={key} aria-pressed={!!region && shownHeat === key} onClick={() => chooseHeat(key)} title={LAYERS[key].label}><i style={{ background: LAYERS[key].ramp[2] }} />{LAYERS[key].short}</button>)}
       </div>
       <div className="dock-tools" data-tour="evidence">
         <TooltipProvider delayDuration={200}>

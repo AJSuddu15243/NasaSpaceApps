@@ -1,5 +1,5 @@
 import type { Scenario } from '../../shell/scenario';
-import type { RegionResult } from './useMissionData';
+import { ZERO_WEIGHTS, type RegionResult } from './useMissionData';
 import type { GridRegion } from '../heatmap/grid';
 import { scenarioInstant } from '../timeline/MissionTimeline';
 
@@ -53,7 +53,8 @@ export function PrioritiesPanel({ scenario, change, results }: { scenario: Scena
             change(f.key === 'ice' ? { ice: v, heat: 'score' } : { weights: { ...scenario.weights, [f.key]: v }, heat: 'score' }, true);
           }} /></label>;
       })}
-      {total === 0 && <p className="hud-warning" role="alert">Every weight is 0: give at least one factor a weight to rank areas.</p>}
+      {sum === 0 ? <p className="hud-warning" role="alert">{ZERO_WEIGHTS} Ice access alone is display-only.</p>
+        : total === 0 && <p className="hud-warning" role="alert">Every weight the preview uses is 0: give at least one factor a weight to rank areas.</p>}
       <label className="weight-row limit-row"><span>Slope limit <i>· hard rule</i></span><output>{scenario.slopeLimit}°</output>
         <input type="range" min={3} max={20} step={1} value={scenario.slopeLimit} aria-label="Maximum landing slope in degrees" onChange={event => change({ slopeLimit: Number(event.target.value) }, true)} /></label>
       <p className="hud-note">Cells steeper than the limit are excluded. {engine
@@ -64,13 +65,18 @@ export function PrioritiesPanel({ scenario, change, results }: { scenario: Scena
   </div>;
 }
 
-function exportCsv(results: Partial<Record<GridRegion, RegionResult>>, scenario: Scenario) {
+/** Ranked areas of every region as CSV text, one row per area. */
+export function rankedCsv(results: Partial<Record<GridRegion, RegionResult>>, scenario: Pick<Scenario, 'date' | 'delay' | 'hours' | 'weights' | 'ice' | 'slopeLimit'>) {
   const start = scenarioInstant({ date: scenario.date, delay: scenario.delay });
   const w = scenario.weights;
-  const rows = [['region', 'rank', 'lat_deg', 'lon_deg', 'score', 'source', 'sun_earth_basis', 'window_start_utc', 'window_h', 'sun_frac', 'earth_frac', 'thermal_factor', 'slope_factor', 'crater_factor', 'ice_km', 'slope_limit_deg', 'weights_sun_earth_slope_crater_rock_thermal_ice']];
+  const rows = [['region', 'rank', 'lat_deg', 'lon_deg', 'score', 'source', 'sun_earth_basis', 'window_start_utc', 'window_h', 'sun_frac', 'earth_frac', 'thermal_factor', 'slope_factor', 'crater_factor', 'rock_factor', 'ice_km', 'slope_limit_deg', 'weights_sun_earth_slope_crater_rock_thermal_ice']];
   const f3 = (v: number) => Number.isFinite(v) ? v.toFixed(3) : '';
-  for (const [region, r] of Object.entries(results)) r?.areas.forEach((a, i) => rows.push([region, String(i + 1), a.lat.toFixed(5), a.lon.toFixed(5), a.score.toFixed(4), r.source, r.source === 'preview' ? 'long-term 18.6 yr' : 'window', r.source === 'preview' ? '' : start, r.source === 'preview' ? '' : String(scenario.hours), f3(a.factors.sun), f3(a.factors.earth), r.source === 'preview' ? '' : f3(a.factors.thermal), f3(a.factors.slope), f3(a.factors.crater), Number.isFinite(a.iceKm) ? a.iceKm.toFixed(2) : '', String(scenario.slopeLimit), [w.sun, w.earth, w.slope, w.crater, w.rock, w.thermal, scenario.ice].join(' ')]));
-  const blob = new Blob([rows.map(r => r.join(',')).join('\n') + '\n'], { type: 'text/csv' });
+  for (const [region, r] of Object.entries(results)) r?.areas.forEach((a, i) => rows.push([region, String(i + 1), a.lat.toFixed(5), a.lon.toFixed(5), a.score.toFixed(4), r.source, r.source === 'preview' ? 'long-term 18.6 yr' : 'window', r.source === 'preview' ? '' : start, r.source === 'preview' ? '' : String(scenario.hours), f3(a.factors.sun), f3(a.factors.earth), r.source === 'preview' ? '' : f3(a.factors.thermal), f3(a.factors.slope), f3(a.factors.crater), f3(a.factors.rock), Number.isFinite(a.iceKm) ? a.iceKm.toFixed(2) : '', String(scenario.slopeLimit), [w.sun, w.earth, w.slope, w.crater, w.rock, w.thermal, scenario.ice].join(' ')]));
+  return rows.map(r => r.join(',')).join('\n') + '\n';
+}
+
+function exportCsv(results: Partial<Record<GridRegion, RegionResult>>, scenario: Scenario) {
+  const blob = new Blob([rankedCsv(results, scenario)], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'lunala-ranked-areas.csv'; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
