@@ -2,7 +2,7 @@ import type { Metrics } from '../../contracts/engine-api';
 import type { SiteMask } from '../../contracts/site-mask';
 import type { MissionWeights } from '../../shell/scenario';
 import type { Track } from '../../engine/track';
-import type { Grid } from '../heatmap/grid';
+import { maskAt, type Grid } from '../heatmap/grid';
 import type { RegionResult } from '../mission/useMissionData';
 import { projectedPoint } from '../../scene/coordinates';
 
@@ -105,21 +105,9 @@ export function regionAt(regions: Partial<Record<string, RegionResult>> | undefi
  * shortcut: 64 bins (5.6°) vs 360 for curated masks, cell centre within 80 m of the point; bake a 360-bin mask for points that matter.
  */
 export function gridSiteMask(grid: Grid, id: string, lat: number, lon: number): SiteMask | null {
-  const i = cellIndex(grid, lat, lon);
-  const info = grid.header.layer_info.mask;
-  if (i === null || !grid.bytes || !info || info.dtype !== 'int16') return null;
-  const elev = grid.layers.elev_m?.[i], slope = grid.layers.slope_deg?.[i], aspect = grid.layers.aspect_deg?.[i];
-  if (elev === undefined || slope === undefined || !Number.isFinite(elev) || !Number.isFinite(slope)) return null;
-  const n = info.components;
-  const view = new DataView(grid.bytes.buffer, grid.bytes.byteOffset + info.byte_offset + i * n * 2, n * 2);
-  const mask_deg = Array.from({ length: n }, (_, b) => view.getInt16(b * 2, true) * info.scale + info.offset);
-  const h = grid.header;
-  return {
-    schema_version: 1, generated_at: h.generated_at, source_urls: h.source_urls, id, lat, lon, elev_m: elev, slope_deg: slope,
-    ...(aspect !== undefined && Number.isFinite(aspect) ? { aspect_deg: aspect } : {}),
-    // The engine takes any bin count; the site-mask contract type pins 360.
-    bins: n as 360, mask_deg, max_distance_km: 150, dem_source: `${h.region} grid cell ${i}`,
-  };
+  // One decoder (heatmap/grid.ts maskAt, which also honours nodata); keep the place's own id and coordinates.
+  const m = maskAt(grid, lat, lon);
+  return m && { ...m, id, lat, lon };
 }
 
 /**
