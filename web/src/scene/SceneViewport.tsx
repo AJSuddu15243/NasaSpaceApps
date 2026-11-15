@@ -1,3 +1,4 @@
+import { Globe, Mountain, RotateCcw } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { EphemHeader } from '../contracts/ephem';
 import { useSceneEphemeris } from './sceneEphemeris';
@@ -44,18 +45,18 @@ export function SceneViewport({ sites, date, table, view, onSiteSelect }: {
   const effectiveLayer = layer === 'slope' && !current.assets?.slope || layer === 'imagery' && (!current.assets?.imagery || failedImage === tile.id) ? 'relief' : layer;
   return <div className="scene-viewport" ref={hostRef}>
     <div className="scene-toolbar">
-      <label>Terrain at <select aria-label="Terrain site" value={site.id} onChange={e => selectSite(e.target.value)}>{allSites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
-      {view === '3d' && <button aria-pressed={overview} onClick={() => setOverview(v => !v)}>{overview ? 'Explore local terrain' : 'Moon overview'}</button>}
-      <button onClick={() => setReset(v => v + 1)}>Reset view</button>
+      <label className="scene-select">Site <select aria-label="Terrain site" value={site.id} onChange={e => selectSite(e.target.value)}>{allSites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></label>
+      {view === '3d' && <button type="button" className="scene-icon" aria-pressed={!overview} onClick={() => setOverview(v => !v)} aria-label={overview ? 'Explore local terrain' : 'Moon overview'} title={overview ? 'Explore local terrain' : 'Moon overview'}><Globe size={14} /></button>}
+      <button type="button" className="scene-icon" onClick={() => setReset(v => v + 1)} aria-label="Reset view" title="Reset view"><RotateCcw size={14} /></button>
+      {local && <>
+        <label className="scene-select">Layer <select aria-label="Terrain layer" value={effectiveLayer} onChange={e => setLayer(e.target.value as typeof layer)}>
+          <option value="relief">Relief</option><option value="imagery" disabled={!current.assets?.imagery || failedImage === tile.id}>NAC imagery</option>
+          <option value="elevation">Elevation</option><option value="slope" disabled={!current.assets?.slope}>Slope heatmap</option>
+        </select></label>
+        <button type="button" className="scene-icon" aria-pressed={contours} onClick={() => setContours(v => !v)} aria-label="Toggle 100 m contours" title="100 m contours"><Mountain size={14} /></button>
+        <button type="button" className="scene-icon" aria-pressed={exaggeration === 2} onClick={() => setExaggeration(v => v === 1 ? 2 : 1)} aria-label="Toggle relief exaggeration" title={`Relief ×${exaggeration}`}>{exaggeration === 2 ? '×2' : '×1'}</button>
+      </>}
     </div>
-    {local && <div className="scene-toolbar">
-      <label>Layer <select aria-label="Terrain layer" value={effectiveLayer} onChange={e => setLayer(e.target.value as typeof layer)}>
-        <option value="relief">Relief</option><option value="imagery" disabled={!current.assets?.imagery || failedImage === tile.id}>NAC imagery</option>
-        <option value="elevation">Elevation</option><option value="slope" disabled={!current.assets?.slope}>Slope heatmap</option>
-      </select></label>
-      <button aria-pressed={contours} onClick={() => setContours(v => !v)}>Contours · 100 m</button>
-      <button aria-pressed={exaggeration === 2} onClick={() => setExaggeration(v => v === 1 ? 2 : 1)}>Relief ×{exaggeration}</button>
-    </div>}
     <div className="scene-status"><span>{!local ? 'LROC / LOLA Moon overview' : current.tile ? 'Real LOLA terrain · 80 m' : 'Synthetic terrain preview'}</span><time>{date.slice(0, 16).replace('T', ' ')} UTC</time></div>
     {local && !current.ready ? <div className="scene-message" role="status">Loading terrain…</div> : local && current.error ? <div className="scene-message" role="alert">{current.error}</div> : <div className="scene-canvas">
       {!local ? <OverviewMoon active={active} key={reset} sites={allSites} simulationRef={simulationRef} timeKey={`${date}-${source}`} onSiteSelect={selectSite} /> :

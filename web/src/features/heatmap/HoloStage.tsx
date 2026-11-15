@@ -1,3 +1,4 @@
+import { Globe, Layers, Map as MapIcon, Mountain, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Grid } from './grid';
 import { cellLatLon } from './grid';
@@ -69,14 +70,19 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
       <span className="holo-eyebrow">LUNAR SPECIMEN / {name.toUpperCase()}</span>
       <h2>{selected ? spec.label : 'Anatomy of a landing site'}</h2>
       <span className={`holo-status holo-status-${spec.status}`}>{selected === 'score' ? (source === 'preview' ? 'PREVIEW · ENGINE COMPUTING' : `RUST/WASM ENGINE · ${source.toUpperCase()}`) : spec.status === 'proxy' ? 'PROXY' : selected === 'favorability' ? 'USGS GEOLOGIC MODEL' : 'NASA SOURCE DATA'}</span>
-      <div className="specimen-controls" role="group" aria-label="Terrain controls">
-        <button onClick={() => { setSelected(null); onView('3d'); setProbe(null); }} aria-pressed={selected === null && !map}>All layers</button>
-        <button onClick={() => onView(map ? '3d' : 'map')} aria-pressed={map}>Polar map</button>
-        <button onClick={() => setReset(n => n + 1)}>Reset view</button>
-        <button onClick={onClose}>Return to globe</button>
-        <button onClick={() => setContours(v => !v)} aria-pressed={contours}>100 m contours</button>
-        <button onClick={() => setExaggeration(v => v === 1 ? 2 : 1)}>Relief ×{exaggeration}</button>
-        <label>Overlay <input aria-label="Overlay opacity" type="range" min={0.1} max={1} step={0.05} value={opacity} onChange={e => setOpacity(Number(e.target.value))}/></label>
+      <div className="specimen-controls" role="toolbar" aria-label="Terrain controls">
+        <button type="button" onClick={() => { setSelected(null); onView('3d'); setProbe(null); }} aria-pressed={selected === null && !map} aria-label="All layers" title="All layers"><Layers size={14} /></button>
+        <button type="button" onClick={() => onView(map ? '3d' : 'map')} aria-pressed={map} aria-label={map ? 'Switch to 3D view' : 'Polar map'} title={map ? '3D view' : 'Polar map'}>{map ? <Mountain size={14} /> : <MapIcon size={14} />}</button>
+        <button type="button" onClick={() => setReset(n => n + 1)} aria-label="Reset view" title="Reset view"><RotateCcw size={14} /></button>
+        <button type="button" onClick={onClose} aria-label="Return to globe" title="Return to globe"><Globe size={14} /></button>
+        <details className="display-menu">
+          <summary aria-label="Display options" title="Display options"><SlidersHorizontal size={14} /></summary>
+          <div className="display-pop">
+            <label className="display-toggle"><input type="checkbox" checked={contours} onChange={e => setContours(e.target.checked)} /> 100 m contours</label>
+            <label className="display-toggle"><input type="checkbox" checked={exaggeration === 2} onChange={e => setExaggeration(e.target.checked ? 2 : 1)} /> Relief ×2</label>
+            <label className="display-slider">Overlay opacity <input aria-label="Overlay opacity" type="range" min={0.1} max={1} step={0.05} value={opacity} onChange={e => setOpacity(Number(e.target.value))} /></label>
+          </div>
+        </details>
       </div>
     </header>
     <div className="holo-canvas">
