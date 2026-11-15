@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-15T04:16:39Z",
+  "generated_at": "2026-11-15T14:13:18Z",
   "files": [
     {
       "path": "ephem.bin",
@@ -264,10 +264,19 @@
     },
     {
       "path": "mock/sites.json",
-      "bytes": 883,
-      "sha256": "be6927ad13c415a8dfb5e3126e3f76073df4c0bee0a739c6a1f29454b2803343",
+      "bytes": 862,
+      "sha256": "7f5c8f8302135fb408c4fde9e2a41f9b39a18b411a0e6ecb59b4950cafb71f2f",
       "source_urls": [
         "https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md"
+      ]
+    },
+    {
+      "path": "sites.json",
+      "bytes": 1787,
+      "sha256": "59ae201f12828c0057fbdc84e76f69adc3f3a0373bcbce783d0ce9f09fafe443",
+      "source_urls": [
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://iopscience.iop.org/article/10.3847/PSJ/ad1b50"
       ]
     },
     {

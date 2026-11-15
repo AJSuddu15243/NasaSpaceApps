@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { expect, it } from 'vitest';
 import { parseEphem, parseMask, parseMetrics, parseSites } from '../validation';
-import { loadDemoData } from '../data';
+import { loadDemoData, loadSites } from '../data';
 import { MOCK_PARAMS, site_metrics, UnavailableScenario } from '../../engine';
 import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
@@ -27,6 +27,26 @@ it('loads the real ephemeris and masks plus the synthetic demo fixtures through 
   expect(() => site_metrics(mask, data.table, '2026-11-14T12:00:00.000Z', 24, MOCK_PARAMS)).toThrow(UnavailableScenario);
   expect(() => parseMetrics({ ...metrics, t_min_k: 300, t_max_k: 200 }, 336)).toThrow();
   expect(() => parseMetrics({ ...metrics, longest_dark_h: 400 }, 336)).toThrow();
+});
+it('reads the real catalogue from sites.json: elevation from the mask, or no terrain data', async () => {
+  const data = await loadDemoData(new AbortController().signal, request);
+  const byId = new Map(data.sites.map(site => [site.id, site]));
+  expect(byId.get('connecting-ridge')?.note).toMatch(/LOLA elevation 1,943 m\.$/);
+  expect(byId.get('peak-near-shackleton')?.note).toMatch(/No terrain data yet\.$/);
+  expect(data.masks.has('peak-near-shackleton')).toBe(false);
+  expect(byId.get('demo-ridge-a')?.category).toBe('demo');
+  const dup: typeof fetch = async input => String(input).endsWith('/data/sites.json') ? Response.json([...json('sites.json'), ...JSON.parse(readFileSync(resolve('public/data/sites.json'), 'utf8'))]) : request(input);
+  await expect(loadDemoData(new AbortController().signal, dup)).rejects.toThrow('catalogue');
+});
+it('keeps the catalogue when ephem fails, and rejects a malformed manifest', async () => {
+  const noEphem: typeof fetch = async input => String(input).includes('ephem') ? new Response('', { status: 503 }) : request(input);
+  const catalogue = loadSites(new AbortController().signal, noEphem);
+  await expect(loadDemoData(new AbortController().signal, noEphem, catalogue)).rejects.toThrow('503');
+  const { sites, realIds } = await catalogue;
+  expect(sites.find(site => site.id === 'connecting-ridge')?.note).not.toMatch(/LOLA/);
+  expect(realIds.has('connecting-ridge') && !realIds.has('demo-ridge-a')).toBe(true);
+  const badManifest: typeof fetch = async input => String(input).endsWith('manifest.json') ? Response.json({}) : request(input);
+  await expect(loadDemoData(new AbortController().signal, badManifest)).rejects.toThrow('manifest');
 });
 it('rejects corrupt catalogue, mask geometry, ephemeris length and NaNs', () => {
   const sites = json('sites.json');

@@ -6,7 +6,6 @@ import { ScenarioPanel } from './components/ScenarioPanel';
 import { ResultsPanel } from './components/ResultsPanel';
 import { MoonGlobeView, type GlobeMarker } from '../features/globe/MoonGlobeView';
 import { customSiteId, formatCoordinates, parseCustomSite } from '../features/sites/sites';
-import { SITES } from '../landing/story';
 import { MissionTimeline, scenarioInstant } from '../features/timeline/MissionTimeline';
 import { NavigatorTour } from '../features/tour/NavigatorTour';
 import { AnalysisPanel } from '../features/analysis/AnalysisPanel';
@@ -26,7 +25,6 @@ import { syncRemoteScenarios } from '../scenarios/store';
 import './workspace.css';
 import './mission.css';
 
-const curated: Site[] = SITES.map(site => ({ id: site.id, name: site.name, lat: site.lat, lon: site.lon, category: 'artemis3', note: 'Surveyed: LOLA terrain, sunlight, Earth visibility, permanent shadow', source_url: 'https://ntrs.nasa.gov/citations/20250002845' }));
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 /** Tilted toward the south pole so the Artemis III regions are in view from the start. */
 const POLE_VIEW = { lat: -62, lng: -20, altitude: 1.9 };
@@ -50,8 +48,8 @@ export default function Navigator() {
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
 
-  const demoSites = useMemo(() => mission.demo.data?.sites.map(site => ({ ...site, name: `${site.name} (synthetic demo)` })) ?? [], [mission.demo.data]);
-  const catalogue = useMemo(() => [...curated, ...demoSites], [demoSites]);
+  // The bare catalogue shows first; the demo load swaps in notes carrying the mask elevation.
+  const catalogue: Site[] = useMemo(() => (mission.demo.data?.sites ?? mission.sites.data).map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site), [mission.demo.data, mission.sites.data]);
   const engineData = useMemo(() => mission.demo.data && { ...mission.demo.data, sites: catalogue }, [mission.demo.data, catalogue]);
   const resolve = useCallback((id: string) => {
     const site = catalogue.find(item => item.id === id);
@@ -79,12 +77,12 @@ export default function Navigator() {
   }, [scenario.focus, scenario.view, scenario.sites, resolve, setScenario]);
 
   const markers: GlobeMarker[] = useMemo(() => {
-    const ids = [...new Set([...curated.map(site => site.id), ...scenario.sites, ...(scenario.focus ? [scenario.focus] : [])])];
+    const ids = [...new Set([...catalogue.filter(site => site.category !== 'demo').map(site => site.id), ...scenario.sites, ...(scenario.focus ? [scenario.focus] : [])])];
     return ids.flatMap((id, index) => {
       const point = resolve(id);
       return point ? [{ id, lat: point.lat, lng: point.lon, name: point.name, kind: 'site' as const, index, variant: isGridRegion(id) ? 'region' as const : id.startsWith('custom') ? 'point' as const : 'site' as const, active: id === scenario.focus }] : [];
     });
-  }, [resolve, scenario.sites, scenario.focus]);
+  }, [catalogue, resolve, scenario.sites, scenario.focus]);
 
   const inspect = useCallback((id: string, layer?: AnalysisLayer) => { setScenario({ focus: id, layer: layer ?? scenario.layer ?? 'terrain' }); setCompareOpen(false); setAnalysisOpen(false); setFeedback(''); if (narrow) setLeftOpen(false); }, [setScenario, scenario.layer, narrow]);
   const closeAnalysis = useCallback(() => setScenario({ focus: undefined, layer: undefined, view: 'globe' }), [setScenario]);
@@ -119,7 +117,7 @@ export default function Navigator() {
     { label: 'LOLA terrain survey · 3 regions × 15,625 cells', detail: '160 m', status: mission.grids.status },
     { label: 'Sunlight · Earth visibility · permanent shadow', detail: 'PGDA 69', status: mission.grids.status },
     { label: 'Ephemeris · Astronomy Engine vs JPL Horizons', detail: 'GEOMETRIC', status: 'ready' as const },
-    { label: 'Site catalogue', detail: `${catalogue.length} SITES`, status: 'ready' as const },
+    { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.length} SITES` : '', status: mission.sites.status },
   ];
   const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => setScenario(patch, replace), [setScenario]);
   const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);
