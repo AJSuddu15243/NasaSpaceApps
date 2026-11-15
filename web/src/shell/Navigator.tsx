@@ -32,7 +32,7 @@ const POLE_VIEW = { lat: -62, lng: -20, altitude: 1.9 };
 export default function Navigator() {
   const { scenario, warnings, setScenario } = useShell();
   const mission = useMissionData();
-  const results = useRegionResults(mission.grids.data, scenario);
+  const results = useRegionResults(mission.grids.data, scenario, mission.demo.data?.table);
   const narrow = useMediaQuery('(max-width: 1439px)');
   const reducedMotion = useMediaQuery(reducedMotionQuery);
   const [booted, setBooted] = useState(false);
@@ -50,6 +50,7 @@ export default function Navigator() {
 
   // The bare catalogue shows first; the demo load swaps in notes carrying the mask elevation.
   const catalogue: Site[] = useMemo(() => (mission.demo.data?.sites ?? mission.sites.data).map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site), [mission.demo.data, mission.sites.data]);
+  const engineData = useMemo(() => mission.demo.data && { ...mission.demo.data, sites: catalogue }, [mission.demo.data, catalogue]);
   const resolve = useCallback((id: string) => {
     const site = catalogue.find(item => item.id === id);
     if (site) return site;
@@ -156,7 +157,7 @@ export default function Navigator() {
     {narrow && !leftOpen && <button type="button" className="hud-fab" onClick={() => setLeftOpen(true)}><MapPin size={16} /> Sites & priorities</button>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
@@ -167,7 +168,7 @@ export default function Navigator() {
     {compareOpen && <div className="hud hud-right mission-comparison">
       <header className="analysis-heading"><div><span className="eyebrow">SHORTLIST · {scenario.sites.length}/{MAX_SITES}</span><h2>Compare places</h2></div><button type="button" onClick={() => setCompareOpen(false)} aria-label="Close comparison">×</button></header>
       <ScienceCompare places={comparePlaces} date={instant} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
-      {engineInShortlist && mission.demo.data && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={{ ...mission.demo.data, sites: catalogue }} scenario={{ ...scenario, date: new Date(Date.parse(scenario.date) + (scenario.delay ?? 0) * 86400000).toISOString() }} /></details>}
+      {engineInShortlist && engineData && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={engineData} scenario={scenario} /></details>}
     </div>}
     {!focused && !compareOpen && booted && <section className="mission-intro" aria-label="Getting started">
       <p className="eyebrow">LUNAR SOUTH POLE · ARTEMIS III REGIONS</p>

@@ -32,7 +32,7 @@ describe('mission-planning use cases', () => {
   });
 
   it('flags a site that fails multiple thresholds as red with every reason', () => {
-    const bad = makeMetrics({ pct_lit: 40, pct_earth_visible: 30, longest_dark_h: 96, longest_blackout_h: 72 });
+    const bad = makeMetrics({ pct_lit: 30, pct_earth_visible: 30, longest_dark_h: 196, longest_blackout_h: 192 });
     const status = siteStatus(bad, DEFAULT_THRESHOLDS);
     expect(status.status).toBe('red');
     expect(status.reason).toContain('Sunlit time');
@@ -43,7 +43,7 @@ describe('mission-planning use cases', () => {
 
   it('passes a comfortable site green and a borderline site yellow', () => {
     expect(siteStatus(makeMetrics(), DEFAULT_THRESHOLDS).status).toBe('green');
-    const borderline = makeMetrics({ pct_earth_visible: 62 }); // above 60% but longest_blackout 12 < 24
+    const borderline = makeMetrics({ pct_earth_visible: 42 }); // above 40% and longest_blackout 12 < 180
     expect(siteStatus(borderline, DEFAULT_THRESHOLDS).status).toBe('green');
     const marginal = makeMetrics({ pct_lit: 71, longest_dark_h: 30 });
     expect(siteStatus(marginal, { ...DEFAULT_THRESHOLDS, minLitPercent: 75 }).status).toBe('yellow');

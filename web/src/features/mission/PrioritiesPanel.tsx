@@ -5,7 +5,7 @@ import type { GridRegion } from '../heatmap/grid';
 type Change = (patch: Partial<Scenario>, replace?: boolean) => void;
 type W = Scenario['weights'];
 const PRESETS: { id: string; label: string; text: string; weights: W; ice: number }[] = [
-  { id: 'balanced', label: 'Balanced landing', text: 'Sunlight and Earth contact first, then safe ground.', weights: { sun: 50, earth: 35, slope: 10, crater: 5, rock: 0, thermal: 0 }, ice: 0 },
+  { id: 'balanced', label: 'Balanced landing', text: 'Sunlight and Earth contact first, then safe ground.', weights: { sun: 35, earth: 25, slope: 20, crater: 10, rock: 0, thermal: 10 }, ice: 0 },
   { id: 'power', label: 'Maximum solar power', text: 'Stay in the light as long as possible.', weights: { sun: 80, earth: 10, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 0 },
   { id: 'comms', label: 'Always talk to Earth', text: 'Direct radio contact matters most.', weights: { sun: 25, earth: 65, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 0 },
   { id: 'ice', label: 'Land near water ice', text: 'Reach a permanently shadowed cold trap while staying lit.', weights: { sun: 35, earth: 15, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 40 },
