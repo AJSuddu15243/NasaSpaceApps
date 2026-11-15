@@ -27,7 +27,13 @@ export function createShellStore(browser: BrowserPort) {
   };
   let snapshot = read();
   const listeners = new Set<() => void>();
-  const publish = () => { snapshot = read(); listeners.forEach(listener => listener()); };
+  const notify = () => listeners.forEach(listener => listener());
+  // Safari throws after ~100 replaceState calls in 10 s (Firefox ~200), so slider drags coalesce URL writes.
+  const REPLACE_MS = 250;
+  let pending: ReturnType<typeof setTimeout> | undefined;
+  const cancelPending = () => { clearTimeout(pending); pending = undefined; };
+  const url = () => `${snapshot.path}${writeScenario(snapshot.scenario)}${browser.location.hash}`;
+  const publish = () => { cancelPending(); snapshot = read(); notify(); };
   return {
     getSnapshot: () => snapshot,
     subscribe(listener: () => void) {
@@ -37,12 +43,14 @@ export function createShellStore(browser: BrowserPort) {
     },
     set(patch: Partial<Scenario>, replace = false) {
       const next = readScenario(writeScenario({ ...snapshot.scenario, ...patch })).scenario;
-      const search = writeScenario(next);
-      if (search === browser.location.search) return;
-      browser.history[replace ? 'replaceState' : 'pushState'](null, '', `${snapshot.path}${search}${browser.location.hash}`);
-      publish();
+      if (writeScenario(next) === writeScenario(snapshot.scenario)) return;
+      snapshot = { ...snapshot, scenario: next, warnings: [] };
+      if (replace) pending ??= setTimeout(() => { pending = undefined; browser.history.replaceState(null, '', url()); }, REPLACE_MS);
+      else { cancelPending(); browser.history.pushState(null, '', url()); }
+      notify();
     },
     navigate(path: '/' | '/app' | '/docs') {
+      cancelPending();
       browser.history.pushState(null, '', `${path}${writeScenario(snapshot.scenario)}`);
       publish();
     },

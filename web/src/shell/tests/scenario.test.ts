@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SCENARIO, readScenario, validUtc, writeScenario } from '../scenario';
 import { createShellStore, type BrowserPort } from '../store';
 describe('shareable scenario boundary', () => {
@@ -35,7 +35,14 @@ it('publishes state and restores it on browser navigation without duplicate list
   expect(listeners.size).toBe(1);
   store.set({ hours: 48 }); expect(store.getSnapshot().scenario.hours).toBe(48); expect(updates).toBe(1);
   store.set({ hours: 48 }); expect(updates).toBe(1);
-  store.set({ mode: 'planner' }, true); expect(replaces).toBe(1);
+  vi.useFakeTimers();
+  // A slider drag: state updates every tick, the URL is written once at the end (Safari replaceState limit).
+  for (let hours = 1; hours <= 300; hours++) store.set({ hours }, true);
+  expect(store.getSnapshot().scenario.hours).toBe(300); expect(updates).toBe(301); expect(replaces).toBe(0);
+  vi.advanceTimersByTime(250); expect(replaces).toBe(1); expect(url.searchParams.get('hours')).toBe('300');
+  store.set({ mode: 'planner' }, true); store.set({ hours: 48 }); vi.advanceTimersByTime(250);
+  expect(replaces).toBe(1); expect(url.searchParams.get('hours')).toBe('48'); // push cancels the pending replace
+  vi.useRealTimers();
   store.navigate('/'); expect(store.getSnapshot().path).toBe('/');
   url.href = 'https://example.test/app?hours=72'; listeners.forEach(fn => fn()); expect(store.getSnapshot().scenario.hours).toBe(72);
   off1(); expect(listeners.size).toBe(1); off2(); expect(listeners.size).toBe(0);

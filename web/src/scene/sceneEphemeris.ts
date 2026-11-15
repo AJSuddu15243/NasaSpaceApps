@@ -22,8 +22,7 @@ export function decodeSceneEphemeris(header: unknown, bytes: ArrayBuffer): Scene
   return { header, rows };
 }
 export function coveredSample(table: SceneEphemTable, date: string) {
-  const time = Date.parse(date), start = Date.parse(table.header.t0_iso);
-  return time >= start && time <= start + (table.header.n - 1) * table.header.step_hours * 3600000 ? ephemAt(table, date) : null;
+  return ephemAt(table, date); // null outside the table range
 }
 /** Consume PIPE-2 if packaged; preserve an explicitly synthetic demo while EPH-2 is pending. */
 export function useSceneEphemeris(fallback: SceneEphemTable, date: string) {

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Box, Globe, Map, Mountain } from 'lucide-react';
 import type { Scenario, View } from '../scenario';
 import type { DemoData } from '../data';
@@ -30,9 +30,10 @@ export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenari
   const scrubIso = scrub?.hour != null ? new Date(Date.parse(scenario.date) + scrub.hour * 3_600_000).toISOString() : scenario.date;
   const scrubInRange = !coverage || (Date.parse(scrubIso) >= Date.parse(coverage.start) && Date.parse(scrubIso) <= Date.parse(coverage.end));
   const ephemTime = scrubInRange ? scrubIso : scenario.date;
-  const ephem = ephemAt(data.table, ephemTime);
+  const ephem = useMemo(() => ephemAt(data.table, ephemTime), [data.table, ephemTime]);
   const scrubActive = scrub?.hour != null;
-  const globeMarkers: GlobeMarker[] = [
+  // Memoized so weight-slider ticks don't rebuild every globe marker.
+  const globeMarkers = useMemo((): GlobeMarker[] => [
     ...scenario.sites.flatMap((id, index) => {
       const site = data.sites.find(item => item.id === id);
       const coords = site ?? parseCustomSite(id);
@@ -43,7 +44,7 @@ export function ViewPanel({ scenario, data, change, scrub }: { scenario: Scenari
       { lat: ephem.sunLat, lng: ephem.sunLon, name: 'Sub-solar point', index: -1, kind: 'sun' as const, distanceKm: ephem.sunDistKm },
       { lat: ephem.earthLat, lng: ephem.earthLon, name: 'Sub-Earth point', index: -1, kind: 'earth' as const, distanceKm: ephem.earthDistKm },
     ] : []),
-  ];
+  ], [scenario.sites, data.sites, ephem]);
   const isGlobe = scenario.view === 'globe';
   const isTerrain = scenario.view === '3d' || scenario.view === 'map';
   const active = views.find(v => v.id === scenario.view)!;
