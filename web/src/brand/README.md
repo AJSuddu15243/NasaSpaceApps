@@ -1,6 +1,6 @@
-# LND-1 · Lunar Window
+# LND-1 · Lunala
 
-**Final product name: Lunar Window.** Descriptor: Lunar Landing Site Navigator.
+**Final product name: Lunala.** Descriptor: Lunar Landing Site Navigator.
 Tagline: **Compare sites. Find your window.**
 
 “Window” connects the launch-delay scenario to the time intervals when sunlight and
@@ -73,7 +73,7 @@ simulation. WEB-2 remains on its own local branch, with its PR held for WEB-1 co
 user's request. Next in the design-and-landing sequence: LND-2, then LND-3 + WEB-12,
 LND-4, and LND-5, respecting their dependencies.
 
-`preview/identity.svg` and `preview/identity.png` are a rendered identity sheet for review
-(not an app screenshot). The PNG was rendered from that SVG with Sharp and visually
-inspected at 16/32/48 px icon sizes. Both specimen formats use a system font fallback;
+`preview/identity.svg` is a rendered identity sheet for review
+(not an app screenshot). The mark was visually inspected at 16/32/48 px icon sizes.
+The specimen uses a system font fallback;
 the production wordmark uses WEB-2’s IBM Plex Sans.

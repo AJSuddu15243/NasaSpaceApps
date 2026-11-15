@@ -2,8 +2,8 @@ import { Globe, Layers, Map as MapIcon, Mountain, RotateCcw, SlidersHorizontal }
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Grid } from './grid';
 import { cellLatLon } from './grid';
-import { displayRange, LAYERS, STACK, layerSpec, layerValues, type HeatLayer, type ScoreSource, type WindowFracs } from './layers';
-import type { PreviewArea } from './score';
+import { displayRange, LAYERS, STACK, SURFACE_LAYERS, layerSpec, layerValues, type HeatLayer, type ScoreSource, type WindowFracs } from './layers';
+import { scalarTexture } from './scalarTexture';
 import { formatCoordinates } from '../sites/sites';
 import { useTerrainData } from '../../scene/useTerrainData';
 import { useSceneVisibility } from '../../scene/useSceneVisibility';
@@ -20,8 +20,8 @@ function webglAvailable() {
 }
 
 /** Real terrain is the persistent specimen; scientific overlays expand above it and dock on selection. */
-export function HoloStage({ name, grid, heat, scores, areas, source = 'preview', window, computing = false, slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose }: {
-  name: string; grid: Grid; heat: HeatLayer; scores: Float32Array; areas: PreviewArea[]; source?: ScoreSource; window?: WindowFracs; computing?: boolean; slopeLimit: number; reducedMotion: boolean; date: string;
+export function HoloStage({ name, grid, heat, scores, source = 'preview', window, computing = false, slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose }: {
+  name: string; grid: Grid; heat: HeatLayer; scores: Float32Array; source?: ScoreSource; window?: WindowFracs; computing?: boolean; slopeLimit: number; reducedMotion: boolean; date: string;
   /** Engine sun_lit (0..1, visible solar disk over the terrain horizon) at the focused place and playhead; undefined = plane test only. */
   sunLit?: number;
   view: import('../../shell/scenario').View; onView: (view: 'map' | '3d') => void;
@@ -33,6 +33,7 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
   const [contours, setContours] = useState(false);
   const [exaggeration, setExaggeration] = useState<1 | 2>(1);
   const [opacity, setOpacity] = useState(0.9);
+  const [stackCount, setStackCount] = useState(1);
   const map = view === 'map';
   const [failedImage, setFailedImage] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -40,8 +41,13 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
   const centre = useMemo(() => ({ id: grid.header.region, ...cellLatLon(grid.header, Math.floor(grid.header.nx * grid.header.ny / 2)) }), [grid]);
   const terrain = useTerrainData(centre, attempt);
   const labels = useRef<(HTMLElement | null)[]>([]);
-  const areaLabels = useRef<(HTMLElement | null)[]>([]);
   const gl = useMemo(webglAvailable, []);
+  useEffect(() => {
+    if (!terrain.ready) { setStackCount(1); return; }
+    if (!gl || map || selected !== null || stackCount >= STACK.length) return;
+    const frame = requestAnimationFrame(() => setStackCount(count => Math.min(STACK.length, count + 1)));
+    return () => cancelAnimationFrame(frame);
+  }, [terrain.ready, gl, map, selected, stackCount]);
   const previousHeat = useRef(heat);
   useEffect(() => { if (previousHeat.current !== heat) { setSelected(heat); setProbe(null); previousHeat.current = heat; } }, [heat]);
   const imageryError = useCallback(() => setFailedImage(grid.header.region), [grid.header.region]);
@@ -62,12 +68,17 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
     const frame = tileFrame(terrain.tile), sun = new Vector3(...simulationRef.current.sunDirection);
     return [sun.dot(frame.right), sun.dot(frame.normal), -sun.dot(frame.up)];
   }, [terrain.tile, ephem]);
-  const marks = useMemo(() => areas.map(a => a.index), [areas]);
   const values = selected ? layerValues(grid, selected, scores, window) : undefined;
   const windowLayer = (key: HeatLayer | null) => key === 'score' || key === 'sun' || key === 'earth';
   const pending = (key: HeatLayer) => (key === 'sun' || key === 'earth') && !window ? (computing ? ' · computing' : ' · engine unavailable') : ' · unavailable';
   const cell = probe !== null ? { ...cellLatLon(grid.header, probe), value: values?.[probe] } : null;
   const surfaceLayer = selected === 'imagery' || selected === 'slope' || selected === 'elevation' ? selected : 'relief';
+  const scalarValues = map && selected && !SURFACE_LAYERS.includes(selected) ? values : undefined;
+  const scalarRange = selected ? ranges[selected] : undefined;
+  const scalarMap = useMemo(() => selected && terrain.tile && scalarValues && scalarRange
+    ? scalarTexture(grid, terrain.tile, scalarValues, scalarRange, LAYERS[selected].ramp) : undefined,
+  [grid, selected, terrain.tile, scalarValues, scalarRange]);
+  useEffect(() => () => scalarMap?.dispose(), [scalarMap]);
   return <section ref={hostRef} className="holo-stage" aria-label={`Terrain survey of ${name}`} data-layer={selected ?? 'stack'}>
     <div className="holo-frame" aria-hidden="true"><i/><i/><i/><i/></div>
     <header className="holo-title">
@@ -75,7 +86,7 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
       <h2>{selected ? spec.label : 'Anatomy of a landing site'}</h2>
       <span className={`holo-status holo-status-${spec.status}`}>{windowLayer(selected) ? (source === 'preview' ? (computing ? 'PREVIEW · ENGINE COMPUTING' : 'PREVIEW · ENGINE UNAVAILABLE') : `RUST/WASM ENGINE · ${source.toUpperCase()}`) : spec.status === 'proxy' ? 'PROXY' : selected === 'favorability' ? 'USGS GEOLOGIC MODEL' : 'NASA SOURCE DATA'}</span>
       <div className="specimen-controls" role="toolbar" aria-label="Terrain controls">
-        <button type="button" onClick={() => { setSelected(null); onView('3d'); setProbe(null); }} aria-pressed={selected === null && !map} aria-label="All layers" title="All layers"><Layers size={14} /></button>
+        <button type="button" onClick={() => { setStackCount(1); setSelected(null); onView('3d'); setProbe(null); }} aria-pressed={selected === null && !map} aria-label="All layers" title="All layers"><Layers size={14} /></button>
         <button type="button" onClick={() => onView(map ? '3d' : 'map')} aria-pressed={map} aria-label={map ? 'Switch to 3D view' : 'Polar map'} title={map ? '3D view' : 'Polar map'}>{map ? <Mountain size={14} /> : <MapIcon size={14} />}</button>
         <button type="button" onClick={() => setReset(n => n + 1)} aria-label="Reset view" title="Reset view"><RotateCcw size={14} /></button>
         <button type="button" onClick={onClose} aria-label="Return to globe" title="Return to globe"><Globe size={14} /></button>
@@ -84,7 +95,7 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
           <div className="display-pop">
             <label className="display-toggle"><input type="checkbox" checked={contours} onChange={e => setContours(e.target.checked)} /> 100 m contours</label>
             <label className="display-toggle"><input type="checkbox" checked={exaggeration === 2} onChange={e => setExaggeration(e.target.checked ? 2 : 1)} /> Relief ×2</label>
-            <label className="display-slider">Overlay opacity <input aria-label="Overlay opacity" type="range" min={0.1} max={1} step={0.05} value={opacity} onChange={e => setOpacity(Number(e.target.value))} /></label>
+            {selected === 'slope' && <label className="display-slider">Overlay opacity <input aria-label="Overlay opacity" type="range" min={0.1} max={1} step={0.05} value={opacity} onChange={e => setOpacity(Number(e.target.value))} /></label>}
           </div>
         </details>
       </div>
@@ -94,9 +105,9 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
         : terrain.error || !terrain.tile ? <div className="holo-loading" role="alert"><p>{terrain.error ?? 'No measured terrain covers this point.'}</p><button onClick={() => setAttempt(n => n + 1)}>Retry terrain</button></div>
         : !gl ? <p className="holo-loading" role="status">3D unavailable. Layer descriptions, ranked areas and cell values remain available below.</p>
         : <Suspense fallback={<p className="holo-loading" role="status">Preparing specimen…</p>}>
-          {map ? <LunarScene active={active} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} view="map" layer={surfaceLayer} contoursEnabled={contours} exaggeration={exaggeration} resetKey={resetKey} overlayOpacity={opacity} simulationRef={simulationRef} timeKey={date} onImageryError={imageryError}/>
+          {map ? <LunarScene active={active} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} view="map" layer={surfaceLayer} scalarMap={scalarMap} contoursEnabled={contours} exaggeration={exaggeration} resetKey={resetKey} overlayOpacity={opacity} simulationRef={simulationRef} timeKey={date} onImageryError={imageryError}/>
             : <StrataView active={active} resetKey={resetKey} contours={contours} exaggeration={exaggeration} overlayOpacity={opacity} onImageryError={imageryError}
-              grid={grid} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} scores={scores} window={window} marks={marks} ranges={ranges} selected={selected} onSelect={select} onProbe={setProbe} sunDir={sunDir} sunLit={sunLit} reducedMotion={reducedMotion} labelRefs={labels} areaLabelRefs={areaLabels}/>}
+              grid={grid} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} scores={scores} window={window} ranges={ranges} selected={selected} stackCount={stackCount} onSelect={select} onProbe={setProbe} sunDir={sunDir} sunLit={sunLit} reducedMotion={reducedMotion} labelRefs={labels}/>}
         </Suspense>}
       {!map && selected === null && terrain.ready && gl && <div className="strata-labels" aria-label="Exploded terrain layers">{STACK.map((key, i) => <button key={key} ref={el => { labels.current[i] = el; }} disabled={!available(key)} onClick={() => select(key)}><span>{String(i + 1).padStart(2, '0')}</span>{LAYERS[key].short}{!available(key) && pending(key)}</button>)}</div>}
     </div>
@@ -106,7 +117,6 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
       <p className="holo-probe" role="status">{cell ? <><b>{formatCoordinates(cell.lat, cell.lon)}</b><span>{cell.value !== undefined && Number.isFinite(cell.value) ? spec.format(cell.value) : 'No scalar value for this layer'}</span></> : <span>{selected ? 'Drag to orbit · scroll/pinch to zoom · hover to probe' : 'Choose a floating layer to settle it onto the ground'}</span>}</p>
       <label className="specimen-cell">Inspect cell <input aria-label="Inspect grid cell" type="number" min={0} max={grid.header.nx * grid.header.ny - 1} value={probe ?? ''} placeholder={`0–${grid.header.nx * grid.header.ny - 1}`} onChange={e => { const n = e.target.valueAsNumber; setProbe(Number.isInteger(n) && n >= 0 && n < grid.header.nx * grid.header.ny ? n : null); }}/></label>
       <p className="specimen-caption">LOLA 80 m terrain · science cells 160 m · relief normalized for display, ×{exaggeration} · cutaway depth illustrative, no subsurface measurements.</p>
-      {map && selected && !['imagery', 'slope', 'elevation', 'relief'].includes(selected) && <p className="specimen-caption">Polar map shows relief. Open All layers and select {spec.short} for its dot field.</p>}
       {terrain.assets?.notices.map(note => <p className="specimen-caption" key={note}>{note}</p>)}
       {failedImage && <p role="alert" className="specimen-caption">NAC image unavailable. Other measured layers remain usable.</p>}
     </footer>

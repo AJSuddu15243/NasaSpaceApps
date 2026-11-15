@@ -21,7 +21,7 @@ function Refresh({ timeKey, visible }: { timeKey?: string; visible: boolean }) {
   return null;
 }
 export function LunarScene({ active: inView = true, tile, simulationRef, contoursEnabled = false, elevationEnabled = false,
-  assets, layer, overlayOpacity, onImageryError, exaggeration = 1, onSiteSelect, cameraMode = 'south-pole', view = '3d', sites = [], timeKey, resetKey = 0, className,
+  assets, layer, scalarMap, overlayOpacity, onImageryError, exaggeration = 1, onSiteSelect, cameraMode = 'south-pole', view = '3d', sites = [], timeKey, resetKey = 0, className,
   'aria-label': label = 'Interactive lunar terrain' }: LunarSceneProps) {
   const fallback = useMemo(createMockSouthPoleTile, []);
   const active = tile ?? fallback;
@@ -39,7 +39,7 @@ export function LunarScene({ active: inView = true, tile, simulationRef, contour
     <color attach="background" args={['#080c12']} />
     <ambientLight intensity={0.65} />
     <SunLight simulationRef={simulationRef} span={frame.span} />
-    <SouthPolePatch tile={active} contoursEnabled={contoursEnabled} elevationEnabled={elevationEnabled} assets={assets} onImageryError={onImageryError} layer={layer} overlayOpacity={overlayOpacity} exaggeration={exaggeration} />
+    <SouthPolePatch tile={active} contoursEnabled={contoursEnabled} elevationEnabled={elevationEnabled} assets={assets} onImageryError={onImageryError} layer={layer} scalarMap={scalarMap} overlayOpacity={overlayOpacity} exaggeration={exaggeration} />
     <SceneOverlays tile={active} frame={frame} sites={sites} map={view === 'map'} exaggeration={exaggeration} onSiteSelect={onSiteSelect} />
     <SceneCamera frame={frame} view={view} mode={cameraMode} resetKey={resetKey} />
     <Refresh timeKey={timeKey} visible={visible && inView} />

@@ -1,6 +1,6 @@
 # Methods, data sources and assumptions
 
-How Lunar Window turns lunar data into landing-site comparisons. This document
+How Lunala turns lunar data into landing-site comparisons. This document
 is the reproducibility contract: what we compute, where the inputs come from,
 and what we assume. It describes the *designed* system; where a piece is still
 scaffolded or running on synthetic stand-ins, that is stated explicitly.

@@ -3,7 +3,7 @@
 Read this first. Agents: read this file, then the issue file you were given in `docs/handoff/issues/`.
 
 ## The product in one line
-**Lunar Window: pick a south-pole site, move the arrival date, see why it wins or loses (Sun, Earth, terrain).**
+**Lunala: pick a south-pole site, move the arrival date, see why it wins or loses (Sun, Earth, terrain).**
 Four things make it different. Every UI hour goes into these:
 1. **Where**: compare Artemis sites side by side (exists, WEB-5).
 2. **When**: launch-delay comparison on a timeline (UI-3).

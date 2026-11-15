@@ -9,7 +9,7 @@ import './landing.css';
 const MoonStage = lazy(() => import('./MoonStage'));
 
 const CHAPTERS = [
-  { id: 'top', label: 'Lunar Window', hint: 'Scroll to descend' },
+  { id: 'top', label: 'Lunala', hint: 'Scroll to descend' },
   { id: 'pole', label: 'The pole', hint: 'Keep scrolling' },
   { id: 'time', label: 'Time', hint: 'Scroll moves the Sun' },
   { id: 'sites', label: 'Sites', hint: 'Hover a site to illuminate it' },
@@ -195,7 +195,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
 
     <header className="lw-header" inert={diving}>
       <a className="lw-brand" href="/" onClick={e => { e.preventDefault(); scrollTo('top'); }}>
-        <img src={mark} alt="" /><span>Lunar Window</span>
+        <img src={mark} alt="" /><span>Lunala</span>
       </a>
       <nav className="lw-pill" aria-label="Story chapters">
         {NAV.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={CHAPTERS[active].id === id ? 'true' : undefined} onClick={e => { e.preventDefault(); scrollTo(id); }}>{label}</a>)}

@@ -1,16 +1,17 @@
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
-import { BufferAttribute, BufferGeometry, Color, DoubleSide, Mesh, PerspectiveCamera, ShaderMaterial, Vector3, type Material } from 'three';
+import { BufferAttribute, BufferGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, PerspectiveCamera, ShaderMaterial, Vector3, type Material } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { specimenGeometry, gridBounds, probeIndex } from './specimen';
+import { specimenGeometry, specimenScalarGeometry, probeIndex } from './specimen';
 import { TerrainShaderMaterial } from '../../scene/shaders';
 import type { TerrainAssets } from '../../scene/terrainAssets';
 import type { SouthPoleTile } from '../../scene/types';
 import type { Grid } from './grid';
-import { DotLayer, SPAN } from './DotField';
+import { scalarTexture } from './scalarTexture';
 import { LAYERS, STACK, SURFACE_LAYERS, layerValues, type HeatLayer, type WindowFracs } from './layers';
 
 export const RELIEF = 0.3;
+const SPAN = 2;
 const GAP = 0.2;
 const BASE_DEPTH = 0.42;
 
@@ -27,9 +28,9 @@ export interface StrataProps {
   scores: Float32Array;
   /** Engine window fractions for the sun/earth slabs; those slabs are absent until they arrive. */
   window?: WindowFracs;
-  marks: number[];
   ranges: Record<HeatLayer, [number, number]>;
   selected: HeatLayer | null;
+  stackCount: number;
   onSelect: (layer: HeatLayer) => void;
   onProbe: (index: number | null) => void;
   /** Unit vector to the Sun in the stack frame (x east-ish map +x, y up, z map −y). */
@@ -38,14 +39,6 @@ export interface StrataProps {
   sunLit?: number;
   reducedMotion: boolean;
   labelRefs: MutableRefObject<(HTMLElement | null)[]>;
-  areaLabelRefs: MutableRefObject<(HTMLElement | null)[]>;
-}
-
-/** Elevation normalised with one shared min/max so the terrain mesh and every dot layer line up. */
-export function normaliseWith(values: ArrayLike<number>, lo: number, hi: number) {
-  const out = new Float32Array(values.length);
-  for (let i = 0; i < values.length; i++) out[i] = Number.isFinite(values[i]) ? Math.min(1, Math.max(0, (values[i] - lo) / Math.max(1, hi - lo))) : 0;
-  return out;
 }
 
 /** Cut-away walls from the terrain edge down to a flat base: the "cross-section" of the specimen. */
@@ -136,24 +129,20 @@ function SurfaceSlab({ layer, index, geometry, tile, assets, selected, reducedMo
   </mesh>;
 }
 
-function DotSlab({ layer, index, grid, tile, values, elevation01, range, marks, selected, reducedMotion, live, onSelect, onProbe, areaLabelRefs }: { layer: HeatLayer; index: number; grid: Grid; tile: SouthPoleTile; values: Float32Array; elevation01: Float32Array; range: [number, number]; marks: number[]; selected: HeatLayer | null; reducedMotion: boolean; live: LiveY; onSelect: (l: HeatLayer) => void; onProbe: (i: number | null) => void; areaLabelRefs: MutableRefObject<(HTMLElement | null)[]> }) {
-  const group = useRef<import('three').Group>(null);
-  const step = useSlab(layer, index, selected, reducedMotion, live);
-  const opacity = useRef(0);
-  useFrame((state, delta) => {
-    const s = step(state.clock.elapsedTime, delta);
-    if (group.current) { group.current.position.y = s.y; group.current.visible = s.o > 0.01; }
-    opacity.current = s.o;
-  });
-  const isSel = selected === layer;
-  return <group ref={group}>
-    <DotLayer bounds={gridBounds(grid, tile)} nx={grid.header.nx} ny={grid.header.ny} values={values} elevation01={elevation01} range={range} ramp={LAYERS[layer].ramp}
-      marks={layer === 'score' ? marks : []} swapKey={layer} reducedMotion={reducedMotion} interactive={isSel} relief={RELIEF}
-      opacity={selected === null ? 0.9 : isSel ? 1 : 0} onProbe={onProbe} labelRefs={layer === 'score' && isSel ? areaLabelRefs : undefined} />
-    {selected === null && <mesh rotation-x={-Math.PI / 2} position-y={RELIEF * 0.5} onClick={e => { e.stopPropagation(); onSelect(layer); }}>
-      <planeGeometry args={[SPAN, SPAN]} /><meshBasicMaterial transparent opacity={0} depthWrite={false} />
-    </mesh>}
-  </group>;
+function ScalarSlab({ layer, index, geometry, grid, tile, values, range, selected, live, onSelect, onProbe }: { layer: HeatLayer; index: number; geometry: BufferGeometry; grid: Grid; tile: SouthPoleTile; values: Float32Array; range: [number, number]; selected: HeatLayer | null; live: LiveY; onSelect: (l: HeatLayer) => void; onProbe: (i: number | null) => void }) {
+  const texture = useMemo(() => scalarTexture(grid, tile, values, range, LAYERS[layer].ramp), [grid, tile, values, range[0], range[1], layer]);
+  const material = useMemo(() => new MeshBasicMaterial({ map: texture, side: DoubleSide }), [texture]);
+  useEffect(() => () => { material.dispose(); texture.dispose(); }, [material, texture]);
+  const y = selected === null ? index * GAP : 0.006;
+  useEffect(() => {
+    live.current[layer] = { y, o: 1 };
+    return () => { live.current[layer] = { y, o: 0 }; };
+  }, [live, layer, y]);
+  const probe = (e: ThreeEvent<PointerEvent>) => {
+    if (selected !== layer || !e.uv) return;
+    e.stopPropagation(); onProbe(probeIndex(grid, tile, e.uv.x, e.uv.y));
+  };
+  return <mesh geometry={geometry} material={material} position-y={y} onClick={e => { if (selected === null) { e.stopPropagation(); onSelect(layer); } }} onPointerMove={probe} onPointerOut={() => selected === layer && onProbe(null)} />;
 }
 
 function Rig({ selected, height, reducedMotion, resetKey }: { selected: HeatLayer | null; height: number; reducedMotion: boolean; resetKey: number }) {
@@ -219,13 +208,13 @@ function Skirt({ geometry, selected, reducedMotion }: { geometry: BufferGeometry
 }
 
 function Scene(props: StrataProps) {
-  const { grid, tile, assets, scores, window, marks, ranges, selected, onSelect, onProbe, sunDir, sunLit, reducedMotion, labelRefs, areaLabelRefs, resetKey, contours, exaggeration, overlayOpacity, onImageryError } = props;
+  const { grid, tile, assets, scores, window, ranges, selected, stackCount, onSelect, onProbe, sunDir, sunLit, reducedMotion, labelRefs, resetKey, contours, exaggeration, overlayOpacity, onImageryError } = props;
   const live: LiveY = useRef({});
   const [lo, hi] = useMemo(() => { let a = Infinity; let b = -Infinity; for (let i = 0; i < tile.elevationM.length; i++) { a = Math.min(a, tile.elevationM[i]); b = Math.max(b, tile.elevationM[i]); } return [a, b]; }, [tile]);
   const surface = useMemo(() => specimenGeometry(tile, RELIEF * exaggeration), [tile, exaggeration]);
+  const scalarSurface = useMemo(() => specimenScalarGeometry(grid, tile, RELIEF * exaggeration, lo, hi), [grid, tile, lo, hi, exaggeration]);
   const skirt = useMemo(() => skirtGeometry(tile, lo, lo + (hi - lo) / exaggeration), [tile, lo, hi, exaggeration]);
-  useEffect(() => () => { surface.dispose(); skirt.dispose(); }, [surface, skirt]);
-  const elevation01 = useMemo(() => normaliseWith(grid.layers.elev_m ?? new Float32Array(grid.header.nx * grid.header.ny), lo, hi).map(v => v * exaggeration), [grid, lo, hi, exaggeration]);
+  useEffect(() => () => { surface.dispose(); scalarSurface.dispose(); skirt.dispose(); }, [surface, scalarSurface, skirt]);
   const height = (STACK.length - 1) * GAP + RELIEF;
   const sun = useMemo(() => new Vector3(...sunDir).multiplyScalar(6), [sunDir]);
   return <>
@@ -236,11 +225,11 @@ function Scene(props: StrataProps) {
     <Labels live={live} labelRefs={labelRefs} />
     <group>
       <Skirt geometry={skirt} selected={selected} reducedMotion={reducedMotion} />
-      {STACK.map((key, i) => SURFACE_LAYERS.includes(key)
+      {STACK.map((key, i) => (selected === null ? i < stackCount : key === 'relief' || key === selected) && (SURFACE_LAYERS.includes(key)
         ? (key !== 'imagery' || assets?.imagery) && (key !== 'slope' || assets?.slope)
           ? <SurfaceSlab key={key} layer={key} index={i} geometry={surface} tile={tile} assets={assets} selected={selected} reducedMotion={reducedMotion} live={live} onSelect={onSelect} onProbe={onProbe} grid={grid} contours={contours} overlayOpacity={overlayOpacity} onImageryError={onImageryError} />
           : null
-        : (() => { const values = layerValues(grid, key, scores, window); return values ? <DotSlab key={key} layer={key} index={i} grid={grid} tile={tile} values={values} elevation01={elevation01} range={ranges[key]} marks={marks} selected={selected} reducedMotion={reducedMotion} live={live} onSelect={onSelect} onProbe={onProbe} areaLabelRefs={areaLabelRefs} /> : null; })())}
+        : (() => { const values = layerValues(grid, key, scores, window); return values ? <ScalarSlab key={key} layer={key} index={i} geometry={scalarSurface} grid={grid} tile={tile} values={values} range={ranges[key]} selected={selected} live={live} onSelect={onSelect} onProbe={onProbe} /> : null; })()))}
       <gridHelper args={[SPAN * 1.6, 32, '#66563f', '#211e19']} position-y={-BASE_DEPTH - 0.002} />
     </group>
   </>;

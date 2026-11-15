@@ -30,7 +30,7 @@ export function BootSequence({ lines, onDone, onRetry }: { lines: BootLine[]; on
   return <div className={`boot ${leaving ? 'boot-leaving' : ''}`} role="status" aria-live="polite" onClick={() => !failed && setLeaving(true)}>
     <div className="boot-ring" aria-hidden="true"><i/><i/><i/></div>
     <div className="boot-log">
-      <p className="boot-title">LUNAR WINDOW · MISSION CONTROL</p>
+      <p className="boot-title">LUNALA · MISSION CONTROL</p>
       {lines.map((line, i) => <p key={line.label} className={`boot-line boot-${line.status}`} style={{ animationDelay: `${i * 120}ms` }}>
         <span className="boot-mark" aria-hidden="true">{line.status === 'ready' ? '■' : line.status === 'error' ? '×' : '▢'}</span>
         <span>{line.label}</span><b>{line.status === 'ready' ? line.detail : line.status === 'error' ? 'FAILED' : 'LOADING'}</b>
