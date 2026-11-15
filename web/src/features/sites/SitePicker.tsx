@@ -4,7 +4,7 @@ import type { Site } from '../../contracts/sites';
 import { customSiteId, formatCoordinates, MAX_SELECTED_SITES, parseCustomSite, searchSites, validateCoordinates } from './sites';
 
 const categoryLabel: Record<Site['category'], string> = {
-  artemis3: 'Artemis III candidates', clps: 'CLPS regions', intl: 'International missions', apollo: 'Apollo references',
+  artemis3: 'Artemis III candidates', clps: 'CLPS regions', intl: 'International missions', apollo: 'Apollo references', demo: 'Synthetic demo data',
 };
 
 const coordsText = formatCoordinates;

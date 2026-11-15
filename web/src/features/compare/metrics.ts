@@ -10,12 +10,12 @@ export interface CompareThresholds {
   maxBlackoutHours: number;
 }
 
-// shortcut: fixed demo thresholds until WEB-4 exposes them as scenario params.
+// shortcut: fixed demo thresholds (Ananth, 2026-11-15) until WEB-4 exposes them as scenario params.
 export const DEFAULT_THRESHOLDS: CompareThresholds = {
-  minLitPercent: 70,
-  minEarthContactPercent: 60,
-  maxDarknessHours: 48,
-  maxBlackoutHours: 24,
+  minLitPercent: 40,
+  minEarthContactPercent: 40,
+  maxDarknessHours: 180,
+  maxBlackoutHours: 180,
 };
 
 const directions: Record<MetricKey, 'max' | 'min'> = {
@@ -61,4 +61,18 @@ export function siteStatus(metrics: Metrics, thresholds: CompareThresholds): { s
   if (failed.length > 1) return { status: 'red', reason: failed.map(check => check.reason).join('; ') };
   if (failed.length === 1) return { status: 'yellow', reason: failed[0].reason };
   return { status: 'green', reason: 'All four mission thresholds met' };
+}
+
+const shortLabel: Record<MetricKey, string> = {
+  litPercent: 'Sunlit', longestDarknessHours: 'Darkness', earthContactPercent: 'Earth contact', longestBlackoutHours: 'Blackout',
+};
+
+/** "Sunlit 62% → 48% · Earth contact 44% → 0%": the status metrics that changed between two windows. */
+export function slipDeltas(before: Metrics, after: Metrics): string {
+  const parts = (Object.keys(shortLabel) as MetricKey[]).flatMap(key => {
+    const unit = key.endsWith('Percent') ? '%' : ' h';
+    const [a, b] = [before, after].map(m => `${Math.round(metricValue(m, key) * 10) / 10}${unit}`);
+    return a === b ? [] : [`${shortLabel[key]} ${a} → ${b}`];
+  });
+  return parts.length ? parts.join(' · ') : 'no change in the status metrics';
 }

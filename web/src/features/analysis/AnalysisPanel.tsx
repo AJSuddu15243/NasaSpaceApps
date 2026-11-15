@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { AnalysisLayer, Mode } from '../../shell/scenario';
 import { siteSky, sunEarthAt } from '../../ephem';
 import { formatCoordinates } from '../sites/sites';
-import { LAYERS, percentile } from '../heatmap/layers';
+import { LAYERS, percentile, scoreLayer } from '../heatmap/layers';
 import type { RegionResult } from '../mission/useMissionData';
 import { loadAnalysis, type AnalysisData } from './data';
 import './analysis.css';
@@ -189,8 +189,8 @@ function Evidence({ location, region }: { location: AnalysisLocation; region?: R
   return <div data-tour-anchor="evidence-panel">
     <div className="analysis-source">What each layer is, and where it came from</div>
     <ul className="evidence-list">
-      {(['sun', 'earth', 'ice', 'favorability', 'imagery', 'relief', 'elevation', 'slope', 'roughness', 'score'] as const).map(k => <li key={k}><span className={`chip chip-${LAYERS[k].status}`}>{LAYERS[k].status === 'preview' && k === 'favorability' ? 'model' : LAYERS[k].status}</span><b>{LAYERS[k].label}</b><small>{LAYERS[k].citation}. {LAYERS[k].caveat}</small></li>)}
-      <li><span className="chip chip-pending">pending</span><b>Date-specific sunlight, Earth contact, thermal</b><small>Rust/WASM engine (horizon masks, site_metrics, grid_scores) is still in progress. Nothing here is filled in by guesswork.</small></li>
+      {(['sun', 'earth', 'ice', 'favorability', 'imagery', 'relief', 'elevation', 'slope', 'roughness', 'score'] as const).map(k => { const L = k === 'score' && region ? scoreLayer(region.source) : LAYERS[k]; return <li key={k}><span className={`chip chip-${L.status}`}>{L.status === 'preview' && k === 'favorability' ? 'model' : L.status}</span><b>{L.label}</b><small>{L.citation}. {L.caveat}</small></li>; })}
+      <li><span className="chip chip-real">real</span><b>Date-specific sunlight, Earth contact, thermal</b><small>Rust/WASM engine over LOLA horizon masks and the JPL Horizons table: compare cards use site_metrics, the suitability layer uses grid_fracs + scores_from_fracs (precomputed for demo dates, computed in your browser otherwise).</small></li>
     </ul>
     <div className="analysis-source">Ephemeris check vs JPL Horizons</div>
     {check.status === 'ready' ? <p className="analysis-note"><b>{check.n} samples</b> of Sun and Earth elevation for {location.name} (Jan 2026, Jul 2028) agree with JPL Horizons to <b>{check.worst!.toFixed(4)}°</b> worst case (computed in your browser now).</p>

@@ -7,10 +7,11 @@ export function generateMocks(root) {
   const json = (path, value) => writeFileSync(resolve(root, path), JSON.stringify(value, null, 2) + '\n');
   const source = 'https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/web/README.md';
   const meta = { schema_version: 1, generated_at: '2026-11-14T12:00:00Z', source_urls: [source] };
+  // Real sites live in ../sites.json; mock/ holds only synthetic fixtures.
   const sites = [
-    { id: 'demo-ridge-a', name: 'Demo ridge A', lat: -89.5, lon: 30, category: 'artemis3', note: 'Synthetic site for interface testing; not an Artemis candidate.', source_url: source },
-    { id: 'demo-ridge-b', name: 'Demo ridge B', lat: -88.8, lon: 45, category: 'artemis3', note: 'Synthetic site for interface testing; not an Artemis candidate.', source_url: source },
-    { id: 'demo-basin-c', name: 'Demo basin C', lat: -89.1, lon: -20, category: 'artemis3', note: 'Synthetic site for interface testing; not an Artemis candidate.', source_url: source },
+    { id: 'demo-ridge-a', name: 'Demo ridge A', lat: -89.5, lon: 30, category: 'demo', note: 'Synthetic fixture for interface testing; not a landing site.', source_url: source },
+    { id: 'demo-ridge-b', name: 'Demo ridge B', lat: -88.8, lon: 45, category: 'demo', note: 'Synthetic fixture for interface testing; not a landing site.', source_url: source },
+    { id: 'demo-basin-c', name: 'Demo basin C', lat: -89.1, lon: -20, category: 'demo', note: 'Synthetic fixture for interface testing; not a landing site.', source_url: source },
   ];
   json('sites.json', sites);
   for (const site of sites) json(`masks/${site.id}.json`, { ...meta, id: site.id, lat: site.lat, lon: site.lon, elev_m: 0, slope_deg: 4, bins: 360, mask_deg: Array(360).fill(2), max_distance_km: 150, dem_source: 'Synthetic flat horizon; not a DEM' });

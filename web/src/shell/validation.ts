@@ -5,13 +5,20 @@ import sites from '../../../contracts/schemas/sites.schema.json';
 import mask from '../../../contracts/schemas/site-mask.schema.json';
 import ephem from '../../../contracts/schemas/ephem.schema.json';
 import engine from '../../../contracts/schemas/engine-api.schema.json';
+import manifest from '../../../contracts/schemas/manifest.schema.json';
 import type { Sites } from '../contracts/sites';
 import type { SiteMask } from '../contracts/site-mask';
 import type { EphemHeader } from '../contracts/ephem';
 import type { Metrics } from '../contracts/engine-api';
+import type { Manifest } from '../contracts/manifest';
 const ajv = new Ajv2020({ allErrors: true, strict: false, strictNumbers: true });
 addFormats(ajv); ajv.addSchema(common); ajv.addSchema(engine);
 const sitesCheck = ajv.compile<Sites>(sites);
+const manifestCheck = ajv.compile<Manifest>(manifest);
+export function parseManifest(value: unknown): Manifest {
+  if (!manifestCheck(value)) throw new Error('The data manifest is invalid.');
+  return value;
+}
 const maskCheck = ajv.compile<SiteMask>(mask);
 const ephemCheck = ajv.compile<EphemHeader>(ephem);
 const metricsCheck = ajv.compile<Metrics>({ $ref: 'engine-api.schema.json#/$defs/metrics' });

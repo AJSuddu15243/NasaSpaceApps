@@ -17,9 +17,9 @@
       "lat": { "$ref": "common.schema.json#/$defs/lat_deg" },
       "lon": { "$ref": "common.schema.json#/$defs/lon_deg" },
       "category": {
-        "description": "Site group (no units): Artemis III candidate region, CLPS lander, international mission, or Apollo (equatorial contrast).",
+        "description": "Site group (no units): Artemis III candidate region, CLPS lander, international mission, Apollo (equatorial contrast), or demo (synthetic fixture for interface testing).",
         "type": "string",
-        "enum": ["artemis3", "clps", "intl", "apollo"]
+        "enum": ["artemis3", "clps", "intl", "apollo", "demo"]
       },
       "note": { "description": "One-line plain-language note shown in the UI (no units); may be empty.", "type": "string" },
       "source_url": { "description": "URL of the source the coordinates were taken from (no units).", "type": "string", "format": "uri" }

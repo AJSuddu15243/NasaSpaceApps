@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
-import { site_metrics, MOCK_PARAMS, UnavailableScenario } from '../../engine';
+import { useMemo, useState, type ReactNode } from 'react';
+import { metricsHash, site_metrics, siteExtras, siteParams, MOCK_PARAMS, UnavailableScenario } from '../../engine';
+import { scenarioInstant } from '../../features/timeline/MissionTimeline';
 import type { DemoData } from '../data';
 import type { Scenario } from '../scenario';
 import type { Metrics } from '../../contracts/engine-api';
-import { bestValues, countdown, DEFAULT_THRESHOLDS, metricValue, siteStatus, type MetricKey } from '../../features/compare/metrics';
+import { bestValues, countdown, DEFAULT_THRESHOLDS, metricValue, siteStatus, slipDeltas, type MetricKey } from '../../features/compare/metrics';
 import { readinessScore, siteTimeline, TL_BOTH, TL_DARK, TL_EARTH, TL_SUN } from '../../features/compare/timeline';
 import { parseCustomSite } from '../../features/sites/sites';
 import type { ScrubState } from './ViewPanel';
@@ -11,10 +12,14 @@ import { ChevronRight } from 'lucide-react';
 import { Badge } from '../ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../design';
 
-interface SiteResult {
+export interface SiteResult {
   id: string;
   name: string;
   metrics: Metrics | null;
+  /** Same site on the on-time date, only when the launch slipped. */
+  baseline: Metrics | null;
+  /** Engine site_extras survives_night (real sites only). */
+  survivesNight: boolean | null;
   message: string | null;
   timeline: Uint8Array | null;
   readiness: number | null;
@@ -29,29 +34,52 @@ const rows: { key: MetricKey; label: string; short: string; text: (m: Metrics) =
   { key: 'litPercent', label: 'Sunlit window', short: 'Sunlit', text: m => `${pct(m.pct_lit)}%`, tip: 'Share of the window the site spends in sunlight — drives solar power.' },
   { key: 'longestDarknessHours', label: 'Longest darkness', short: 'Darkness', text: m => `${m.longest_dark_h} h`, tip: 'Longest unbroken stretch without sunlight; radiators and batteries must survive it.' },
   { key: 'earthContactPercent', label: 'Earth contact', short: 'Earth contact', text: m => `${pct(m.pct_earth_visible)}%`, tip: 'Share of the window with a clear line of sight to Earth for direct-to-Earth comms.' },
-  { key: 'longestBlackoutHours', label: 'Longest blackout', short: 'Blackout', text: m => `${m.longest_blackout_h} h`, tip: 'Longest stretch with neither Sun nor Earth visible — the worst-case comms gap.' },
+  { key: 'longestBlackoutHours', label: 'Longest blackout', short: 'Blackout', text: m => `${m.longest_blackout_h} h`, tip: 'Longest stretch without line of sight to Earth.' },
 ];
 
-export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: DemoData; scenario: Scenario; onCollapse?: () => void; scrub?: ScrubState }) {
-  const results: SiteResult[] = scenario.sites.map(id => {
+type ResultInputs = Pick<Scenario, 'sites' | 'date' | 'delay' | 'hours' | 'survivalK' | 'batteryH' | 'slopeLimit' | 'missionWeights'>;
+
+/** Engine results per site. `scenario.date` is the on-time launch; this function alone applies the slip, so callers must not. */
+export function siteResults(data: DemoData, scenario: ResultInputs): { start: string; results: SiteResult[] } {
+  // Cards score the arrival window: date + launch slip, never the playhead.
+  const start = scenarioInstant({ date: scenario.date, delay: scenario.delay });
+  const slipped = (scenario.delay ?? 0) > 0;
+  const params = siteParams(scenario);
+  const results = scenario.sites.map((id): SiteResult => {
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
     const coords = site ?? parseCustomSite(id);
     const mask = data.masks.get(id);
     const horizonDeg = mask ? mask.mask_deg.reduce((a, b) => a + b, 0) / mask.mask_deg.length : 0;
-    const timeline = coords ? siteTimeline(data.table, coords.lat, coords.lon, scenario.date, scenario.hours, horizonDeg) : null;
+    const timeline = coords ? siteTimeline(data.table, coords.lat, coords.lon, start, scenario.hours, horizonDeg) : null;
     // Named regions without a horizon mask are treated like custom points: no metrics are invented for them.
-    if (!site || !mask) return { id, name, metrics: null, message: 'No horizon mask exists for this place yet, so engine metrics are unavailable. Its measured layers are in the science comparison.', timeline, readiness: null };
+    if (!site || !mask) return { id, name, metrics: null, baseline: null, survivesNight: null, message: 'No horizon mask exists for this place yet, so engine metrics are unavailable. Its measured layers are in the science comparison.', timeline, readiness: null };
     try {
-      const metrics = site_metrics(mask!, data.table, scenario.date, scenario.hours, MOCK_PARAMS);
-      return { id, name, metrics, message: null, timeline, readiness: readinessScore(metrics, scenario.missionWeights, scenario.hours) };
+      const demo = id.startsWith('demo-');
+      const p = demo ? MOCK_PARAMS : params;
+      const metrics = site_metrics(mask, data.table, start, scenario.hours, p);
+      const baseline = slipped ? site_metrics(mask, data.table, scenario.date, scenario.hours, p) : null;
+      const survivesNight = demo ? null : siteExtras(mask, data.table, start, scenario.hours, p).survives_night;
+      return { id, name, metrics, baseline, survivesNight, message: null, timeline, readiness: readinessScore(metrics, scenario.missionWeights, scenario.hours) };
     } catch (error) {
-      return { id, name, metrics: null, message: error instanceof UnavailableScenario ? error.message : 'Engine results are unavailable.', timeline, readiness: null };
+      return { id, name, metrics: null, baseline: null, survivesNight: null, message: error instanceof UnavailableScenario ? error.message : 'Engine results are unavailable.', timeline, readiness: null };
     }
   });
+  return { start, results };
+}
+
+export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: DemoData; scenario: Scenario; onCollapse?: () => void; scrub?: ScrubState }) {
+  // Up to 3 engine calls per site; skip them on playhead/layer/view changes. The store re-parses the URL on every set,
+  // so arrays are fresh objects each time: key on their serialized values.
+  const { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights } = scenario;
+  const sitesKey = sites.join(','), mwKey = JSON.stringify(missionWeights);
+  const params = siteParams(scenario);
+  const { results } = useMemo(() => siteResults(data, { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights }), [data, sitesKey, date, delay, hours, survivalK, batteryH, slopeLimit, mwKey]);
   const computed = results.map(result => result.metrics).filter((metrics): metrics is Metrics => metrics !== null);
   const best = bestValues(computed);
   const showTable = computed.length > 1;
+  let hash: string | null = null;
+  try { hash = computed.length ? metricsHash(computed) : null; } catch { /* engine not loaded: no hash */ }
 
   return <aside className="ws-results rs" aria-label="Site comparison">
     <div className="ws-panel-head">
@@ -87,14 +115,25 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
               <div><dt>Peak sun elev.</dt><dd>{metrics.max_sun_el_deg.toFixed(1)}°</dd></div>
             </dl>
             <div className="rs-countdowns"><span>Sunset in <b>{countdown(metrics.h_to_first_sunset)}</b></span><span>Earthset in <b>{countdown(metrics.h_to_first_earthset)}</b></span></div>
+            {result.baseline && <p className="rs-reason" role="status">Slip {scenario.delay} d: {slipDeltas(result.baseline, metrics)}</p>}
             {result.timeline && <TimelineBar timeline={result.timeline} scrubHour={scrub?.hour ?? null} />}
             <p className="rs-reason">{status.reason}</p>
+            {result.survivesNight !== null && <p className="rs-units">Survival {params.survival_temp_k} K · battery {params.battery_h} h ({result.survivesNight ? 'outlasts' : 'does not outlast'} the longest darkness) · antenna margin {params.antenna_margin_deg}°</p>}
           </div>;
         })}</div>}
+      {hash && <HashLine hash={hash} />}
 
-      <details className="rs-assumptions"><summary>Assumptions &amp; thresholds</summary><p>Status uses demo thresholds: ≥70% sunlit, ≥60% Earth contact, ≤48 h darkness, ≤24 h blackout. Temperature model: simplified, no thermal inertia. Earth contact assumes a DSN station can see the Moon; no relay coverage.</p></details>
+      <details className="rs-assumptions"><summary>Assumptions &amp; thresholds</summary><p>Status uses demo thresholds: ≥40% sunlit, ≥40% Earth contact, ≤180 h darkness, ≤180 h blackout. Real sites use the survival temperature and battery set in Planner. Temperature model: simplified, no thermal inertia. Earth contact assumes a DSN station can see the Moon; no relay coverage.</p></details>
     </div>
   </aside>;
+}
+
+function HashLine({ hash }: { hash: string }) {
+  const [copied, setCopied] = useState(false);
+  return <p className="rs-units" title="FNV-1a 64 over the engine metrics above: identical inputs give the identical hash on every machine.">
+    Determinism hash <code>{hash}</code>{' '}
+    <button type="button" className="rs-copy" aria-label="Copy determinism hash" onClick={() => navigator.clipboard?.writeText(hash).then(() => setCopied(true), () => setCopied(false))}>{copied ? 'Copied' : 'Copy'}</button>
+  </p>;
 }
 
 const tlState = { [TL_DARK]: 'tl-dark', [TL_SUN]: 'tl-sun', [TL_EARTH]: 'tl-earth', [TL_BOTH]: 'tl-both' } as const;

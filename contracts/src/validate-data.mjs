@@ -35,6 +35,9 @@ export function validateDataDir(dir = DEFAULT_DIR) {
   const files = readdirSync(dir, { recursive: true, encoding: 'utf8' })
     .map((rel) => rel.split('\\').join('/'))
     .filter((rel) => statSync(join(dir, rel)).isFile())
+    // shortcut: baked/ (engine grid_fracs cache, web/scripts/bake.ts) has no contract yet; its format lives in
+    // web/src/features/heatmap/baked.ts and web vitest guards it. Add a `baked` schema if other tools read it.
+    .filter((rel) => !rel.startsWith('baked/'))
     .sort();
   const errors = [];
   const ignored = [];

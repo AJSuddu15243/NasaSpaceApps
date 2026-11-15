@@ -81,6 +81,16 @@ export const LAYERS: Record<HeatLayer, LayerSpec> = {
     citation: LOLA },
 };
 
+/** Where a region's score came from: baked or live Rust/WASM grid_fracs for the window, or the JS preview. */
+export type ScoreSource = 'baked' | 'live' | 'preview';
+/** The score layer spec for a source: engine scores are `real`; the preview keeps its preview caveat. */
+export function scoreLayer(source: ScoreSource): LayerSpec {
+  if (source === 'preview') return LAYERS.score;
+  return { ...LAYERS.score, status: 'real',
+    caveat: `Rust/WASM engine scores for your arrival window (${source === 'baked' ? 'precomputed with the shipped engine, fractions stored at 0.4 % steps' : 'computed in your browser'}). The ice-access weight is display-only and not part of this score.`,
+    citation: 'engine/src/score.rs grid_fracs + scores_from_fracs · inputs below' };
+}
+
 export function isHeatLayer(value: unknown): value is HeatLayer {
   return typeof value === 'string' && (HEAT_LAYERS as string[]).includes(value);
 }
