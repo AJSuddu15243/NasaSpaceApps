@@ -9,7 +9,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "api": "node src/api.ts",
+    "api": "node --env-file-if-exists=.env src/api.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
