@@ -74,7 +74,19 @@ export async function loadBakedFracs(region: string, startIso: string, hours: nu
   const start = new Date(startIso).toISOString();
   if (idx?.format !== BAKED_FORMAT || idx.hours !== hours || !idx.regions.includes(region) || !idx.starts.includes(start)) return null;
   if ((Object.keys(idx.params) as (keyof BakedIndex['params'])[]).some(k => idx.params[k] !== params[k])) return null;
-  const response = await request(`/data/baked/${bakedFile(region, start)}`);
-  if (!response.ok) return null;
-  return decodeFracs(new Uint8Array(await response.arrayBuffer()), n);
+  // Inline, not lib/cache: this file must stay free of runtime imports (see the header).
+  const key = `${bakedFile(region, start)}:${n}`;
+  let pending = fracsCache.get(key);
+  if (!pending) {
+    const p = (async () => {
+      const response = await request(`/data/baked/${bakedFile(region, start)}`);
+      return response.ok ? decodeFracs(new Uint8Array(await response.arrayBuffer()), n) : null;
+    })();
+    void p.then(v => v, () => null).then(v => { if (!v && fracsCache.get(key) === p) fracsCache.delete(key); }); // retry failures
+    fracsCache.set(key, pending = p);
+    if (fracsCache.size > 12) fracsCache.delete(fracsCache.keys().next().value!);
+  }
+  return pending;
 }
+// Decoded fracs are 16 bytes per cell (~1 MB per region and start); 12 keeps a few slips of all three regions.
+const fracsCache = new Map<string, Promise<Float32Array | null>>();
