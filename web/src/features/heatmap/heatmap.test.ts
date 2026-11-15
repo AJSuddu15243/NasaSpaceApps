@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { distanceToPsr, gridFactors, scoreCells, topAreas, type PreviewWeights } from './score';
 import { parseGrid, xyToLatLon, type Grid } from './grid';
-import { displayRange, isHeatLayer, layerSpec, layerValues, percentile } from './layers';
+import { displayRange, dockLayers, isHeatLayer, layerSpec, layerValues, percentile } from './layers';
 import { weightShares } from '../mission/PrioritiesPanel';
 
 // Fixtures copied from engine/src/score.rs tests (parity: the preview must match the engine).
@@ -118,5 +118,19 @@ describe('window vs long-term layers', () => {
     const w = { sun: 35, earth: 25, slope: 20, crater: 10, rock: 0, thermal: 10 };
     expect(weightShares(w, 40, true)).toMatchObject({ sun: 35, thermal: 10, ice: null });
     expect(weightShares(w, 0, false)).toMatchObject({ sun: 39, thermal: null, ice: 0 });
+  });
+});
+
+describe('dock order follows the priority weights', () => {
+  const w = (sun: number, earth: number, slope: number, crater: number, rock = 0) => ({ sun, earth, slope, crater, rock, thermal: 0 });
+  it('defaults: score, sun, earth, terrain, crater, then the unweighted ties in base order, photo last', () => {
+    expect(dockLayers(w(35, 25, 20, 10), 0)).toEqual(['score', 'sun', 'sun_lt', 'earth', 'earth_lt', 'terrain', 'crater', 'ice', 'favorability', 'roughness', 'imagery']);
+  });
+  it('power preset keeps sun first and ties (crater = rock = ice = 0) stable', () => {
+    expect(dockLayers(w(80, 10, 10, 0), 0)).toEqual(['score', 'sun', 'sun_lt', 'earth', 'earth_lt', 'terrain', 'crater', 'ice', 'favorability', 'roughness', 'imagery']);
+  });
+  it('ice preset lifts the ice layers above Earth; heavy rock and slope reorder', () => {
+    expect(dockLayers(w(35, 15, 10, 0), 40)).toEqual(['score', 'ice', 'favorability', 'sun', 'sun_lt', 'earth', 'earth_lt', 'terrain', 'crater', 'roughness', 'imagery']);
+    expect(dockLayers(w(10, 10, 50, 0, 60), 0).slice(0, 3)).toEqual(['score', 'roughness', 'terrain']);
   });
 });

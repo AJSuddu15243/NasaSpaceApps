@@ -38,11 +38,11 @@
 .holo-title{padding:16px 18px 6px;gap:5px 12px}
 .holo-title h2{font-size:clamp(18px,1.7vw,25px)}
 .holo-eyebrow{color:var(--mission-accent);font-size:9px;letter-spacing:.14em}
-.specimen-controls,.specimen-layer-list{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.specimen-controls,.terrain-switch{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .specimen-controls{flex-basis:100%;margin-top:6px}
-.specimen-controls button,.specimen-layer-list button,.holo-loading button{border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);padding:6px 9px;border-radius:4px;font:10px var(--font-data);min-height:30px}
-.specimen-controls button[aria-pressed=true],.specimen-layer-list button[aria-pressed=true]{border-color:var(--mission-accent);color:var(--mission-accent);background:#37291c}
-.specimen-controls button:disabled,.specimen-layer-list button:disabled,.strata-labels button:disabled{opacity:.45;cursor:not-allowed}
+.specimen-controls button,.terrain-switch button,.holo-loading button{border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);padding:6px 9px;border-radius:4px;font:10px var(--font-data);min-height:30px}
+.specimen-controls button[aria-pressed=true],.terrain-switch button[aria-pressed=true]{border-color:var(--mission-accent);color:var(--mission-accent);background:#37291c}
+.specimen-controls button:disabled,.terrain-switch button:disabled,.strata-labels button:disabled{opacity:.45;cursor:not-allowed}
 .specimen-controls>button{display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:6px}
 .specimen-controls summary{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);border-radius:6px;cursor:pointer;list-style:none}
 .specimen-controls summary::-webkit-details-marker{display:none}
@@ -68,7 +68,7 @@
  .holo-stage{grid-template-rows:auto minmax(140px,1fr) auto}
  .holo-title{padding:8px 12px 4px}.holo-title h2{font-size:18px}.holo-status{font-size:8px}
  .specimen-controls{gap:4px}.specimen-controls>button,.specimen-controls summary{width:26px;height:26px}.display-pop{min-width:150px}
- .holo-footer{padding:4px 12px 6px}.specimen-layer-list{flex-wrap:nowrap;overflow:auto;scrollbar-width:thin}
- .specimen-layer-list button{white-space:nowrap;flex-shrink:0}.specimen-explain{max-height:48px;overflow:auto;font-size:10px}
+ .holo-footer{padding:4px 12px 6px}.terrain-switch{flex-wrap:nowrap;overflow:auto;scrollbar-width:thin}
+ .terrain-switch button{white-space:nowrap;flex-shrink:0}.specimen-explain{max-height:48px;overflow:auto;font-size:10px}
  .specimen-caption{font-size:8px}.strata-labels{display:none}.holo-legend{font-size:9px}
 }

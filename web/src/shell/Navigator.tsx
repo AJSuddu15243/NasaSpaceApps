@@ -11,7 +11,7 @@ import { MissionTimeline, scenarioInstant } from '../features/timeline/MissionTi
 import { NavigatorTour } from '../features/tour/NavigatorTour';
 import { AnalysisPanel } from '../features/analysis/AnalysisPanel';
 import { HoloStage } from '../features/heatmap/HoloStage';
-import { HEAT_LAYERS, LAYERS, type HeatLayer } from '../features/heatmap/layers';
+import { dockLayers, LAYERS, TERRAIN_LAYERS, type HeatLayer } from '../features/heatmap/layers';
 import { coveringRegion } from '../features/heatmap/specimen';
 import { geographicPoint } from '../scene/coordinates';
 import { isGridRegion, siteMaskFor } from '../features/heatmap/grid';
@@ -178,7 +178,7 @@ export default function Navigator() {
         <div className="hud-actions">
           <Tooltip><TooltipTrigger asChild><button type="button" className={`hud-icon solg-btn${solgCast ? ' is-casting' : ''}`} aria-label="Ask Solgaleo, the lunar copilot" aria-expanded={askOpen}
             onClick={() => { setSolgCast(true); setTimeout(() => setSolgCast(false), 750); setAskOpen(v => !v); }}><Sparkles size={15} /></button></TooltipTrigger><TooltipContent>Solgaleo · ask about what you see</TooltipContent></Tooltip>
-          <Tooltip><TooltipTrigger asChild><button type="button" className="hud-icon" aria-label="Replay mission briefing" onClick={() => setTourReplay(n => n + 1)}><RotateCcw size={15} /></button></TooltipTrigger><TooltipContent>Replay briefing</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" className="hud-icon" aria-label="Replay mission briefing" onClick={() => setTourReplay(n => n + 1)}><RotateCcw size={15} /></button></TooltipTrigger><TooltipContent>Replay the mission briefing tour</TooltipContent></Tooltip>
         </div>
       </TooltipProvider>
     </header>
@@ -197,7 +197,7 @@ export default function Navigator() {
     {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
@@ -221,7 +221,8 @@ export default function Navigator() {
 
     <nav className="hud hud-dock" aria-label="Heatmap layers and tools" data-tour="layers">
       <div className="dock-layers" role="group" aria-label="Heatmap layer">
-        {HEAT_LAYERS.map(key => <button type="button" key={key} aria-pressed={!!region && shownHeat === key} onClick={() => chooseHeat(key)} title={LAYERS[key].label}><i style={{ background: LAYERS[key].ramp[2] }} />{LAYERS[key].short}</button>)}
+        {dockLayers(scenario.weights, scenario.ice).map(dock => { const key = dock === 'terrain' ? (TERRAIN_LAYERS.includes(scenario.heat) ? scenario.heat : 'slope') : dock;
+          return <button type="button" key={dock} aria-pressed={!!region && (dock === 'terrain' ? !!shownHeat && TERRAIN_LAYERS.includes(shownHeat) : shownHeat === key)} onClick={() => chooseHeat(key)} title={dock === 'terrain' ? 'Terrain: slope, elevation and relief' : LAYERS[key].label}><i style={{ background: LAYERS[key].ramp[2] }} />{dock === 'terrain' ? 'Terrain' : LAYERS[key].short}</button>; })}
       </div>
       <div className="dock-tools" data-tour="evidence">
         <TooltipProvider delayDuration={200}>

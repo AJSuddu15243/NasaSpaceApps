@@ -37,6 +37,20 @@ test('mobile and desktop controls remain inside the viewport and accessible', as
     expect(result.violations.map(v => ({ id: v.id, targets: v.nodes.map(n => n.target) }))).toEqual([]);
   }
 });
+test('a minimized timeline can be restored and header tooltips are visible', async ({ page }) => {
+  for (const [width, height] of [[1440, 900], [1280, 800], [390, 844]]) {
+    await page.setViewportSize({ width, height });
+    await enter(page, '/app');
+    await page.getByRole('button', { name: 'Minimize timeline' }).click();
+    const fab = page.getByRole('button', { name: 'Show mission timeline' });
+    const box = (await fab.boundingBox())!;
+    expect(box.y).toBeGreaterThan(height / 2);
+    await fab.click();
+    await expect(page.getByRole('button', { name: 'Minimize timeline' })).toBeVisible();
+  }
+  await page.getByRole('button', { name: 'Replay mission briefing' }).hover();
+  await expect(page.getByRole('tooltip')).toContainText('Replay the mission briefing tour');
+});
 test('failed grids recover and malformed links never fabricate results', async ({ page }) => {
   await page.route('**/data/grid/haworth.bin', route => route.fulfill({ status: 503, body: 'unavailable' }));
   await enter(page, '/app?focus=haworth');

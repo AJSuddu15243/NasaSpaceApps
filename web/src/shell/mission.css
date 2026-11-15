@@ -230,7 +230,7 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
   .delay-controls>span,.delay-controls label{display:none}
   .timeline-foot>span:first-child,.timeline-foot>span:last-child{display:none}
   .mission-globe .globe-controls,.mission-globe .globe-hint{display:none}
-  .mission-intro{bottom:250px;left:16px;right:16px}
+  .mission-intro{bottom:276px;left:16px;right:16px}
   .mission-intro h1{font-size:36px;margin:8px 0}
   .mission-intro>p:not(.eyebrow){font-size:12px}
   .mission-intro button{margin:12px 0 6px;padding:10px 16px}
@@ -251,13 +251,13 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 }
 @media(max-width:640px){
  .mission-holo-wrap{top:98px;bottom:190px}.hud-right{bottom:190px;max-height:63%}.hud-inspector{top:58px}
- .mission-focused .hud-dock .dock-layers{display:none}.mission-focused .hud-dock{bottom:128px}
+ .hud-dock{bottom:176px}.mission-focused .mission-holo-wrap{bottom:258px} /* dock (the only layer picker) sits above the ~165px timeline */
  .mission .hud-fab{width:32px;height:32px}.hud-top{min-height:40px}
  .mission-holo .holo-probe{font-size:9px;min-height:15px}
 }
 @media(max-height:700px){.specimen-explain,.specimen-caption{display:none}.holo-stage{grid-template-rows:auto minmax(100px,1fr) auto}.hud-bottom{padding:6px 10px}.holo-footer{padding-bottom:4px}}
 .mission{color-scheme:dark;--shell-bg:#0c0b09;--shell-card:#15120e;--shell-text:#efe7da;--shell-muted:#b3a898;--shell-line:#68553f;--shell-field:#806c50;--background:36 10% 4%;--card:36 15% 7%;--foreground:36 30% 90%;--muted-foreground:36 15% 65%;--input:36 20% 28%}
-.mission .specimen-controls button,.mission .specimen-layer-list button{font:10px var(--font-data)}
+.mission .specimen-controls button,.mission .terrain-switch button{font:10px var(--font-data)}
 .mission .strata-labels button{font:10px var(--font-data)}
 .mission .ws-side{background:transparent;border:0;box-shadow:none;min-height:0;padding:0}
 .mission .ws-side{height:auto;overflow:visible}
@@ -275,7 +275,7 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 .mission .globe-marker--region em{opacity:0;transition:opacity .2s}
 .mission .globe-marker--region:hover em,.mission .globe-marker--region:focus-visible em,.mission .globe-marker--region.is-active em{opacity:1}
 .mission .sp{flex-shrink:0}.mission .ws-scroll{max-height:none;overflow:visible}
-@media(max-width:640px){.mission .specimen-controls button,.mission .specimen-layer-list button{font-size:9px;min-height:32px}.holo-status{display:none}.specimen-controls label{display:none}}
+@media(max-width:640px){.mission .specimen-controls button,.mission .terrain-switch button{font-size:9px;min-height:32px}.holo-status{display:none}.specimen-controls label{display:none}}
 
 /* Light theme: warm paper stage, dark ink text, light glass HUD. The Moon viewport and boot stay dark. */
 :root[data-theme='light'] .mission{
@@ -346,7 +346,8 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 .hud-min{margin-left:auto;display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:6px;background:none;color:var(--shell-muted);transition:background .15s,color .15s;flex:none}
 .hud-min:hover{background:#e8cca81f;color:var(--shell-text)}
 .hud-min-bottom{position:absolute;top:6px;right:8px;z-index:3}
-.hud-fab-bottom{left:50%;transform:translateX(-50%);bottom:14px}
+/* top:auto beats .hud-fab's top at every breakpoint, so the restore button sits bottom-centre below the dock. */
+.mission .hud-fab-bottom{top:auto;left:50%;transform:translateX(-50%);bottom:14px;display:grid}
 :root[data-theme='light'] .hud-min:hover{background:#0000000f}
 :root[data-theme='light'] .hud-icon:hover,:root[data-theme='light'] .hud-fab:hover{background:#0000000f}
 :root[data-theme='light'] .hud-icon{color:#6e665a}
