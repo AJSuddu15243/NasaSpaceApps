@@ -11,6 +11,20 @@ export function preloadNavigator(): Promise<unknown> {
   });
 }
 
+let terrainWarm = false;
+/** Once, at idle: warm the lazy 3D chunks (same modules as the lazy() views) and the default region's terrain into
+ * the loader caches, so opening 3D or the heatmap does not wait on downloads. Best effort: views still load on demand. */
+export function preloadTerrain(region = 'connecting-ridge') {
+  if (terrainWarm) return;
+  terrainWarm = true;
+  const warm = () => void Promise.all([
+    import('../features/heatmap/StrataView'), import('../scene/LunarScene'), import('../scene/SceneViewport'),
+    Promise.all([import('../scene/tileLoader'), import('../scene/terrainAssets')])
+      .then(async ([tiles, assets]) => { const tile = await tiles.loadRegionTile(region); if (tile) await assets.loadTerrainAssets(tile); }),
+  ]).catch(() => { /* each view reports its own load errors */ });
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(warm, { timeout: 5000 }); else setTimeout(warm, 1500);
+}
+
 /** A navigation may finish only after readiness and motion, and never after cancellation. */
 export function awaitNavigatorEntry(
   prepare: Promise<unknown>, signal: AbortSignal, motionMs: number, timeoutMs = 15_000,

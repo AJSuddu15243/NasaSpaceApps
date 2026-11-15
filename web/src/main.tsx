@@ -4,6 +4,7 @@ import { Moon, Sun } from 'lucide-react';
 import { useShell } from './shell/store';
 import { writeScenario } from './shell/scenario';
 import { Button } from './shell/ui';
+import { preloadTerrain } from './shell/preload';
 import { LandingPage } from './landing/LandingPage';
 import mark from './brand/assets/mark.svg';
 import './styles.css';
@@ -21,6 +22,7 @@ function App() {
   const [shareUrl, setShareUrl] = useState('');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
   useEffect(() => { document.documentElement.dataset.theme = theme; document.documentElement.classList.toggle('dark', theme === 'dark'); try { localStorage.setItem('lunar-theme', theme); } catch { /* private mode */ } }, [theme]);
+  useEffect(() => { if (path.startsWith('/app')) preloadTerrain(); }, [path]);
   useEffect(() => { document.title = `${path.startsWith('/app') ? 'Workspace' : path === '/design' ? 'Design reference' : path === '/docs' ? 'Documentation' : 'Lunar Landing Site Navigator'} · Lunala`; }, [path]);
   async function copyLink() {
     const url = `${location.origin}/app${writeScenario(scenario)}`;
