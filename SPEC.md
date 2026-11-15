@@ -104,6 +104,12 @@ The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per 
   `site_metrics(mask, ephem, t_start, hours, params) -> Metrics` (solar, thermal, DTE),
   `grid_scores(grid, ephem, t_start, hours, weights) -> Float32Array`,
   `top_areas(scores, window_cells, n) -> Area[]`, `output_hash(...) -> string`.
+  **Rust/WASM signature change (ENG-4/9, decided with Ananth 2026-11-14; contract schema update is a follow-up
+  PR):** `site_metrics(geom, mask, ephem, t_start_h, hours, params)` with `geom = {lat_deg, lon_deg, elev_m,
+  slope_deg, aspect_deg?}`, `mask` a Float32Array (any bin count) and `t_start_h` in hours since the ephem `t0`;
+  `site_extras` and `site_track` take the same arguments. The TS facade keeps
+  `site_metrics(mask: SiteMask, table, t_start: ISO string, hours, params)`, builds `geom` from the SiteMask and
+  converts ISO to hours; demo-* sites stay on `mock.ts` until INT-1 loads real masks and ephem.
 
 ## Curated sites (seed list; W6 verifies coordinates and cites sources)
 Artemis III candidate regions (Peak near Cabeus B, Haworth, Malapert Massif, Mons Mouton Plateau, Mons Mouton,

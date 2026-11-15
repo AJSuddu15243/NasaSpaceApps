@@ -32,6 +32,30 @@ export function grid_scores(grid, ephem, t_start, hours, weights) {
 }
 
 /**
+ * Hash of a Metrics[] list, every field canonical and in contract order (see hash.rs).
+ * @param {any} list
+ * @returns {string}
+ */
+export function metrics_hash(list) {
+    let deferred2_0;
+    let deferred2_1;
+    try {
+        const ret = wasm.metrics_hash(list);
+        var ptr1 = ret[0];
+        var len1 = ret[1];
+        if (ret[3]) {
+            ptr1 = 0; len1 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred2_0 = ptr1;
+        deferred2_1 = len1;
+        return getStringFromWasm0(ptr1, len1);
+    } finally {
+        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+    }
+}
+
+/**
  * @param {Uint8Array | number[]} bytes
  * @returns {string}
  */
@@ -51,15 +75,33 @@ export function output_hash(bytes) {
 }
 
 /**
+ * Copy of `ephem` (rows of 6 f32) with angle columns snapped to `hash::QUANTUM_DEG`.
+ * @param {Float32Array | number[]} ephem
+ * @returns {Float32Array}
+ */
+export function quantize_ephem(ephem) {
+    const ptr0 = passArrayF32ToWasm0(ephem, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.quantize_ephem(ptr0, len0);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v2 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+    return v2;
+}
+
+/**
+ * @param {any} geom
  * @param {Float32Array | number[]} mask_deg
  * @param {Float32Array | number[]} ephem
- * @param {number} t_start
+ * @param {number} t_start_h
  * @param {number} hours
  * @param {any} params
  * @returns {any}
  */
-export function site_metrics(mask_deg, ephem, t_start, hours, params) {
-    const val3 = +t_start;
+export function site_extras(geom, mask_deg, ephem, t_start_h, hours, params) {
+    const val3 = +t_start_h;
     const val4 = +hours;
     let ptr0, len0, ptr1, len1;
     try {
@@ -72,11 +114,73 @@ export function site_metrics(mask_deg, ephem, t_start, hours, params) {
         if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 4, 4); }
         throw e;
     }
-    const ret = wasm.site_metrics(ptr0, len0, ptr1, len1, val3, val4, params);
+    const ret = wasm.site_extras(geom, ptr0, len0, ptr1, len1, val3, val4, params);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
     return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {any} geom
+ * @param {Float32Array | number[]} mask_deg
+ * @param {Float32Array | number[]} ephem
+ * @param {number} t_start_h
+ * @param {number} hours
+ * @param {any} params
+ * @returns {any}
+ */
+export function site_metrics(geom, mask_deg, ephem, t_start_h, hours, params) {
+    const val3 = +t_start_h;
+    const val4 = +hours;
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArrayF32ToWasm0(mask_deg, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArrayF32ToWasm0(ephem, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 4, 4); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 4, 4); }
+        throw e;
+    }
+    const ret = wasm.site_metrics(geom, ptr0, len0, ptr1, len1, val3, val4, params);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {any} geom
+ * @param {Float32Array | number[]} mask_deg
+ * @param {Float32Array | number[]} ephem
+ * @param {number} t_start_h
+ * @param {number} hours
+ * @param {any} params
+ * @returns {Float32Array}
+ */
+export function site_track(geom, mask_deg, ephem, t_start_h, hours, params) {
+    const val3 = +t_start_h;
+    const val4 = +hours;
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArrayF32ToWasm0(mask_deg, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArrayF32ToWasm0(ephem, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 4, 4); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 4, 4); }
+        throw e;
+    }
+    const ret = wasm.site_track(geom, ptr0, len0, ptr1, len1, val3, val4, params);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v5 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+    return v5;
 }
 
 /**

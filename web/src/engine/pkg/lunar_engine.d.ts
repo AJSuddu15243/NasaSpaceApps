@@ -3,9 +3,23 @@
 
 export function grid_scores(grid: Uint8Array | number[], ephem: Float32Array | number[], t_start: number, hours: number, weights: any): Float32Array;
 
+/**
+ * Hash of a Metrics[] list, every field canonical and in contract order (see hash.rs).
+ */
+export function metrics_hash(list: any): string;
+
 export function output_hash(bytes: Uint8Array | number[]): string;
 
-export function site_metrics(mask_deg: Float32Array | number[], ephem: Float32Array | number[], t_start: number, hours: number, params: any): any;
+/**
+ * Copy of `ephem` (rows of 6 f32) with angle columns snapped to `hash::QUANTUM_DEG`.
+ */
+export function quantize_ephem(ephem: Float32Array | number[]): Float32Array;
+
+export function site_extras(geom: any, mask_deg: Float32Array | number[], ephem: Float32Array | number[], t_start_h: number, hours: number, params: any): any;
+
+export function site_metrics(geom: any, mask_deg: Float32Array | number[], ephem: Float32Array | number[], t_start_h: number, hours: number, params: any): any;
+
+export function site_track(geom: any, mask_deg: Float32Array | number[], ephem: Float32Array | number[], t_start_h: number, hours: number, params: any): Float32Array;
 
 export function top_areas(scores: Float32Array | number[], window_cells: number, n: number): any;
 
@@ -14,8 +28,12 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly grid_scores: (a: number, b: number, c: number, d: number, e: number, f: number, g: any) => [number, number, number, number];
+    readonly metrics_hash: (a: any) => [number, number, number, number];
     readonly output_hash: (a: number, b: number) => [number, number];
-    readonly site_metrics: (a: number, b: number, c: number, d: number, e: number, f: number, g: any) => [number, number, number];
+    readonly quantize_ephem: (a: number, b: number) => [number, number, number, number];
+    readonly site_extras: (a: any, b: number, c: number, d: number, e: number, f: number, g: number, h: any) => [number, number, number];
+    readonly site_metrics: (a: any, b: number, c: number, d: number, e: number, f: number, g: number, h: any) => [number, number, number];
+    readonly site_track: (a: any, b: number, c: number, d: number, e: number, f: number, g: number, h: any) => [number, number, number, number];
     readonly top_areas: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
