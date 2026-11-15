@@ -12,7 +12,8 @@ const checkGrid = ajv.compile<GridHeader>(gridSchema);
 export const GRID_REGIONS = ['connecting-ridge', 'haworth', 'malapert-massif'] as const;
 export type GridRegion = typeof GRID_REGIONS[number];
 export type LayerName = 'slope_deg' | 'aspect_deg' | 'elev_m' | 'crater_depth_m' | 'roughness_deg' | 'rock' | 'sun_avg' | 'earth_avg' | 'psr' | 'ice_favorability';
-export interface Grid { header: GridHeader; layers: Partial<Record<LayerName, Float32Array>> }
+/** `bytes` is the raw .bin the engine reads (grid_fracs, scores_from_fracs); absent on synthetic test grids. */
+export interface Grid { header: GridHeader; layers: Partial<Record<LayerName, Float32Array>>; bytes?: Uint8Array }
 
 export const isGridRegion = (id: string | undefined): id is GridRegion => !!id && (GRID_REGIONS as readonly string[]).includes(id);
 
@@ -48,7 +49,7 @@ export function parseGrid(value: unknown, bytes: ArrayBuffer, region: string): G
     }
     layers[name as LayerName] = out;
   }
-  return { header: value, layers };
+  return { header: value, layers, bytes: new Uint8Array(bytes) };
 }
 
 const cache = new Map<string, Promise<Grid>>();
