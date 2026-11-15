@@ -2,7 +2,7 @@ import Lenis from 'lenis';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import mark from '../brand/assets/mark.svg';
 import { loadMoonTextures, type MoonTextures, type StageState } from './textures';
-import { copyOpacity, formatLat, formatLon, illustrativeDate, sampleStage, SITES } from './story';
+import { copyOpacity, formatLat, formatLon, sampleStage, stageDate, SITES } from './story';
 import { awaitNavigatorEntry, preloadNavigator } from '../shell/preload';
 import './landing.css';
 
@@ -32,8 +32,8 @@ const TEAM = [
 const LEDGER = [
   ['Terrain', 'LOLA LDEM, 80 m per pixel, 80° S to the pole', 'NASA PGDA · SHA-256 pinned', 'Verified'],
   ['Ephemeris', 'JPL Horizons DE441 in the MOON_ME frame, 43,824 hourly rows, 2026–2030', 'JPL SSD', 'Verified'],
-  ['Horizon masks', '360 azimuth bins per site, terrain out to 150 km', 'Built from LOLA', 'In progress'],
-  ['Engine', 'Sunlight, Earth contact and thermal estimate per hour, scored and hashed', 'Rust → WASM', 'In progress'],
+  ['Horizon masks', '360 azimuth bins per site, terrain out to 150 km', 'Built from LOLA', 'Verified'],
+  ['Engine', 'Sunlight, Earth contact and thermal estimate per hour, scored and hashed', 'Rust → WASM', 'Verified'],
 ] as const;
 
 interface NavigatorHints extends Navigator { deviceMemory?: number; connection?: { saveData?: boolean } }
@@ -74,7 +74,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
   const [webgl, setWebgl] = useState(true);
   const [credit, setCredit] = useState('');
   const [active, setActive] = useState(0);
-  const [date, setDate] = useState('2026.11.14');
+  const [date, setDate] = useState('2027.01.15');
   const [hovered, setHovered] = useState<string | null>(null);
   const [diving, setDiving] = useState(false);
   const [entryError, setEntryError] = useState('');
@@ -125,7 +125,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       });
       const nearest = Math.round(chapter);
       if (nearest !== lastActive) { lastActive = nearest; setActive(nearest); }
-      const d = illustrativeDate(sampleStage(chapter).sunLon).toISOString().slice(0, 10).replaceAll('-', '.');
+      const d = stageDate(sampleStage(chapter).sunLon).toISOString().slice(0, 10).replaceAll('-', '.');
       if (d !== lastDate) { lastDate = d; setDate(d); }
       frame = requestAnimationFrame(tick);
     };
@@ -231,8 +231,8 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
         <p className="body">Light sweeps once around the pole every 29.5 days. A launch slip moves arrival into a different part of that cycle, so power and darkness change even when the coordinates don’t.</p>
         <div className="readout">
           <span className="micro">Arrival · UTC</span>
-          <Odometer value={date} label={`Illustrative arrival date ${date}`} />
-          <small>Illustrative lighting on this page. The navigator uses the Horizons table.</small>
+          <Odometer value={date} label={`Arrival date ${date}`} />
+          <small>Sun and Earth on this globe are placed for this date by Astronomy Engine. The navigator uses the JPL Horizons table.</small>
         </div>
       </Chapter>
 
@@ -254,7 +254,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
         <p className="body">Libration swings Earth up to 6.86° north or south over a month. From a polar site that can lift it clear of a ridge, or drop it behind one and cut direct-to-Earth contact.</p>
         <dl className="stats">
           <div><dt>Earth latitude swing</dt><dd>±6.86°</dd></div>
-          <div><dt>Earth distance</dt><dd>356–407k km</dd></div>
+          <div><dt>Earth distance</dt><dd>356.6–406.7k km</dd></div>
         </dl>
       </Chapter>
 

@@ -33,14 +33,26 @@ const urlParams = [
   ['sites', 'Comma-separated site ids (max 4, deduplicated)'],
   ['date', 'UTC ISO 8601 start of the window'],
   ['hours', 'Mission length, 1–8760 whole hours'],
-  ['weights', 'Four decimal weights for the scoring mix'],
+  ['weights', 'Four to six decimal weights for the engine score: sun, earth, slope, crater, rock, thermal (missing ones keep their defaults)'],
+  ['mw', 'Four mission weights: lit, earth, dark, blackout'],
   ['mode', 'planner | explorer'],
   ['view', '3d | panorama | map | globe'],
+  ['v', 'Link format version; only 1 is accepted'],
+  ['focus', 'Focused site or custom-point id'],
+  ['layer', 'Analysis tab: terrain | horizon | libration | evidence (heatmap opens terrain)'],
+  ['playhead', 'Hours into the window, 0 to the mission length'],
+  ['delay', 'Launch slip in whole days, 0–365'],
+  ['heat', 'Heatmap layer id'],
+  ['ice', 'Ice-access weight, 0–100'],
+  ['sl', 'Slope limit, 1–30°'],
+  ['surv', 'Survival temperature, 40–400 K'],
+  ['bat', 'Battery, 0–720 h'],
 ] as const;
 
 const sources = [
   ['NASA Moon Trek / LROC QuickMap', 'Terrain imagery and elevation services'],
-  ['PGDA LOLA GeoTIFF', 'LOLA elevation fallback'],
+  ['PGDA LOLA GeoTIFF (80 m)', 'Terrain: horizon masks, slope and the 160 m survey grids'],
+  ['PGDA illumination products', 'Long-term (18.6-year) Sun and Earth visibility and permanent shadow'],
   ['JPL Horizons', 'Sun/Earth ephemerides and validation samples'],
   ['NASA SVS / LROC WAC', 'Global imagery mosaic (landing page)'],
 ];
@@ -115,7 +127,7 @@ export function DocsPage() {
           <h2>Mission workflow</h2>
           <p>The workspace compares candidate sites over a shared time window. Every scenario — sites, date, window length, weights and view — is encoded in the URL, so a link reproduces the exact state.</p>
           <ol className="docs-steps">
-            <li><strong>Pick sites.</strong> Curated south-pole candidates or custom coordinates down to 80°S, up to four at a time.</li>
+            <li><strong>Pick sites.</strong> Curated south-pole candidates or custom coordinates, up to four at a time. Terrain-aware results need a horizon mask or one of the three 20 km survey grids; other points use a flat horizon and say so.</li>
             <li><strong>Set the window.</strong> A UTC start time and mission length from 1 to 8,760 hours.</li>
             <li><strong>Read the horizon.</strong> Terrain decides sunlight and Earth contact; nothing is averaged away.</li>
             <li><strong>Compare and share.</strong> Metrics, statuses and countdowns side by side — the whole scenario lives in the link.</li>
@@ -144,7 +156,7 @@ export function DocsPage() {
             <tbody>{sources.map(([name, use]) => <tr key={name}><th scope="row">{name}</th><td>{use}</td></tr>)}</tbody>
           </table></div>
           <div className="docs-callout">
-            <strong>Synthetic demonstration data.</strong> Until the pipeline's real outputs are packaged, the app runs on labelled stand-ins under <code>web/public/data/mock/</code>. Synthetic values are never presented as measurements — see the badge in the workspace header.
+            <strong>Real data, three labelled demo sites.</strong> Curated sites and the survey grids run on LOLA terrain and the JPL Horizons table under <code>web/public/data/</code>, computed by the Rust/WASM engine. The three sites marked “synthetic demo” use stand-ins under <code>web/public/data/mock/</code> and are never presented as measurements.
           </div>
           <p>Full methods, assumptions and validation status: <a href="https://github.com/AJSuddu15243/NasaSpaceApps/blob/main/docs/METHODS.md" target="_blank" rel="noreferrer">docs/METHODS.md</a>.</p>
         </section>
@@ -178,7 +190,7 @@ export function DocsPage() {
               <p>{desc}</p>
             </div>)}
           </div>
-          <p className="docs-note">The same Rust crate produces the offline horizon masks (native bin, run by the pipeline) and the in-browser scoring WASM — the numbers in the UI come from the same deterministic code that built the masks.</p>
+          <p className="docs-note">The same Rust crate produces the offline horizon masks (native bin, run by the pipeline) and the in-browser scoring WASM — the site metrics and suitability scores in the UI come from that same deterministic code, and the workspace shows a hash of the site metrics so two machines can confirm they match.</p>
         </section>
       </main>
     </div>
