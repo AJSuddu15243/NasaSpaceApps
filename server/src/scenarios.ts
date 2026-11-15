@@ -15,6 +15,8 @@ export interface ScenarioRecord {
     missionWeights: Record<string, number>;
     mode: string;
     view: string;
+    /** Other web Scenario fields (survivalK, batteryH, ice, slopeLimit, focus, layer, heat, playhead, delay); kept in the weights jsonb. */
+    [extra: string]: unknown;
   };
   createdAt: string;
 }
@@ -42,7 +44,7 @@ export async function saveScenario(name: string, payload: ScenarioRecord['payloa
   // Slug is deterministic from the name: re-saving updates in place, and names
   // that slugify identically share one row (same rule as the web store).
   const slug = slugify(name.trim() || 'untitled');
-  const weights = { engine: payload.weights, mission: payload.missionWeights, mode: payload.mode, view: payload.view };
+  const weights = toWeights(payload);
   const [row] = await db.insert(scenarios).values({
     id: slug,
     name: name.trim() || 'Untitled scenario',
@@ -61,20 +63,29 @@ export async function deleteScenario(slug: string): Promise<void> {
   await db.delete(scenarios).where(eq(scenarios.id, slug));
 }
 
-function toRecord(row: typeof scenarios.$inferSelect): ScenarioRecord {
-  const w = row.weights as { engine?: Record<string, number>; mission?: Record<string, number>; mode?: string; view?: string };
+const EXTRA_KEYS = ['survivalK', 'batteryH', 'ice', 'slopeLimit', 'focus', 'layer', 'heat', 'playhead', 'delay'];
+
+/** Row `weights` jsonb: both weight sets, mode/view, and the known extra payload fields (no migration needed). */
+export function toWeights(payload: ScenarioRecord['payload']): Record<string, unknown> {
+  const extras = Object.fromEntries(EXTRA_KEYS.filter((k) => k in payload).map((k) => [k, payload[k]]));
+  return { ...extras, engine: payload.weights, mission: payload.missionWeights, mode: payload.mode, view: payload.view };
+}
+
+export function toRecord(row: typeof scenarios.$inferSelect): ScenarioRecord {
+  const { engine, mission, mode, view, ...extras } = row.weights as { engine?: Record<string, number>; mission?: Record<string, number>; mode?: string; view?: string; [extra: string]: unknown };
   return {
     slug: row.id,
     name: row.name,
     payload: {
+      ...extras,
       sites: row.sites,
       // pg returns "YYYY-MM-DD HH:MM:SS+00"; the web contract wants ISO-8601 Z.
       date: new Date(row.landingDateUtc).toISOString(),
       hours: row.durationHours,
-      weights: w.engine ?? {},
-      missionWeights: w.mission ?? {},
-      mode: w.mode ?? 'planner',
-      view: w.view ?? '3d',
+      weights: engine ?? {},
+      missionWeights: mission ?? {},
+      mode: mode ?? 'planner',
+      view: view ?? '3d',
     },
     createdAt: row.createdAt,
   };
