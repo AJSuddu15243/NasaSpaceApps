@@ -13,7 +13,9 @@ import { HoloStage } from '../features/heatmap/HoloStage';
 import { HEAT_LAYERS, LAYERS, type HeatLayer } from '../features/heatmap/layers';
 import { coveringRegion } from '../features/heatmap/specimen';
 import { geographicPoint } from '../scene/coordinates';
-import { isGridRegion } from '../features/heatmap/grid';
+import { isGridRegion, siteMaskFor } from '../features/heatmap/grid';
+import { siteParams } from '../engine';
+import { tryTrack } from '../features/timeline/MissionTimeline';
 import { ScienceCompare } from '../features/compare/ScienceCompare';
 import { BootSequence } from '../features/mission/BootSequence';
 import { PrioritiesPanel } from '../features/mission/PrioritiesPanel';
@@ -109,7 +111,7 @@ export default function Navigator() {
   const telemetry = useMemo(() => sunEarthAt(instant), [instant]);
   const place = useMemo(() => {
     const p = focused ?? (scenario.sites[0] ? resolve(scenario.sites[0]) : undefined);
-    return p ? { name: p.name, lat: p.lat, lon: p.lon } : undefined;
+    return p ? { id: p.id, name: p.name, lat: p.lat, lon: p.lon } : undefined;
   }, [focused, scenario.sites, resolve]);
   const comparePlaces = useMemo(() => scenario.sites.flatMap(id => { const p = resolve(id); return p ? [{ id, name: p.name, lat: p.lat, lon: p.lon, region: (() => { const r = coveringRegion(mission.grids.data, p); return r ? results[r] : undefined; })() }] : []; }), [scenario.sites, resolve, results, mission.grids.data]);
   const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id));
@@ -170,11 +172,12 @@ export default function Navigator() {
     {narrow && !leftOpen && <button type="button" className="hud-fab" onClick={() => setLeftOpen(true)}><MapPin size={16} /> Sites & priorities</button>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={tryTrack(siteMaskFor(focused, mission.demo.data?.masks, mission.grids.data), mission.demo.data?.table, instant, 1, siteParams(scenario))?.sunLit[0]} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
       <AnalysisPanel location={focused} date={instant} layer={scenario.layer ?? 'terrain'} mode={scenario.mode} region={region} slopeLimit={scenario.slopeLimit}
+        mask={siteMaskFor(focused, mission.demo.data?.masks, mission.grids.data)} table={mission.demo.data?.table} params={siteParams(scenario)}
         onLayerChange={layer => setScenario({ layer }, true)} onClose={closeAnalysis} onAdd={addFocused} canAdd={scenario.sites.length < MAX_SITES && !scenario.sites.includes(focused.id)} feedback={feedback} />
     </div>}
     {focused && narrow && <button type="button" className="hud-fab hud-inspector" aria-expanded={analysisOpen} onClick={() => setAnalysisOpen(v => !v)}>{analysisOpen ? 'Close analysis' : 'Why this place?'}</button>}
@@ -202,7 +205,7 @@ export default function Navigator() {
       </div>
     </nav>
 
-    <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} /></div>
+    <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} mask={place && siteMaskFor(place, mission.demo.data?.masks, mission.grids.data)} table={mission.demo.data?.table} params={siteParams(scenario)} /></div>
     {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} />}
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}

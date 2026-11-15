@@ -19,8 +19,10 @@ function webglAvailable() {
 }
 
 /** Real terrain is the persistent specimen; scientific overlays expand above it and dock on selection. */
-export function HoloStage({ name, grid, heat, scores, areas, source = 'preview', slopeLimit, reducedMotion, date, view, onView, onHeat, onClose }: {
+export function HoloStage({ name, grid, heat, scores, areas, source = 'preview', slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose }: {
   name: string; grid: Grid; heat: HeatLayer; scores: Float32Array; areas: PreviewArea[]; source?: ScoreSource; slopeLimit: number; reducedMotion: boolean; date: string;
+  /** Engine sun_lit (0..1, visible solar disk over the terrain horizon) at the focused place and playhead; undefined = plane test only. */
+  sunLit?: number;
   view: import('../../shell/scenario').View; onView: (view: 'map' | '3d') => void;
   onHeat: (layer: HeatLayer) => void; onClose: () => void;
 }) {
@@ -86,7 +88,7 @@ export function HoloStage({ name, grid, heat, scores, areas, source = 'preview',
         : <Suspense fallback={<p className="holo-loading" role="status">Preparing specimen…</p>}>
           {map ? <LunarScene active={active} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} view="map" layer={surfaceLayer} contoursEnabled={contours} exaggeration={exaggeration} resetKey={resetKey} overlayOpacity={opacity} simulationRef={simulationRef} timeKey={date} onImageryError={imageryError}/>
             : <StrataView active={active} resetKey={resetKey} contours={contours} exaggeration={exaggeration} overlayOpacity={opacity} onImageryError={imageryError}
-              grid={grid} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} scores={scores} marks={marks} ranges={ranges} selected={selected} onSelect={select} onProbe={setProbe} sunDir={sunDir} reducedMotion={reducedMotion} labelRefs={labels} areaLabelRefs={areaLabels}/>}
+              grid={grid} tile={terrain.tile} assets={failedImage ? { ...terrain.assets!, imagery: undefined } : terrain.assets} scores={scores} marks={marks} ranges={ranges} selected={selected} onSelect={select} onProbe={setProbe} sunDir={sunDir} sunLit={sunLit} reducedMotion={reducedMotion} labelRefs={labels} areaLabelRefs={areaLabels}/>}
         </Suspense>}
       {!map && selected === null && terrain.ready && gl && <div className="strata-labels" aria-label="Exploded terrain layers">{STACK.map((key, i) => <button key={key} ref={el => { labels.current[i] = el; }} disabled={!available(key)} onClick={() => select(key)}><span>{String(i + 1).padStart(2, '0')}</span>{LAYERS[key].short}{!available(key) && ' · unavailable'}</button>)}</div>}
     </div>

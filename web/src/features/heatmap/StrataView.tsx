@@ -32,6 +32,8 @@ export interface StrataProps {
   onProbe: (index: number | null) => void;
   /** Unit vector to the Sun in the stack frame (x east-ish map +x, y up, z map −y). */
   sunDir: [number, number, number];
+  /** Engine visible fraction of the solar disk at the playhead (far terrain included); undefined falls back to the local plane test. */
+  sunLit?: number;
   reducedMotion: boolean;
   labelRefs: MutableRefObject<(HTMLElement | null)[]>;
   areaLabelRefs: MutableRefObject<(HTMLElement | null)[]>;
@@ -215,7 +217,7 @@ function Skirt({ geometry, selected, reducedMotion }: { geometry: BufferGeometry
 }
 
 function Scene(props: StrataProps) {
-  const { grid, tile, assets, scores, marks, ranges, selected, onSelect, onProbe, sunDir, reducedMotion, labelRefs, areaLabelRefs, resetKey, contours, exaggeration, overlayOpacity, onImageryError } = props;
+  const { grid, tile, assets, scores, marks, ranges, selected, onSelect, onProbe, sunDir, sunLit, reducedMotion, labelRefs, areaLabelRefs, resetKey, contours, exaggeration, overlayOpacity, onImageryError } = props;
   const live: LiveY = useRef({});
   const [lo, hi] = useMemo(() => { let a = Infinity; let b = -Infinity; for (let i = 0; i < tile.elevationM.length; i++) { a = Math.min(a, tile.elevationM[i]); b = Math.max(b, tile.elevationM[i]); } return [a, b]; }, [tile]);
   const surface = useMemo(() => specimenGeometry(tile, RELIEF * exaggeration), [tile, exaggeration]);
@@ -227,7 +229,7 @@ function Scene(props: StrataProps) {
   return <>
     <ambientLight intensity={0.55} color={new Color('#eee2ce')} />
     <hemisphereLight args={['#eee2ce', '#141210', 0.35]} />
-    <directionalLight castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-3} shadow-camera-right={3} shadow-camera-top={3} shadow-camera-bottom={-3} shadow-bias={-0.0001} position={sun} intensity={sunDir[1] > -0.05 ? 2.4 : 0.2} color="#fff3dc" />
+    <directionalLight castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-3} shadow-camera-right={3} shadow-camera-top={3} shadow-camera-bottom={-3} shadow-bias={-0.0001} position={sun} intensity={sunLit !== undefined ? 0.2 + 2.2 * sunLit : sunDir[1] > -0.05 ? 2.4 : 0.2} color="#fff3dc" />
     <Rig selected={selected} height={height} reducedMotion={reducedMotion} resetKey={resetKey} />
     <Labels live={live} labelRefs={labelRefs} />
     <group>
