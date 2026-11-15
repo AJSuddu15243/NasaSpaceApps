@@ -7,6 +7,7 @@ pub mod geometry;
 pub mod grid;
 pub mod mask;
 pub mod score;
+pub mod thermal;
 
 pub use contracts::{Area, Metrics, Params, Weights};
 use serde::{Serialize, de::DeserializeOwned};
