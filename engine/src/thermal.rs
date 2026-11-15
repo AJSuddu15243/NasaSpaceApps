@@ -7,6 +7,7 @@ use crate::constants::{ALBEDO, AU_KM, EMISSIVITY, S0, SIGMA, T_FLOOR_K};
 /// Surface normal in the site's East-North-Up frame. `aspect_deg` is the downhill azimuth,
 /// clockwise from north; the normal tilts by `slope_deg` towards it.
 // shortcut: a missing aspect is treated as flat ground, which underestimates polar temperatures; every real mask writes aspect_deg (ENG-3), so only mocks hit this.
+// shortcut: callers pass the grid's slope_deg, which is the MAX of the 2x2 80 m slopes (for the hard slope limit) while aspect comes from the mean gradient, so the tilt runs ~0.6-0.7 deg (median) steeper than the mean surface (~+4 K on a sun-facing slope at grazing Sun, earlier 40 K floor facing away); have the layers stage write a mean-gradient slope for the thermal normal when thermal accuracy matters.
 pub fn surface_normal(slope_deg: f64, aspect_deg: Option<f64>) -> [f64; 3] {
     let Some(aspect) = aspect_deg else {
         return [0.0, 0.0, 1.0];
