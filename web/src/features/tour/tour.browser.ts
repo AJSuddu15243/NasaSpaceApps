@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('skipping onboarding cannot mutate the shared scenario or trap focus', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/app');
-  await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
+  await page.getByRole('button', { name: 'Continue to workspace' }).click({ timeout: 15000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
   const tour = page.getByTestId('navigator-tour');
   await expect(tour).toBeVisible();
@@ -15,7 +15,7 @@ test('skipping onboarding cannot mutate the shared scenario or trap focus', asyn
   expect(page.url()).toBe(original);
   await expect(page.locator('#main')).toBeFocused();
   await page.reload();
-  await expect(page.getByRole('button', { name: /replay briefing/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Replay mission briefing' })).toBeVisible();
   await expect(tour).toHaveCount(0);
 });
 
@@ -23,9 +23,9 @@ test('replayed guidance resets its step and restores focus to the replay control
   await page.addInitScript(() => localStorage.setItem('lunar-window-tour-v2', 'done'));
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/app');
-  await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
+  await page.getByRole('button', { name: 'Continue to workspace' }).click({ timeout: 15000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
-  const replay = page.getByRole('button', { name: /replay briefing/i });
+  const replay = page.getByRole('button', { name: 'Replay mission briefing' });
   await replay.click();
   const tour = page.getByTestId('navigator-tour');
   await expect(tour.getByRole('heading', { name: 'Choose a place' })).toBeVisible();
@@ -34,7 +34,11 @@ test('replayed guidance resets its step and restores focus to the replay control
   await tour.getByRole('button', { name: 'Back' }).click();
   await expect(tour.getByRole('heading', { name: 'Choose a place' })).toBeVisible();
   for (let i = 0; i < 4; i++) await tour.getByRole('button', { name: 'Next' }).click();
+  const scenario = page.url();
+  await expect(tour).toContainText('Next: choose a place in Sites');
   await tour.getByRole('button', { name: 'Start exploring' }).click();
+  await expect(page.getByRole('complementary', { name: 'Sites and priorities' })).toBeVisible();
+  expect(page.url()).toBe(scenario);
   await expect(replay).toBeFocused();
   await replay.click();
   await expect(tour.getByRole('heading', { name: 'Choose a place' })).toBeVisible();
@@ -48,7 +52,7 @@ test('blocked storage and reduced motion cannot make the mobile tour undiscardab
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/app');
-  await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
+  await page.getByRole('button', { name: 'Continue to workspace' }).click({ timeout: 15000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
   const tour = page.getByTestId('navigator-tour');
   await expect(tour).toBeVisible();

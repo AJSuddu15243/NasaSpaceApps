@@ -184,9 +184,11 @@ export default function Navigator() {
     </header>
 
     {leftOpen && <aside className="hud hud-left" data-tour="sites" aria-label="Sites and priorities">
-      <div className="hud-tabs" role="tablist" aria-label="Left panel">
-        <button type="button" role="tab" aria-selected={leftTab === 'sites'} onClick={() => setLeftTab('sites')}>Sites <span>{scenario.sites.length}/{MAX_SITES}</span></button>
-        <button type="button" role="tab" aria-selected={leftTab === 'priorities'} onClick={() => setLeftTab('priorities')}>Priorities</button>
+      <div className="hud-tabs">
+        <div className="hud-tab-buttons" role="tablist" aria-label="Left panel">
+          <button type="button" role="tab" aria-selected={leftTab === 'sites'} onClick={() => setLeftTab('sites')}>Sites <span>{scenario.sites.length}/{MAX_SITES}</span></button>
+          <button type="button" role="tab" aria-selected={leftTab === 'priorities'} onClick={() => setLeftTab('priorities')}>Priorities</button>
+        </div>
         <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min" aria-label="Minimize panel" onClick={() => setLeftOpen(false)}><ChevronLeft size={14} /></button></TooltipTrigger><TooltipContent>Minimize</TooltipContent></Tooltip></TooltipProvider>
       </div>
       <div className="hud-scroll" role="tabpanel">

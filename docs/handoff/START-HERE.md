@@ -18,7 +18,7 @@ Four things make it different. Every UI hour goes into these:
 | Engine | ENG-1 to ENG-9 merged in #120: `site_metrics`, `grid_fracs`/`grid_scores`, `top_areas`, `nearby_better`, `metrics_hash`, `output_hash` are real WASM (`web/src/engine/pkg/`). |
 | Web | The 3 real regions run the WASM engine; `demo-*` sites stay on `mock.ts` and are labelled. #121 merged the #109/#111/#112 fixes and `web/vercel.json` (SPA rewrite). The heatmap score layer runs the engine: baked for 2027-01-15 + 0–14 d, live on the worker pool otherwise, JS preview while computing (#127). |
 | Demo-ready (merged #124–#127) | Thresholds 40/40/180/180, default scenario 2027-01-15 + 336 h, slip re-scores the cards, 233 K / 48 h site params, hash under the cards, baked engine heatmap, real `sites.json`. Open after the demo: rest of INT-1 (#48), engine-api schema PR. |
-| Not deployed | No Vercel URL yet (#5); settings are in the root `README.md`. |
+| Deployment | Existing live UI: https://lunar-window-smoky.vercel.app/ (HTTP 200 checked 2026-11-15). Production AI credentials/firewall and the newest deployment SHA still require verification in the project account (#5). Settings are in `README.md`. |
 
 ## Who does what
 | Person | Issues | First action |

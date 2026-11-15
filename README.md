@@ -5,9 +5,8 @@ Sun and Earth geometry against the real terrain horizon — solar power, thermal
 exposure and direct-to-Earth communications — with a deterministic Rust/WASM
 engine and a React/Three.js front end.
 
-- **Live URL:** not deployed yet — Vercel previews are tracked in #5.
-- **Screenshots:** pending the first deploy; the landing page and workspace are
-  the demo surface.
+- **Live URL:** https://lunar-window-smoky.vercel.app/ · [Workspace](https://lunar-window-smoky.vercel.app/app). Production API setup and deployment verification are tracked in #5.
+- **Demo surface:** the landing page and interactive mission workspace.
 - **Build spec:** [SPEC.md](SPEC.md) · **Team proposal:** [docs/PROPOSAL.md](docs/PROPOSAL.md)
 - **Methods, data sources, assumptions, validation status:** [docs/METHODS.md](docs/METHODS.md)
 - **Official challenge:** [docs/CHALLENGE.md](docs/CHALLENGE.md)
@@ -83,12 +82,23 @@ Pipeline outputs land in `web/public/data/` and are committed once they fit the
 | Setting | Value |
 |---|---|
 | Root directory | `web` |
-| Install command | `pnpm install` |
+| Install command | `pnpm install --frozen-lockfile` |
 | Build command | `pnpm build` |
 | Output directory | `dist` |
 
-`web/vercel.json` rewrites every path to `/index.html` so deep links such as
-`/app?...` load the SPA; files under `web/public/data/` are served as-is.
+`web/vercel.json` routes `/api/ask` to a server-only function and other deep links
+such as `/app?...` to the SPA; existing assets and `web/public/data/` are served
+as-is. `/version.json` records the deployment's source commit without credentials.
+Verify its SHA against the production branch after each deploy.
+
+Solgaleo needs Production-only `ASK_API_KEY` (sensitive), `ASK_BASE_URL` and
+`ASK_MODEL`, plus one published SDK firewall rule `solgaleo-ip`: 10 requests/minute in a
+shared (`all`) bucket. This also bounds any individual visitor. Production functions run in
+`iad1` so the regional shared counter uses one region.
+See [local and production AI setup](docs/LOCAL-DEV.md#ask-ai-optional). Never use
+`VITE_` for credentials. Redeploy after environment changes. Until configuration
+is complete, the assistant reports an unavailable state; the lunar workspace
+works independently. The optional local database API is not deployed publicly.
 
 ## How it fits together
 

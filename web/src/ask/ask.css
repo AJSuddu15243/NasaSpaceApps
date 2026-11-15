@@ -1,5 +1,5 @@
-/* Solgaleo — left-docked copilot panel; overlays the HUD, never blocks the specimen centre. */
-.ask-panel{position:absolute;z-index:18;left:12px;top:12px;bottom:12px;width:min(400px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px}
+/* Solgaleo starts at the left; the title handle can move it within the workspace. */
+.ask-panel{position:absolute;z-index:18;left:12px;top:12px;height:min(600px,calc(100% - 24px));max-height:calc(100% - 16px);width:min(400px,calc(100vw - 24px));display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;overflow-y:auto;overscroll-behavior:contain}
 .ask-head{display:flex;align-items:center;justify-content:space-between;flex:none}
 .ask-title{display:flex;align-items:center;gap:7px;font:600 12px var(--font-data);letter-spacing:.1em;text-transform:uppercase;color:var(--holo)}
 .ask-head button{border:0;background:none;color:var(--shell-muted);font-size:16px;line-height:1;padding:2px 6px;border-radius:6px}
@@ -23,5 +23,11 @@
 .ask-text blockquote{margin:8px 0;padding:2px 10px;border-left:2px solid var(--edge);color:var(--shell-muted)}
 :root[data-theme='light'] .ask-head button:hover{background:#0000000f}
 @media(max-width:640px){
-  .ask-panel{left:8px;right:8px;top:auto;bottom:150px;width:auto;height:auto;max-height:55%}
+  .ask-panel{left:8px;top:auto;bottom:150px;width:calc(100% - 16px);right:auto;height:auto;max-height:55%}
 }
+
+.ask-head{gap:8px}
+.ask-head .ask-drag-handle{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:1;min-width:0;min-height:30px;padding:4px 6px;cursor:grab;touch-action:none;user-select:none}
+.ask-head .ask-drag-handle:active{cursor:grabbing}
+.ask-drag-handle>svg{color:var(--shell-muted)}
+.ask-drag-handle:focus-visible{outline:2px solid var(--holo);outline-offset:2px}

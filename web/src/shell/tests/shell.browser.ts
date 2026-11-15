@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
 });
 async function enter(page: import('@playwright/test').Page, url = '/app') {
   await page.goto(url);
-  await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
+  await page.getByRole('button', { name: 'Continue to workspace' }).click({ timeout: 15000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
 }
 test('history and shared links cannot silently drop the focused layer or priorities', async ({ page }) => {
@@ -18,7 +18,7 @@ test('history and shared links cannot silently drop the focused layer or priorit
   await expect(page.getByRole('button', { name: 'Explorer', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await page.goForward();
   await expect(page.getByRole('button', { name: 'Planner', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await page.reload(); await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
+  await page.reload(); await page.getByRole('button', { name: 'Continue to workspace' }).click({ timeout: 15000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
   await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'slope');
   await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: () => Promise.reject(new Error('Denied')) } }));
@@ -64,4 +64,23 @@ test('failed grids recover and malformed links never fabricate results', async (
   await expect(page.getByText('This focused location is unavailable.', { exact: false })).toBeVisible();
   await page.goto('/does-not-exist');
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+});
+
+test('Planner changes cannot leave the prioritized dock redundant or out of order', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await enter(page, '/app?focus=haworth');
+  const dock = page.getByRole('group', { name: 'Heatmap layer', exact: true });
+  await expect(dock.getByRole('button').first()).toHaveText('Suitability');
+  await expect(dock.getByRole('button', { name: 'Terrain', exact: true })).toHaveCount(1);
+  await expect(dock.getByRole('button', { name: /^(Slope|Elevation|Relief)$/ })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Planner', exact: true }).click();
+  await expect(page.getByText('Exact numbers: tune weights, limits, export data.')).toBeVisible();
+  await page.getByLabel('Sunlight weight', { exact: true }).focus();
+  await page.keyboard.press('Home');
+  await page.getByLabel('Earth contact weight', { exact: true }).focus();
+  await page.keyboard.press('End');
+  await expect(dock.getByRole('button').nth(1)).toHaveText('Radio');
+  await expect(page.getByRole('button', { name: 'Export ranked areas (CSV)' })).toBeVisible();
+  await dock.getByRole('button', { name: 'Terrain', exact: true }).click();
+  await expect(page.locator('.terrain-switch').getByRole('button', { name: 'Slope', exact: true })).toBeVisible();
 });

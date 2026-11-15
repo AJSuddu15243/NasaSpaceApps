@@ -5,3 +5,4 @@ __pycache__/
 LunarLandingSiteNavigation/data/**/*.csv
 LunarLandingSiteNavigation/data/**/*.zip
 LunarLandingSiteNavigation/data/**/*.png
+.vercel
