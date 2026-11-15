@@ -40,7 +40,9 @@ score[c] = Σ wᵢ·fᵢ[c] / Σ wᵢ        if valid[c]
 - Dividing by `Σ wᵢ` keeps scores in [0, 1] whatever the sliders add up to. All weights 0 → error, not NaN grid.
 - A factor with weight 0 is ignored entirely, so "rock: no data" (NaN layer) doesn't exclude anything.
 - PSR flag is a **separate `u8` layer**, not a score factor (sun% already ~0 there). Rule from #21:
-  mask above `90 − |lat| + 1.54 + 0.27` degrees in every azimuth bin (`psr_flags`, Err when the grid has no mask layer).
+  mask above `90 − |lat| + 1.59 + 0.272` degrees in every azimuth bin (`psr_flags`, Err when the grid has no mask layer).
+  1.59 = max |sub-solar lat| in the shipped 2026–2030 ephem table (1.588; the textbook 1.54 flagged 4 lit cells as PSR),
+  0.272 = largest solar disk radius.
 - Night-survival gate (Ananth, 2026-11-14): after `score_cells`, a cell is NaN when `longest_dark_h > battery_h`; `battery_h = 0`
   turns it off. **The heatmap default is gate off** (see "Results on the real grids").
 

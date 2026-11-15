@@ -12,8 +12,10 @@ use crate::metrics::{self, SiteGeom};
 pub const DEPTH_REF_M: f64 = 50.0;
 // shortcut: rock ships as a 0–1 DEM roughness proxy (PIPE-6), so ROCK_REF = 1.0; set a real rock_ref when a measured rock layer replaces the proxy.
 pub const ROCK_REF: f64 = 1.0;
-/// Max solar declination vs the lunar equator plus the solar disk radius, deg (PSR rule from #21).
-pub const PSR_SUN_MAX_DEG: f64 = 1.54 + 0.27;
+/// Max |sub-solar lat| in the shipped 2026-2030 ephem table (1.588, rounded up) plus the largest
+/// solar disk radius asin(695700 / 1.467e8 km) = 0.272, deg (PSR rule from #21).
+// shortcut: constant from the shipped table, not read from it; recompute if the ephem range changes.
+pub const PSR_SUN_MAX_DEG: f64 = 1.59 + 0.272;
 /// Values per cell in a `grid_fracs` array: sun_frac, earth_frac, cold_frac, longest_dark_h.
 pub const FRACS_PER_CELL: usize = 4;
 
