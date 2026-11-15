@@ -111,7 +111,7 @@ export default function Navigator() {
     return p ? { name: p.name, lat: p.lat, lon: p.lon } : undefined;
   }, [focused, scenario.sites, resolve]);
   const comparePlaces = useMemo(() => scenario.sites.flatMap(id => { const p = resolve(id); return p ? [{ id, name: p.name, lat: p.lat, lon: p.lon, region: (() => { const r = coveringRegion(mission.grids.data, p); return r ? results[r] : undefined; })() }] : []; }), [scenario.sites, resolve, results, mission.grids.data]);
-  const demoInShortlist = scenario.sites.some(id => demoSites.some(site => site.id === id));
+  const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id));
 
   const bootLines = [
     { label: 'Lunar globe · LRO imagery', detail: globeReady ? 'ONLINE' : '', status: globeReady ? 'ready' as const : globeError ? 'error' as const : 'loading' as const },
@@ -169,7 +169,7 @@ export default function Navigator() {
     {compareOpen && <div className="hud hud-right mission-comparison">
       <header className="analysis-heading"><div><span className="eyebrow">SHORTLIST · {scenario.sites.length}/{MAX_SITES}</span><h2>Compare places</h2></div><button type="button" onClick={() => setCompareOpen(false)} aria-label="Close comparison">×</button></header>
       <ScienceCompare places={comparePlaces} date={instant} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
-      {demoInShortlist && mission.demo.data && <details className="demo-results"><summary>Synthetic demo sites (engine fixtures)</summary><ResultsPanel data={{ ...mission.demo.data, sites: catalogue }} scenario={{ ...scenario, date: new Date(Date.parse(scenario.date) + (scenario.delay ?? 0) * 86400000).toISOString() }} /></details>}
+      {engineInShortlist && mission.demo.data && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={{ ...mission.demo.data, sites: catalogue }} scenario={{ ...scenario, date: new Date(Date.parse(scenario.date) + (scenario.delay ?? 0) * 86400000).toISOString() }} /></details>}
     </div>}
     {!focused && !compareOpen && booted && <section className="mission-intro" aria-label="Getting started">
       <p className="eyebrow">LUNAR SOUTH POLE · ARTEMIS III REGIONS</p>

@@ -24,7 +24,7 @@ export function parseMask(value: unknown, id: string): SiteMask {
   return value;
 }
 export function parseEphem(value: unknown, bytes: ArrayBuffer): { header: EphemHeader; rows: Float32Array } {
-  if (!ephemCheck(value) || value.n > 8761 || bytes.byteLength !== value.n * 24) throw new Error('The ephemeris table does not match its header.');
+  if (!ephemCheck(value) || value.n > 43_824 /* 2026-2030 hourly */ || bytes.byteLength !== value.n * 24) throw new Error('The ephemeris table does not match its header.');
   const view = new DataView(bytes);
   const rows = new Float32Array(value.n * 6);
   for (let i = 0; i < rows.length; i++) {

@@ -44,7 +44,7 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
       const metrics = site_metrics(mask!, data.table, scenario.date, scenario.hours, MOCK_PARAMS);
       return { id, name, metrics, message: null, timeline, readiness: readinessScore(metrics, scenario.missionWeights, scenario.hours) };
     } catch (error) {
-      return { id, name, metrics: null, message: error instanceof UnavailableScenario ? error.message : 'Example results are unavailable.', timeline, readiness: null };
+      return { id, name, metrics: null, message: error instanceof UnavailableScenario ? error.message : 'Engine results are unavailable.', timeline, readiness: null };
     }
   });
   const computed = results.map(result => result.metrics).filter((metrics): metrics is Metrics => metrics !== null);
@@ -53,7 +53,7 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
 
   return <aside className="ws-results rs" aria-label="Site comparison">
     <div className="ws-panel-head">
-      <div><h2>Compare</h2><p className="ws-panel-sub">Synthetic examples · not mission results</p></div>
+      <div><h2>Compare</h2><p className="ws-panel-sub">Rust/WASM engine · JPL Horizons ephemeris · LOLA horizon masks</p></div>
       {onCollapse && <button type="button" className="panel-collapse-btn" onClick={onCollapse} aria-label="Collapse comparison panel"><ChevronRight size={14} aria-hidden="true" /></button>}
     </div>
     <div className="ws-scroll">
@@ -70,13 +70,13 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
       {showTable && <p className="rs-units">● best in row · temps in kelvin · times in hours</p>}
 
       {results.length === 0
-        ? <p className="rs-empty">Choose a demo site to inspect an example card.</p>
+        ? <p className="rs-empty">Choose a site to compare engine results.</p>
         : <div className="rs-sites">{results.map((result, index) => {
           const { metrics } = result;
-          if (!metrics) return <div key={result.id} className="rs-card"><h3>{result.name}</h3>{result.timeline && <TimelineBar timeline={result.timeline} scrubHour={scrub?.hour ?? null} />}<p className="rs-reason">{result.message}</p></div>;
+          if (!metrics) return <div key={result.id} className="rs-card"><h3>{result.name}{mockTag(result.id)}</h3>{result.timeline && <TimelineBar timeline={result.timeline} scrubHour={scrub?.hour ?? null} />}<p className="rs-reason">{result.message}</p></div>;
           const status = siteStatus(metrics, DEFAULT_THRESHOLDS);
           return <div key={result.id} className="rs-card">
-            <div className="rs-card-head"><div><span className="rs-idx">SITE {String(index + 1).padStart(2, '0')}</span><h3>{result.name}</h3></div><div className="rs-head-right"><Badge tone={statusTone[status.status]} title={status.reason}>{statusLabel[status.status]}</Badge>{result.readiness !== null && <span className="rs-score" title="Weighted readiness heuristic">{result.readiness}<span className="rs-score-unit">/100</span></span>}</div></div>
+            <div className="rs-card-head"><div><span className="rs-idx">SITE {String(index + 1).padStart(2, '0')}</span><h3>{result.name}{mockTag(result.id)}</h3></div><div className="rs-head-right"><Badge tone={statusTone[status.status]} title={status.reason}>{statusLabel[status.status]}</Badge>{result.readiness !== null && <span className="rs-score" title="Weighted readiness heuristic">{result.readiness}<span className="rs-score-unit">/100</span></span>}</div></div>
             <div className="rs-solar"><span className="rs-big">{metrics.mean_sun_el_deg.toFixed(1)}<span>°</span></span><span className="rs-label">mean solar elevation</span></div>
             <dl className="rs-facts">
               {!showTable && <><div><dt>Sunlit</dt><dd>{metrics.pct_lit}%</dd></div><div><dt>Earth contact</dt><dd>{metrics.pct_earth_visible}%</dd></div></>}
@@ -112,6 +112,11 @@ function TimelineBar({ timeline, scrubHour }: { timeline: Uint8Array; scrubHour:
     </svg>
     <div className="rs-timeline-key"><span><i className="tl-key tl-sun"/>Sun</span><span><i className="tl-key tl-earth"/>Earth</span><span><i className="tl-key tl-both"/>Both</span><span><i className="tl-key tl-dark"/>Neither</span></div>
   </div>;
+}
+
+/** demo-* sites run on synthetic fixtures, never the engine. */
+function mockTag(id: string) {
+  return id.startsWith('demo-') ? <> <Badge tone="neutral" title="Synthetic fixture, not engine output">mock</Badge></> : null;
 }
 
 function shortName(name: string): string {

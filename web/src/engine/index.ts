@@ -32,8 +32,7 @@ export function initEngine(module: BufferSource | WebAssembly.Module): void {
 // engine stays uninitialised until initEngine is called; demo sites still run on the mock.
 if ('document' in globalThis) await compileEngine().then(initEngine, (e: unknown) => console.warn('engine wasm failed to load', e));
 
-// shortcut: demo-* sites (mock masks + constant mock ephem) stay on the synthetic fixtures; switch per site
-// to real masks/ephem when INT-1 (#48) loads web/public/data/masks + ephem.bin instead of mock/.
+// demo-* sites (synthetic masks, labelled "mock" in the UI) stay on fixtures; real masks (INT-1) run the WASM engine.
 const isMock = (mask: SiteMask) => mask.id.startsWith('demo-');
 
 function hoursSinceT0(ephem: Ephem, t_start: string): number {
