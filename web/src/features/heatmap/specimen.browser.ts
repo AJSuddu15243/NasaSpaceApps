@@ -29,12 +29,14 @@ test('a delayed previous terrain response cannot replace the new region', async 
   });
   await page.goto('/app?focus=connecting-ridge');
   await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click());
-  await page.getByRole('button', { name: 'Sites & priorities' }).click();
+  await page.getByRole('button', { name: 'Open sites and priorities' }).click();
   await page.getByRole('button', { name: 'Fly to and inspect Haworth', exact: true }).click();
   await expect(page.locator('.holo-eyebrow')).toContainText('HAWORTH');
-  await expect(page.getByText('3D unavailable.', { exact: false })).toBeVisible();
+  await page.getByRole('group', { name: 'Heatmap layer' }).getByRole('button', { name: 'Terrain' }).click();
+  await expect(page.locator('.terrain-switch').getByRole('button', { name: 'Slope' })).toBeEnabled();
   await page.waitForTimeout(1400);
   await expect(page.locator('.holo-eyebrow')).toContainText('HAWORTH');
+  await expect(page.locator('.terrain-switch').getByRole('button', { name: 'Slope' })).toBeEnabled();
   await expect(page).toHaveURL(/focus=haworth/);
 });
 
@@ -43,5 +45,8 @@ test('missing imagery cannot be advertised as a selectable photo', async ({ page
   await page.goto('/app?focus=haworth');
   await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click());
   await expect(page.getByText('NAC imagery unavailable for this region.', { exact: true })).toBeVisible();
-  // shortcut: the dock does not know per-region asset availability, so only the alert is asserted; disable dock buttons when HoloStage reports availability upward.
+  await page.getByRole('group', { name: 'Heatmap layer' }).getByRole('button', { name: 'NAC photo' }).click();
+  await page.waitForTimeout(300);
+  await expect(page.locator('.holo-stage')).not.toHaveAttribute('data-layer', 'imagery');
+  await expect(page).not.toHaveURL(/heat=imagery/);
 });

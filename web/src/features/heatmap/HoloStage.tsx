@@ -50,9 +50,19 @@ export function HoloStage({ name, grid, heat, scores, source = 'preview', window
     return () => cancelAnimationFrame(frame);
   }, [terrain.ready, gl, map, selected, stackCount]);
   const previousHeat = useRef(heat);
-  useEffect(() => { if (previousHeat.current !== heat) { setSelected(heat); setProbe(null); previousHeat.current = heat; } }, [heat]);
   const imageryError = useCallback(() => setFailedImage(grid.header.region), [grid.header.region]);
   const available = useCallback((key: HeatLayer) => key === 'relief' || (key === 'imagery' ? !!terrain.assets?.imagery && failedImage !== grid.header.region : key === 'slope' ? !!terrain.assets?.slope : !!layerValues(grid, key, scores, window)), [terrain.assets, failedImage, grid, scores, window]);
+  // Dock clicks set heat without knowing this region's assets: gate asset-backed layers here, once terrain has loaded.
+  useEffect(() => {
+    const old = previousHeat.current;
+    if (old === heat) return;
+    const assetBacked = heat === 'imagery' || TERRAIN_LAYERS.includes(heat);
+    if (assetBacked && !terrain.ready) return;
+    setProbe(null);
+    if (!assetBacked || available(heat)) { previousHeat.current = heat; setSelected(heat); return; }
+    if (heat === 'imagery' && selected !== 'imagery') { onHeat(old); return; } // keep the current layer
+    previousHeat.current = 'relief'; setSelected('relief'); onHeat('relief');
+  }, [heat, terrain.ready, available, selected, onHeat]);
   const select = (key: HeatLayer) => { if (available(key)) { setSelected(key); setProbe(null); onHeat(key); } };
   const spec = layerSpec(selected ?? 'relief', source);
   const legendRamp = selected === 'slope' || selected === 'elevation' ? ['#00204d', '#1e4c78', '#466f6a', '#9d9252', '#fde725'] : spec.ramp;
