@@ -101,6 +101,7 @@ export function HoloStage({ name, grid, heat, scores, source = 'preview', window
       </div>
     </header>
     <div className="holo-canvas">
+      {selected && !SURFACE_LAYERS.includes(selected) && !values && <p className="holo-loading" role="status">{LAYERS[selected].short}{pending(selected)}</p>}
       {!terrain.ready ? <p className="holo-loading" role="status">Retrieving LOLA terrain and orbital imagery…</p>
         : terrain.error || !terrain.tile ? <div className="holo-loading" role="alert"><p>{terrain.error ?? 'No measured terrain covers this point.'}</p><button onClick={() => setAttempt(n => n + 1)}>Retry terrain</button></div>
         : !gl ? <p className="holo-loading" role="status">3D unavailable. Layer descriptions, ranked areas and cell values remain available below.</p>

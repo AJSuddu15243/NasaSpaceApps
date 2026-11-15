@@ -237,7 +237,7 @@ function Evidence({ location, region, table, params }: { location: AnalysisLocat
   return <div data-tour-anchor="evidence-panel">
     <div className="analysis-source">What each layer is, and where it came from</div>
     <ul className="evidence-list">
-      {(['sun', 'earth', 'ice', 'favorability', 'imagery', 'relief', 'elevation', 'slope', 'roughness', 'score'] as const).map(k => { const L = k === 'score' && region ? scoreLayer(region.source) : LAYERS[k]; return <li key={k}><span className={`chip chip-${L.status}`}>{L.status === 'preview' && k === 'favorability' ? 'model' : L.status}</span><b>{L.label}</b><small>{L.citation}. {L.caveat}</small></li>; })}
+      {(['sun', 'earth', 'sun_lt', 'earth_lt', 'ice', 'favorability', 'imagery', 'relief', 'elevation', 'slope', 'roughness', 'score'] as const).map(k => { const L = k === 'score' && region ? scoreLayer(region.source) : LAYERS[k]; return <li key={k}><span className={`chip chip-${L.status}`}>{L.status === 'preview' && k === 'favorability' ? 'model' : L.status}</span><b>{L.label}</b><small>{L.citation}. {L.caveat}</small></li>; })}
       <li><span className="chip chip-real">real</span><b>Date-specific sunlight, Earth contact, thermal</b><small>Rust/WASM engine over LOLA horizon masks and the JPL Horizons table: compare cards use site_metrics, the suitability layer uses grid_fracs + scores_from_fracs (precomputed for demo dates, computed in your browser otherwise).</small></li>
     </ul>
     <div className="analysis-source">Ephemeris check vs JPL Horizons</div>
