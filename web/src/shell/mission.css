@@ -1,10 +1,11 @@
 /* Mission control: the Moon fills the stage; slim holographic HUD modules sit around it. */
 body:has(.mission){overflow:hidden}
+body:has(.mission) #root{display:flex;flex-direction:column;height:100dvh}
 body:has(.mission) .app-footer{display:none}
-body:has(.mission) .app-header{min-height:56px;height:56px;padding:8px 20px;position:relative;z-index:30;background:#060503;border-bottom:1px solid #e8cca81a}
+body:has(.mission) .app-header{z-index:30}
 body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;max-width:600px}
 .mission{--holo:var(--mission-accent);--holo-dim:#ceb28d;--glass:#0b0906c7;--edge:#e8cca826;--sun:#f0a948;--earth:#5aa2f0;--ice:#3cc9da;
-  position:relative;height:calc(100dvh - 56px);overflow:hidden;color:#f0ece6;background:radial-gradient(ellipse at 50% 55%,#13100c 0%,#040302 70%);isolation:isolate;font-family:var(--font-ui)}
+  position:relative;flex:1;min-height:0;overflow:hidden;color:#f0ece6;background:radial-gradient(ellipse at 50% 55%,#13100c 0%,#040302 70%);isolation:isolate;font-family:var(--font-ui)}
 .mission button{font:inherit;color:inherit;cursor:pointer}
 .mission .eyebrow{font:9px var(--font-data);letter-spacing:.2em;color:var(--holo-dim)}
 .mission-stars{position:absolute;inset:-50%;z-index:0;pointer-events:none;opacity:.55;
@@ -214,12 +215,7 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
   .hud-dock{bottom:132px}
 }
 @media(max-width:640px){
-  body:has(.mission) .app-header{height:auto;min-height:52px;padding:8px 10px;gap:6px}
-  body:has(.mission) .wordmark small{display:none}
-  body:has(.mission) .app-header nav{padding:2px;gap:0}
-  body:has(.mission) .app-header nav a{padding:5px 8px;min-height:30px;font-size:10px}
-  body:has(.mission) .app-header nav a[href='/design']{display:none}
-  .mission{height:calc(100dvh - 52px)}
+  .mission-holo-wrap{top:52px}
   .hud-top{left:8px;right:8px;top:8px;gap:8px;padding:6px}
   .hud-telemetry div:nth-child(n+3){display:none}.hud-telemetry{gap:10px}
   .hud-link{display:none}
@@ -257,7 +253,6 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
  .mission-holo-wrap{top:98px;bottom:190px}.hud-right{bottom:190px;max-height:63%}.hud-inspector{top:58px}
  .mission-focused .hud-dock .dock-layers{display:none}.mission-focused .hud-dock{bottom:128px}
  .mission .hud-fab{width:32px;height:32px}.hud-top{min-height:40px}
- .mission{height:calc(100dvh - 54px)}
  .mission-holo .holo-probe{font-size:9px;min-height:15px}
 }
 @media(max-height:700px){.specimen-explain,.specimen-caption{display:none}.holo-stage{grid-template-rows:auto minmax(100px,1fr) auto}.hud-bottom{padding:6px 10px}.holo-footer{padding-bottom:4px}}
@@ -279,9 +274,7 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 .mission-globe .globe-controls{left:auto;right:24px;top:88px;bottom:auto;transform:none;flex-direction:column}
 .mission .globe-marker--region em{opacity:0;transition:opacity .2s}
 .mission .globe-marker--region:hover em,.mission .globe-marker--region:focus-visible em,.mission .globe-marker--region.is-active em{opacity:1}
-body:has(.mission) .app-header .ui-button{color:#efe7da;background:#19140e;border:1px solid #806c50}
 .mission .sp{flex-shrink:0}.mission .ws-scroll{max-height:none;overflow:visible}
-body:has(.mission) .app-header{--shell-text:#efe7da;--shell-muted:#b3a898;--shell-bg:#0c0b09;--card:36 15% 7%;--accent:36 15% 14%;--border:36 15% 20%;--foreground:36 30% 90%;--background:36 10% 4%}
 @media(max-width:640px){.mission .specimen-controls button,.mission .specimen-layer-list button{font-size:9px;min-height:32px}.holo-status{display:none}.specimen-controls label{display:none}}
 
 /* Light theme: warm paper stage, dark ink text, light glass HUD. The Moon viewport and boot stay dark. */
@@ -293,8 +286,6 @@ body:has(.mission) .app-header{--shell-text:#efe7da;--shell-muted:#b3a898;--shel
   --shell-bg:#f4f0e6;--shell-card:#fffdf8;--shell-text:#2a241c;--shell-muted:#6e665a;--shell-line:#c9c0ae;--shell-field:#d8cfbc;
   --background:40 30% 93%;--card:45 40% 97%;--foreground:30 20% 14%;--muted-foreground:35 10% 42%;--input:40 15% 80%;--accent:36 25% 90%;--secondary:40 15% 90%;--border:40 12% 80%;
 }
-:root[data-theme='light'] body:has(.mission) .app-header{background:#f4f0e6e0;border-bottom-color:#00000014;--shell-text:#2a241c;--shell-muted:#6e665a;--shell-bg:#f4f0e6;--card:45 40% 97%;--accent:40 20% 90%;--border:40 12% 80%;--foreground:30 20% 14%;--background:40 30% 93%}
-:root[data-theme='light'] body:has(.mission) .app-header .ui-button{color:#2a241c;background:#fffdf8;border-color:#c9c0ae}
 :root[data-theme='light'] .mission-stars{display:none}
 :root[data-theme='light'] .mission-vignette{background:radial-gradient(ellipse at 50% 50%,transparent 50%,#b9b09b30 100%),linear-gradient(#0000 72%,#d9d1bd80)}
 :root[data-theme='light'] .mission-globe .globe-hint{color:#6e665a}
@@ -350,7 +341,6 @@ body:has(.mission) .app-header{--shell-text:#efe7da;--shell-muted:#b3a898;--shel
 :root[data-theme='light'] .mission .sp-inspect{background:#fffdf8}
 :root[data-theme='light'] .mission .sc-row input{color-scheme:light}
 :root[data-theme='light'] .mission .globe-marker--region em{color:#f6f3ef}
-:root[data-theme='light'] body:has(.mission) .app-header .ui-button{color:#2a241c}
 @media(max-width:1020px){:root[data-theme='light'] .hud-right{background:#fffffff5}}
 :root[data-theme='light'] .hud-dock button[aria-pressed=true],:root[data-theme='light'] .hud-dock button[aria-expanded=true]{background:#0000000d}
 .hud-min{margin-left:auto;display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:6px;background:none;color:var(--shell-muted);transition:background .15s,color .15s;flex:none}
