@@ -123,6 +123,8 @@ export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scena
     for (const region of GRID_REGIONS) {
       const grid = grids[region];
       if (!grid?.bytes) continue;
+      // A table-less failure for this window is stale once the table is here: drop it so the live run reads "computing".
+      if (table) setEngine(value => { const e = value[region]; if (!e || e.key !== key || !('failed' in e)) return value; const next = { ...value }; delete next[region]; return next; });
       regionFracs(region, grid, start, hours, table, () => current)
         // No ephem table (still loading or failed) and no baked file → preview, not "computing" forever; a later table re-runs this.
         .then(r => { if (current && (r || !table)) setEngine(value => ({ ...value, [region]: r ? { key, ...r } : { key, failed: true } })); })

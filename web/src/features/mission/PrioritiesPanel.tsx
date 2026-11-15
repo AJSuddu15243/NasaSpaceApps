@@ -9,7 +9,7 @@ const PRESETS: { id: string; label: string; text: string; weights: W; ice: numbe
   { id: 'balanced', label: 'Balanced landing', text: 'Sunlight and Earth contact first, then safe ground.', weights: { sun: 35, earth: 25, slope: 20, crater: 10, rock: 0, thermal: 10 }, ice: 0 },
   { id: 'power', label: 'Maximum solar power', text: 'Stay in the light as long as possible.', weights: { sun: 80, earth: 10, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 0 },
   { id: 'comms', label: 'Always talk to Earth', text: 'Direct radio contact matters most.', weights: { sun: 25, earth: 65, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 0 },
-  { id: 'ice', label: 'Land near water ice', text: 'Reach a permanently shadowed cold trap while staying lit.', weights: { sun: 35, earth: 15, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 40 },
+  { id: 'ice', label: 'Land near water ice', text: 'Stay lit near a permanently shadowed cold trap. Distance to ice is shown but does not change the engine score.', weights: { sun: 35, earth: 15, slope: 10, crater: 0, rock: 0, thermal: 0 }, ice: 40 },
 ];
 const FACTORS: { key: keyof W | 'ice'; label: string; note?: string }[] = [
   { key: 'sun', label: 'Sunlight' }, { key: 'earth', label: 'Earth contact' }, { key: 'slope', label: 'Low slope' }, { key: 'crater', label: 'Shallow terrain' },
@@ -69,7 +69,7 @@ function exportCsv(results: Partial<Record<GridRegion, RegionResult>>, scenario:
   const w = scenario.weights;
   const rows = [['region', 'rank', 'lat_deg', 'lon_deg', 'score', 'source', 'sun_earth_basis', 'window_start_utc', 'window_h', 'sun_frac', 'earth_frac', 'thermal_factor', 'slope_factor', 'crater_factor', 'ice_km', 'slope_limit_deg', 'weights_sun_earth_slope_crater_rock_thermal_ice']];
   const f3 = (v: number) => Number.isFinite(v) ? v.toFixed(3) : '';
-  for (const [region, r] of Object.entries(results)) r?.areas.forEach((a, i) => rows.push([region, String(i + 1), a.lat.toFixed(5), a.lon.toFixed(5), a.score.toFixed(4), r.source, r.source === 'preview' ? 'long-term 18.6 yr' : 'window', start, String(scenario.hours), f3(a.factors.sun), f3(a.factors.earth), r.source === 'preview' ? '' : f3(a.factors.thermal), f3(a.factors.slope), f3(a.factors.crater), Number.isFinite(a.iceKm) ? a.iceKm.toFixed(2) : '', String(scenario.slopeLimit), [w.sun, w.earth, w.slope, w.crater, w.rock, w.thermal, scenario.ice].join(' ')]));
+  for (const [region, r] of Object.entries(results)) r?.areas.forEach((a, i) => rows.push([region, String(i + 1), a.lat.toFixed(5), a.lon.toFixed(5), a.score.toFixed(4), r.source, r.source === 'preview' ? 'long-term 18.6 yr' : 'window', r.source === 'preview' ? '' : start, r.source === 'preview' ? '' : String(scenario.hours), f3(a.factors.sun), f3(a.factors.earth), r.source === 'preview' ? '' : f3(a.factors.thermal), f3(a.factors.slope), f3(a.factors.crater), Number.isFinite(a.iceKm) ? a.iceKm.toFixed(2) : '', String(scenario.slopeLimit), [w.sun, w.earth, w.slope, w.crater, w.rock, w.thermal, scenario.ice].join(' ')]));
   const blob = new Blob([rows.map(r => r.join(',')).join('\n') + '\n'], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'lunar-window-ranked-areas.csv'; a.click();
