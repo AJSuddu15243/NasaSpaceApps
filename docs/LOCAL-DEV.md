@@ -32,7 +32,7 @@ Other web commands:
 ```bash
 pnpm typecheck    # tsc --noEmit
 pnpm lint         # eslint
-pnpm test         # vitest (80 tests)
+pnpm test         # unit and contract tests
 pnpm build        # production build → dist/
 pnpm exec vite preview  # serve the production build (no `preview` script)
 ```
@@ -59,31 +59,21 @@ The API is zero-dependency `node:http`:
 
 ### Ask AI (optional)
 
-The "Ask AI" button in the workspace answers questions about what is on
-screen. It proxies to any OpenAI-compatible chat API — all of these have
-free tiers and need no card:
+Solgaleo calls the same-origin `/api/ask` endpoint. For local use, copy
+`server/.env.example` to `server/.env`, set `ASK_API_KEY` privately, then run
+`pnpm api` in `server/`. The explicit server settings are `ASK_API_KEY`,
+`ASK_BASE_URL` (an HTTPS chat-completions endpoint), and `ASK_MODEL`.
+There is no GitHub-token fallback. Never put credentials in `VITE_` variables.
 
-```bash
-# Groq (fastest free option — console.groq.com → API Keys)
-cd server
-ASK_API_KEY=gsk_... \
-ASK_BASE_URL=https://api.groq.com/openai/v1/chat/completions \
-ASK_MODEL=openai/gpt-oss-120b \
-pnpm api
-
-# or Gemini (aistudio.google.com → Get API key)
-ASK_API_KEY=AIza... \
-ASK_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
-ASK_MODEL=gemini-2.0-flash \
-pnpm api
-
-# or GitHub Models with a personal access token (github.com/settings/tokens)
-GITHUB_TOKEN=github_pat_... pnpm api
-```
-
-See `server/.env.example` for the full list. Without a key the endpoint
-returns 503 and the panel shows a readable offline message — the rest of
-the app is unaffected, so judging never breaks.
+Production uses `web/api/ask.ts` on Vercel, independently of the optional
+scenario database. Configure server-only Production environment variables and
+publish one SDK firewall rule `solgaleo-ip` (fixed window, 10 requests/60 seconds,
+429 on limit). The handler checks that rule with a fixed shared `all` key; the shared
+cap also bounds any individual visitor. This uses one rate-limit rule, as required on Hobby. The cap is 10/minute
+across visitors; the original separate 500/hour rule is not configured. Production functions stay in `iad1` because
+counters are regional. Redeploy after configuration changes and also set provider-side quotas. Missing credentials
+or unavailable firewall rules return a controlled 503; the workspace remains usable.
+Preview builds must not receive the production key unless explicitly trusted.
 
 **Web integration is automatic in dev**: `web/vite.config.ts` proxies `/api`
 to `:8787`, so saving a scenario in `/app` writes to Postgres *and*
@@ -128,9 +118,8 @@ cargo build --release
 wasm-pack build --target web   # or the repo's documented build
 ```
 
-The web app currently consumes the engine through `web/src/engine/` — the
-mock adapter serves labelled synthetic fixtures until the WASM worker
-adapter lands (ENG-9).
+The web app consumes the real WASM engine through `web/src/engine/`.
+Only explicitly labelled `demo-*` sites use synthetic fixtures.
 
 ## Quick sanity check
 

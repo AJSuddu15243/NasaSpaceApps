@@ -1,4 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { Readable } from 'node:stream';
+import { handleAsk } from '../../web/server/ask.ts';
 import { deleteScenario, getScenario, listScenarios, saveScenario, type ScenarioRecord } from './scenarios.ts';
 
 /**
@@ -11,23 +13,10 @@ import { deleteScenario, getScenario, listScenarios, saveScenario, type Scenario
  *   DELETE /api/scenarios/:slug    → 204
  *   POST   /api/ask                → { question, context } → { answer }
  *
- * /api/ask proxies to GitHub Models (free tier) using GITHUB_TOKEN/GH_TOKEN.
- * Any OpenAI-compatible endpoint works via ASK_BASE_URL/ASK_MODEL overrides.
+ * /api/ask shares the protected handler deployed to Vercel.
+ * Set ASK_API_KEY, ASK_BASE_URL and ASK_MODEL in server/.env for local use.
  */
 const PORT = Number(process.env.PORT ?? 8787);
-const ASK_URL = process.env.ASK_BASE_URL ?? 'https://models.github.ai/inference/chat/completions';
-const ASK_MODEL = process.env.ASK_MODEL ?? 'openai/gpt-4o-mini';
-// Any OpenAI-compatible key works: ASK_API_KEY, or GITHUB_TOKEN/GH_TOKEN for GitHub Models.
-const ASK_KEY = process.env.ASK_API_KEY ?? process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN;
-
-const ASK_SYSTEM = `You are the Lunar Window assistant inside a NASA Space Apps mission-planning tool.
-The user is looking at a live workspace: a 3D Moon with candidate Artemis III landing regions near the south pole,
-terrain heatmaps, sunlight/Earth-visibility timelines, and mission comparison metrics.
-Explain what is on screen and the underlying concepts (solar illumination, horizon masks, Earth line-of-sight,
-launch windows, LOLA terrain, JPL ephemeris) in plain language for someone who is not a space engineer.
-Be concise (under ~150 words), concrete, and honest: say when something is illustrative or pending real data.
-Never invent numbers that are not in the provided context.`;
-
 function send(res: ServerResponse, status: number, body?: unknown) {
   res.writeHead(status, {
     'content-type': 'application/json',
@@ -56,6 +45,30 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://localhost:${PORT}`);
   const path = url.pathname;
 
+  if (path === '/api/ask') {
+    const headers = new Headers();
+    for (const [name, value] of Object.entries(req.headers)) {
+      if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(', ') : value);
+    }
+    const controller = new AbortController();
+    const abort = () => { if (!res.writableEnded) controller.abort(); };
+    res.on('close', abort);
+    try {
+      const request = new Request(`http://${req.headers.host ?? 'localhost:8787'}/api/ask`, {
+        method: req.method, headers, signal: controller.signal,
+        ...(!['GET', 'HEAD'].includes(req.method ?? 'GET') ? { body: Readable.toWeb(req), duplex: 'half' } : {}),
+      } as RequestInit);
+      const response = await handleAsk(request);
+      res.writeHead(response.status, Object.fromEntries(response.headers));
+      res.end(await response.text());
+    } catch {
+      res.writeHead(500, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      res.end(JSON.stringify({ error: 'Solgaleo is temporarily unavailable.' }));
+    } finally {
+      res.off('close', abort);
+    }
+    return;
+  }
   if (req.method === 'OPTIONS') return send(res, 204);
   try {
     if (req.method === 'GET' && path === '/api/scenarios') return send(res, 200, await listScenarios());
@@ -70,39 +83,14 @@ const server = createServer(async (req, res) => {
       }
       return send(res, 201, await saveScenario(body.name, body.payload));
     }
-    if (req.method === 'POST' && path === '/api/ask') {
-      const body = await readBody(req) as { question?: unknown; context?: unknown } | null;
-      if (!body || typeof body.question !== 'string' || !body.question.trim()) {
-        return send(res, 400, { error: 'expected { question: string, context?: string }' });
-      }
-      if (!ASK_KEY) return send(res, 503, { error: 'Ask AI needs a key: set ASK_API_KEY (or GITHUB_TOKEN for GitHub Models).' });
-      const upstream = await fetch(ASK_URL, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${ASK_KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          model: ASK_MODEL,
-          max_tokens: 500,
-          temperature: 0.3,
-          messages: [
-            { role: 'system', content: ASK_SYSTEM },
-            { role: 'user', content: `What the user is looking at:\n${typeof body.context === 'string' ? body.context : '(no context)'}\n\nQuestion: ${body.question}` },
-          ],
-        }),
-        signal: AbortSignal.timeout(45_000),
-      });
-      const data = await upstream.json().catch(() => null) as { choices?: { message?: { content?: string } }[]; error?: { message?: string } } | null;
-      const answer = data?.choices?.[0]?.message?.content?.trim();
-      if (!upstream.ok || !answer) return send(res, 502, { error: data?.error?.message ?? `model request failed (${upstream.status})` });
-      return send(res, 200, { answer });
-    }
     if (req.method === 'DELETE' && path.startsWith('/api/scenarios/')) {
       await deleteScenario(decodeURIComponent(path.slice('/api/scenarios/'.length)));
       return send(res, 204);
     }
     return send(res, 404, { error: 'not found' });
-  } catch (error) {
-    return send(res, 500, { error: error instanceof Error ? error.message : 'internal error' });
+  } catch {
+    return send(res, 500, { error: 'internal error' });
   }
 });
 
-server.listen(PORT, () => console.log(`scenarios api → http://localhost:${PORT}/api/scenarios`));
+server.listen(PORT, '127.0.0.1', () => console.log(`scenarios api → http://localhost:${PORT}/api/scenarios`));

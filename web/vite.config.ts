@@ -5,8 +5,8 @@ export default defineConfig({
   build: { target: 'es2022' },
   server: {
     proxy: {
-      // Dev only: forwards the scenarios API to the local server/ package.
-      '/api': 'http://localhost:8787',
+      // Preserve the browser origin for Solgaleo's same-origin check; the API binds IPv4 loopback.
+      '/api': { target: 'http://127.0.0.1:8787', changeOrigin: false },
     },
   },
 });

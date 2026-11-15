@@ -1,6 +1,6 @@
 /**
  * Ask AI — plain-language Q&A about whatever is on the workspace screen.
- * Talks to the local scenarios API (server/src/api.ts → GitHub Models free tier).
+ * Talks to the same-origin server endpoint; credentials never enter the browser.
  * When the API is not running the caller gets a readable error, never a crash.
  */
 
@@ -15,12 +15,15 @@ export async function askLunarAI(question: string, context: string, signal?: Abo
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ question, context }),
-      signal,
+      signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(35_000)]) : AbortSignal.timeout(35_000),
     });
   } catch {
-    throw new AskError('The assistant is offline. Start the API with `cd server && pnpm api` (needs GITHUB_TOKEN).');
+    if (signal?.aborted) throw signal.reason;
+    throw new AskError('Solgaleo could not connect in time. Please try again.');
   }
   const body = await res.json().catch(() => null) as { answer?: string; error?: string } | null;
-  if (!res.ok || !body?.answer) throw new AskError(body?.error ?? `Assistant error (${res.status}).`);
+  if (!res.ok || typeof body?.answer !== 'string' || !body.answer.trim()) {
+    throw new AskError(typeof body?.error === 'string' ? body.error : 'Solgaleo is temporarily unavailable. Please try again.');
+  }
   return body.answer;
 }

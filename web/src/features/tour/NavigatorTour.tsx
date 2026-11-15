@@ -8,7 +8,7 @@ export const TOUR_STEPS = [
   { anchor: 'layers', title: 'Read the heatmaps', text: 'Switch between sunlight, Earth contact (radio), ice traps and terrain (slope, elevation, relief). Buttons are ordered by how much each factor weighs in your priorities. Every dot is a real 160 m patch of ground: move your cursor over the survey to read it.' },
   { anchor: 'timeline', title: 'Move the date', text: 'Drag the playhead or slip the launch by days. The Sun and Earth lanes show their elevation for the place you are looking at, and the shares count the hours the Sun is lit and Earth is in view over the real terrain horizon (Rust/WASM engine; flat horizon where no survey exists). All times are UTC.' },
   { anchor: 'mode', title: 'Set your priorities', text: 'Explorer gives plain-language mission presets. Planner gives exact weights, the slope limit and a CSV export. Both re-rank the landing areas instantly.' },
-  { anchor: 'evidence', title: 'Compare and check the evidence', text: 'Shortlist up to four places and compare them side by side. Evidence lists every data source and checks our Sun and Earth positions against NASA JPL Horizons.' },
+  { anchor: 'evidence', title: 'Compare and check the evidence', text: 'Shortlist up to four places and compare them side by side. Evidence lists every data source and checks our Sun and Earth positions against NASA JPL Horizons. Next: choose a place in Sites, then try a seven-day launch delay to compare its arrival window.' },
 ] as const;
 
 type Rect = { top: number; left: number; width: number; height: number };
@@ -107,7 +107,7 @@ export function NavigatorTour({ replayKey = 0, enabled = true, onStep }: { repla
       {mode === 'tour' && !rect && <p className="navigator-tour-note">This control is hidden at this window size. You can continue.</p>}
       <div className="navigator-tour-actions">
         <button type="button" className="navigator-tour-secondary" onClick={mode === 'tour' && step > 0 ? () => setStep(s => s - 1) : close}>{mode === 'tour' && step > 0 ? 'Back' : 'Skip'}</button>
-        <button type="button" className="navigator-tour-primary" onClick={mode === 'offer' ? start : last ? close : () => setStep(s => s + 1)}>{mode === 'offer' ? 'Start briefing' : last ? 'Start exploring' : 'Next'}</button>
+        <button type="button" className="navigator-tour-primary" onClick={mode === 'offer' ? start : last ? () => { onStep?.('sites'); close(); } : () => setStep(s => s + 1)}>{mode === 'offer' ? 'Start briefing' : last ? 'Start exploring' : 'Next'}</button>
       </div>
       {mode === 'tour' && <div className="navigator-tour-progress" aria-hidden="true">{TOUR_STEPS.map((s, i) => <i key={s.anchor} className={i <= step ? 'is-complete' : ''} />)}</div>}
     </aside>

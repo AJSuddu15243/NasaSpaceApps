@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { BookOpen, RotateCcw, Sparkles, X } from 'lucide-react';
+import { BookOpen, GripHorizontal, RotateCcw, Sparkles, X } from 'lucide-react';
 import ActionSearchBar, { type CommandItem } from '../components/kokonutui/action-search-bar';
 import { askLunarAI, AskError } from './ask';
 import { useShell } from '../shell/store';
+import { usePanelDrag } from './usePanelDrag';
 import './ask.css';
 
 const SUGGESTIONS = [
@@ -20,19 +21,32 @@ const SUGGESTIONS = [
  */
 export function AskPanel({ context, onClose, onReplay }: { context: string; onClose: () => void; onReplay?: () => void }) {
   const { navigate } = useShell();
+  const { panelRef, style, handleProps } = usePanelDrag();
+  const moveHelp = useId();
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState('');
   const queryRef = useRef('');
+  const activeRequest = useRef<AbortController | null>(null);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => () => activeRequest.current?.abort(), []);
 
   const ask = async (text: string) => {
     const q = text.trim();
     if (!q) return;
+    if (q.length > 2000) { setError('Keep your question under 2,000 characters.'); return; }
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    setLoading(true);
     setError(''); setAnswer('');
     try {
-      setAnswer(await askLunarAI(q, context));
+      const result = await askLunarAI(q, context, controller.signal);
+      if (!controller.signal.aborted) setAnswer(result);
     } catch (e) {
-      setError(e instanceof AskError ? e.message : 'The assistant could not answer. Try again.');
+      if (!controller.signal.aborted) setError(e instanceof AskError ? e.message : 'The assistant could not answer. Try again.');
+    } finally {
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
@@ -58,11 +72,14 @@ export function AskPanel({ context, onClose, onReplay }: { context: string; onCl
     return ask(item.label);
   };
 
-  return <section className="hud ask-panel" aria-label="Solgaleo assistant">
+  return <section ref={panelRef} style={style} className="hud ask-panel" aria-label="Solgaleo assistant">
     <header className="ask-head">
-      <span className="ask-title"><Sparkles size={14} /> Solgaleo</span>
+      <button type="button" className="ask-drag-handle" aria-label="Move Solgaleo assistant" aria-describedby={moveHelp} {...handleProps}>
+        <span className="ask-title"><Sparkles size={14} /> Solgaleo</span><GripHorizontal size={16} aria-hidden="true" />
+      </button>
       <button type="button" aria-label="Close assistant" onClick={onClose}><X size={15} /></button>
     </header>
+    <span id={moveHelp} className="sr-only">Drag to move. Use arrow keys to reposition, Shift for larger steps, or Home to reset.</span>
     <p className="ask-context">Lunar copilot · knows what is on your screen — sites, date, view and telemetry.</p>
     <ActionSearchBar
       items={items}
@@ -72,9 +89,10 @@ export function AskPanel({ context, onClose, onReplay }: { context: string; onCl
       onSelect={onSelect}
       defaultOpen
     />
-    {(answer || error) && <div className="ask-answer" role="status" aria-live="polite">
+    {(loading || answer || error) && <div className="ask-answer" role="status" aria-live="polite" aria-busy={loading}>
+      {loading && <p>Solgaleo is checking your workspace…</p>}
       {error && <p className="ask-error">{error}</p>}
-      {answer && <div className="ask-text"><ReactMarkdown>{answer}</ReactMarkdown></div>}
+      {answer && <div className="ask-text"><ReactMarkdown skipHtml disallowedElements={['img', 'a']} unwrapDisallowed>{answer}</ReactMarkdown></div>}
     </div>}
   </section>;
 }
