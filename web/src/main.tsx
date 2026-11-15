@@ -20,7 +20,7 @@ function App() {
   const [share, setShare] = useState('');
   const [shareUrl, setShareUrl] = useState('');
   const [theme, setTheme] = useState<'dark' | 'light'>(() => document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
-  useEffect(() => { document.documentElement.dataset.theme = theme; try { localStorage.setItem('lunar-theme', theme); } catch { /* private mode */ } }, [theme]);
+  useEffect(() => { document.documentElement.dataset.theme = theme; document.documentElement.classList.toggle('dark', theme === 'dark'); try { localStorage.setItem('lunar-theme', theme); } catch { /* private mode */ } }, [theme]);
   useEffect(() => { document.title = `${path.startsWith('/app') ? 'Workspace' : path === '/design' ? 'Design reference' : path === '/docs' ? 'Documentation' : 'Lunar Landing Site Navigator'} · Lunar Window`; }, [path]);
   async function copyLink() {
     const url = `${location.origin}/app${writeScenario(scenario)}`;
