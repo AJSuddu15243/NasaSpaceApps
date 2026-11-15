@@ -4,6 +4,7 @@ import { siteSky, sunEarthAt } from '../../ephem';
 import { formatCoordinates } from '../sites/sites';
 import { LAYERS, percentile, scoreLayer } from '../heatmap/layers';
 import type { RegionResult } from '../mission/useMissionData';
+import type { PreviewArea } from '../heatmap/score';
 import { loadAnalysis, type AnalysisData } from './data';
 import { tryTrack } from '../timeline/MissionTimeline';
 import { horizonAt } from '../heatmap/grid';
@@ -63,6 +64,12 @@ function NoCoverage() {
   return <div className="analysis-empty"><span>No terrain survey here</span><h3>A point to investigate.</h3><p>We only have measured terrain, sunlight, Earth-visibility and permanent-shadow maps for the three Artemis III regions so far. Sun & Earth and Earth wobble still work here: they are computed live for any coordinate.</p></div>;
 }
 
+/** The area's lowest normalised factor; thermal only counts once the engine window has it (the preview has no cold_frac). */
+export function weakestFactor(f: Pick<PreviewArea['factors'], 'sun' | 'earth' | 'slope' | 'crater' | 'rock' | 'thermal'>, engine: boolean): [string, number] {
+  const all: [string, number][] = [['sunlight', f.sun], ['Earth contact', f.earth], ['flat ground', f.slope], ['shallow terrain', f.crater], ['smooth ground', f.rock], ...(engine ? [['warmth', f.thermal] as [string, number]] : [])];
+  return all.filter(e => Number.isFinite(e[1])).reduce((m, e) => e[1] < m[1] ? e : m, ['none', Infinity]);
+}
+
 function Bar({ value, tone }: { value: number; tone: string }) {
   return <i className="factor-bar" style={{ ['--v' as string]: `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`, ['--tone' as string]: tone }} />;
 }
@@ -88,7 +95,7 @@ function WhyHere({ region, mode, slopeLimit }: { region: RegionResult; mode: Mod
         const sunP = sunL ? percentile(sunL, sunL[a.index]) : 0;
         const earthP = earthL ? percentile(earthL, earthL[a.index]) : 0;
         const sun = sunL?.[a.index] ?? NaN; const earth = earthL?.[a.index] ?? NaN; const slope = L.slope_deg?.[a.index] ?? NaN;
-        const weakest = ([['sunlight', a.factors.sun], ['Earth contact', a.factors.earth], ['flat ground', a.factors.slope], ['shallow terrain', a.factors.crater]] as const).reduce((m, f) => f[1] < m[1] ? f : m);
+        const weakest = weakestFactor(a.factors, engine);
         return <li key={a.index}>
           <header><b>{i + 1}</b><span>Area {i + 1}<small>{formatCoordinates(a.lat, a.lon)}</small></span><em>{a.score.toFixed(2)}</em></header>
           {mode === 'explorer' ? <p className="area-story">
@@ -100,6 +107,8 @@ function WhyHere({ region, mode, slopeLimit }: { region: RegionResult; mode: Mod
             <div><dt>Earth contact</dt><dd>{LAYERS.earth.format(earth)} <small>p{earthP}</small></dd><Bar value={a.factors.earth} tone="#5aa2f0"/></div>
             <div><dt>Slope</dt><dd>{slope.toFixed(1)}° / {slopeLimit}°</dd><Bar value={a.factors.slope} tone="#f0b979"/></div>
             <div><dt>Crater relief</dt><dd>{(L.crater_depth_m?.[a.index] ?? NaN).toFixed(0)} m</dd><Bar value={a.factors.crater} tone="#f0b979"/></div>
+            {engine && <div><dt>Warm enough</dt><dd>{LAYERS.sun.format(a.factors.thermal)} of hours</dd><Bar value={a.factors.thermal} tone="#e07a5f"/></div>}
+            <div><dt>Smooth ground <small>proxy</small></dt><dd>{(L.roughness_deg?.[a.index] ?? NaN).toFixed(1)}° roughness</dd><Bar value={a.factors.rock} tone="#a78b56"/></div>
             <div><dt>Ice trap</dt><dd>{Number.isFinite(a.iceKm) ? `${a.iceKm.toFixed(1)} km` : 'none in survey'}</dd><Bar value={Number.isFinite(a.factors.ice) ? a.factors.ice : 0} tone="#3cc9da"/></div>
           </dl>}
         </li>;

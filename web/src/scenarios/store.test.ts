@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SCENARIO } from '../shell/scenario';
-import { deleteScenario, getScenario, listScenarios, saveScenario, scenarioShareUrl } from './store';
+import { deleteScenario, getScenario, listScenarios, saveScenario, scenarioShareUrl, syncRemoteScenarios } from './store';
 
 function memoryStorage() {
   const map = new Map<string, string>();
@@ -64,4 +64,18 @@ it('migrates old saved scenarios without losing new mission state on a round tri
   const scenario = { ...DEFAULT_SCENARIO, heat: 'imagery' as const, ice: 20, slopeLimit: 7, focus: 'haworth', delay: 3, playhead: 12 };
   saveScenario('Layered', scenario);
   expect(getScenario('layered')?.scenario).toEqual(scenario);
+});
+
+it('remote round trip keeps every Planner field (survivalK, batteryH, ice, slope, layers, slip)', async () => {
+  vi.stubGlobal('localStorage', memoryStorage());
+  let body = '';
+  vi.stubGlobal('fetch', vi.fn(async (_url: string, init?: { body?: string }) => { if (init?.body) body = init.body; return new Response('{}'); }));
+  const scenario = { ...DEFAULT_SCENARIO, survivalK: 150, batteryH: 0, heat: 'imagery' as const, ice: 20, slopeLimit: 7, focus: 'haworth', delay: 3, playhead: 12 };
+  saveScenario('Remote', scenario);
+  const { payload } = JSON.parse(body) as { payload: unknown };
+  localStorage.clear();
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify([{ slug: 'remote', name: 'Remote', payload, created_at: '2026-01-01T00:00:00Z' }]))));
+  expect(await syncRemoteScenarios()).toBe(1);
+  expect(getScenario('remote')?.scenario).toEqual(scenario);
+  vi.unstubAllGlobals();
 });

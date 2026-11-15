@@ -77,8 +77,9 @@ export function metricsHash(metrics: Metrics[]): string {
 }
 
 /** Params for real (non demo-*) site cards: battery and survival from the scenario, 2° antenna margin, 1 h step. */
-export function siteParams(scenario: Pick<Scenario, 'batteryH' | 'survivalK' | 'slopeLimit'>): Params {
-  return { battery_h: scenario.batteryH, survival_temp_k: scenario.survivalK, antenna_margin_deg: 2, slope_limit_deg: scenario.slopeLimit, step_hours: 1 };
+// slope_limit_deg is fixed: site_metrics/site_extras/site_track never read it (only the grid scorers do), so the slope slider must not rerun them.
+export function siteParams(scenario: Pick<Scenario, 'batteryH' | 'survivalK'>): Params {
+  return { battery_h: scenario.batteryH, survival_temp_k: scenario.survivalK, antenna_margin_deg: 2, slope_limit_deg: 10, step_hours: 1 };
 }
 
 // --- Grid scoring + greedy (ENG-6/7). Heavy: gridFracs simulates every cell (~0.75 s WASM in node for 125 x 125 x 336 h),

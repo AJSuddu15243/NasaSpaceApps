@@ -105,6 +105,7 @@ function toPayload(scenario: Scenario) {
     missionWeights: { ...scenario.missionWeights },
     mode: scenario.mode, view: scenario.view,
     focus: scenario.focus, layer: scenario.layer, heat: scenario.heat, ice: scenario.ice, slopeLimit: scenario.slopeLimit, playhead: scenario.playhead, delay: scenario.delay,
+    survivalK: scenario.survivalK, batteryH: scenario.batteryH,
   };
 }
 
@@ -118,7 +119,7 @@ function fromRecord(record: { slug: string; name: string; payload: ScenarioRecor
 }
 
 interface ScenarioRecordPayload {
-  focus?: string; layer?: Scenario['layer']; heat?: Scenario['heat']; ice?: number; slopeLimit?: number; playhead?: number; delay?: number;
+  focus?: string; layer?: Scenario['layer']; heat?: Scenario['heat']; ice?: number; slopeLimit?: number; playhead?: number; delay?: number; survivalK?: number; batteryH?: number;
   sites: string[]; date: string; hours: number;
   weights: Record<string, number>; missionWeights?: Record<string, number>;
   mode: string; view: string;

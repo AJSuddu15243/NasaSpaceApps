@@ -19,9 +19,18 @@ function webglAvailable() {
   try { const c = document.createElement('canvas'); const gl = c.getContext('webgl2') || c.getContext('webgl'); if (!gl) return false; gl.getExtension('WEBGL_lose_context')?.loseContext(); return true; } catch { return false; }
 }
 
+export interface HeatRequest { heat: HeatLayer; pick: number }
+/** Layer to show after the parent's heat or pick counter changed: a new request settles its layer, even the same one again
+ * (a preset, a weight drag or a dock click re-picks the current heat); otherwise keep what is shown (null = the anatomy stack). */
+export function shownLayer(prev: HeatRequest, next: HeatRequest, current: HeatLayer | null): HeatLayer | null {
+  return prev.heat !== next.heat || prev.pick !== next.pick ? next.heat : current;
+}
+
 /** Real terrain is the persistent specimen; scientific overlays expand above it and dock on selection. */
-export function HoloStage({ name, grid, heat, scores, source = 'preview', window, computing = false, slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose }: {
-  name: string; grid: Grid; heat: HeatLayer; scores: Float32Array; source?: ScoreSource; window?: WindowFracs; computing?: boolean; slopeLimit: number; reducedMotion: boolean; date: string;
+export function HoloStage({ name, grid, heat, heatPick = 0, onShown, scores, source = 'preview', window, computing = false, slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose }: {
+  name: string; grid: Grid; heat: HeatLayer;
+  /** Bumped by the parent on every explicit heat request; a pick made before this stage mounted opens on that layer. */
+  heatPick?: number; onShown?: (layer: HeatLayer | null) => void; scores: Float32Array; source?: ScoreSource; window?: WindowFracs; computing?: boolean; slopeLimit: number; reducedMotion: boolean; date: string;
   /** Engine sun_lit (0..1, visible solar disk over the terrain horizon) at the focused place and playhead; undefined = plane test only. */
   sunLit?: number;
   view: import('../../shell/scenario').View; onView: (view: 'map' | '3d') => void;
@@ -48,8 +57,13 @@ export function HoloStage({ name, grid, heat, scores, source = 'preview', window
     const frame = requestAnimationFrame(() => setStackCount(count => Math.min(STACK.length, count + 1)));
     return () => cancelAnimationFrame(frame);
   }, [terrain.ready, gl, map, selected, stackCount]);
-  const previousHeat = useRef(heat);
-  useEffect(() => { if (previousHeat.current !== heat) { setSelected(heat); setProbe(null); previousHeat.current = heat; } }, [heat]);
+  const previousHeat = useRef<HeatRequest>({ heat, pick: 0 });
+  useEffect(() => {
+    const next = { heat, pick: heatPick };
+    if (shownLayer(previousHeat.current, next, null) !== null) { setSelected(heat); setProbe(null); }
+    previousHeat.current = next;
+  }, [heat, heatPick]);
+  useEffect(() => { onShown?.(selected); }, [selected, onShown]);
   const imageryError = useCallback(() => setFailedImage(grid.header.region), [grid.header.region]);
   const available = useCallback((key: HeatLayer) => key === 'relief' || (key === 'imagery' ? !!terrain.assets?.imagery && failedImage !== grid.header.region : key === 'slope' ? !!terrain.assets?.slope : !!layerValues(grid, key, scores, window)), [terrain.assets, failedImage, grid, scores, window]);
   const select = (key: HeatLayer) => { if (available(key)) { setSelected(key); setProbe(null); onHeat(key); } };
