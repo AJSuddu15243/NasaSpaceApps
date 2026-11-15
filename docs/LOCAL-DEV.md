@@ -55,6 +55,35 @@ The API is zero-dependency `node:http`:
 - `GET /api/scenarios/:slug` — fetch one
 - `POST /api/scenarios` — `{ name, payload }` save (same-name resave updates)
 - `DELETE /api/scenarios/:slug` — remove
+- `POST /api/ask` — `{ question, context }` → `{ answer }` (Ask AI button in `/app`)
+
+### Ask AI (optional)
+
+The "Ask AI" button in the workspace answers questions about what is on
+screen. It proxies to any OpenAI-compatible chat API — all of these have
+free tiers and need no card:
+
+```bash
+# Groq (fastest free option — console.groq.com → API Keys)
+cd server
+ASK_API_KEY=gsk_... \
+ASK_BASE_URL=https://api.groq.com/openai/v1/chat/completions \
+ASK_MODEL=llama-3.3-70b-versatile \
+pnpm api
+
+# or Gemini (aistudio.google.com → Get API key)
+ASK_API_KEY=AIza... \
+ASK_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
+ASK_MODEL=gemini-2.0-flash \
+pnpm api
+
+# or GitHub Models with a personal access token (github.com/settings/tokens)
+GITHUB_TOKEN=github_pat_... pnpm api
+```
+
+See `server/.env.example` for the full list. Without a key the endpoint
+returns 503 and the panel shows a readable offline message — the rest of
+the app is unaffected, so judging never breaks.
 
 **Web integration is automatic in dev**: `web/vite.config.ts` proxies `/api`
 to `:8787`, so saving a scenario in `/app` writes to Postgres *and*
