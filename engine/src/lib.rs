@@ -5,6 +5,7 @@ pub mod constants;
 pub mod contracts;
 pub mod geometry;
 pub mod grid;
+pub mod hash;
 pub mod mask;
 pub mod metrics;
 pub mod score;
@@ -15,7 +16,7 @@ pub use metrics::{Extras, SiteGeom};
 use serde::{Serialize, de::DeserializeOwned};
 use wasm_bindgen::prelude::*;
 
-// shortcut: grid_scores, top_areas and output_hash are stubs returning neutral values, replaced by ENG-6/7/8.
+// shortcut: grid_scores and top_areas are stubs returning neutral values, replaced by ENG-6/7.
 
 /// Site metrics over [t_start_h, t_start_h + hours), `t_start_h` in hours since the ephem t0.
 /// `mask_deg`: horizon per bin (any bin count); `ephem`: rows of 6 f32 (ephem.json).
@@ -74,9 +75,9 @@ pub fn top_areas(_scores: &[f32], _window_cells: usize, _n: usize) -> Vec<Area> 
     Vec::new()
 }
 
-/// Hex hash of result bytes (ENG-8 picks the algorithm).
-pub fn output_hash(_bytes: &[u8]) -> String {
-    "0".repeat(16)
+/// 16-hex FNV-1a 64 of `hash::ENGINE_TAG` + raw result bytes (e.g. grid scores as bytes).
+pub fn output_hash(bytes: &[u8]) -> String {
+    hash::bytes_hex(bytes)
 }
 
 // --- wasm exports: plain JS objects in/out via serde, typed arrays for bulk data ---
@@ -153,6 +154,21 @@ pub fn top_areas_js(scores: &[f32], window_cells: usize, n: usize) -> Result<JsV
 #[wasm_bindgen(js_name = output_hash)]
 pub fn output_hash_js(bytes: &[u8]) -> String {
     output_hash(bytes)
+}
+
+/// Hash of a Metrics[] list, every field canonical and in contract order (see hash.rs).
+#[wasm_bindgen(js_name = metrics_hash)]
+pub fn metrics_hash_js(list: JsValue) -> Result<String, JsError> {
+    let list: Vec<Metrics> = from_js(&list)?;
+    Ok(hash::metrics_hex(&list))
+}
+
+/// Copy of `ephem` (rows of 6 f32) with angle columns snapped to `hash::QUANTUM_DEG`.
+#[wasm_bindgen(js_name = quantize_ephem)]
+pub fn quantize_ephem_js(ephem: &[f32]) -> Result<Vec<f32>, JsError> {
+    let mut rows = ephem.to_vec();
+    hash::quantize_ephem(&mut rows).map_err(JsError::new)?;
+    Ok(rows)
 }
 
 #[cfg(test)]
@@ -249,5 +265,6 @@ mod tests {
         assert!(grid_scores(&[], &[], 0.0, 24.0, &weights()).is_empty());
         assert!(top_areas(&[0.0; 6], 5, 3).is_empty());
         assert_eq!(output_hash(b"x").len(), 16);
+        assert_ne!(output_hash(b"x"), output_hash(b"y"));
     }
 }

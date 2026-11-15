@@ -41,6 +41,9 @@ explanations for students and the public).
 2. **Determinism across browsers.** JS trig can differ in the last bits, so quantize Astronomy Engine outputs
    (round to 1e-7 rad) before handing them to WASM. The determinism hash is computed from the shipped Horizons
    table inputs, which are bit-identical everywhere.
+   *ENG-8 deviation:* ephem rows are f32, whose ulp (~3e-5° at 360°) is coarser than 1e-7 rad (~5.7e-6°), so the
+   engine's `quantize_ephem` snaps the angle columns to 2^-13° (~1.2e-4°, ~2.1e-6 rad; exact in f32, far below
+   the 0.01° accuracy bar) and leaves distances as f32.
 3. **Horizons is offline only** (no browser CORS, network round-trip). Use it to build and validate the table.
 4. **Horizons need far terrain.** South-pole horizons are set by mountains 100+ km away: build masks from a wide
    DEM with lunar curvature, not from a cropped landing area.
@@ -73,7 +76,9 @@ explanations for students and the public).
   base-sized window, pick the best, exclude its surroundings, repeat → top-N areas. "Nearby better spot" = best
   cell within R km of a chosen site.
 - **Determinism:** fixed time step, fixed loop order, no fast-math, no unseeded randomness; `output_hash()`
-  shown in the UI.
+  shown in the UI. ENG-8: FNV-1a 64 (16 hex) over an engine tag + canonical little-endian bytes (one NaN,
+  -0 → +0, a tag byte before optional fields, contract field order); extra exports `metrics_hash(Metrics[])`
+  and `quantize_ephem(Float32Array)`.
 
 ## File contracts (agree first; build on mocks until real data lands)
 The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per kind in `contracts/schemas/`
