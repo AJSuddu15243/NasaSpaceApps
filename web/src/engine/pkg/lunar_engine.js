@@ -1,15 +1,17 @@
 /* @ts-self-types="./lunar_engine.d.ts" */
 
 /**
+ * FRACS_PER_CELL (4) floats per cell: sun_frac, earth_frac, cold_frac, longest_dark_h.
  * @param {Uint8Array | number[]} grid
+ * @param {any} header
  * @param {Float32Array | number[]} ephem
- * @param {number} t_start
+ * @param {number} t_start_h
  * @param {number} hours
- * @param {any} weights
+ * @param {any} params
  * @returns {Float32Array}
  */
-export function grid_scores(grid, ephem, t_start, hours, weights) {
-    const val3 = +t_start;
+export function grid_fracs(grid, header, ephem, t_start_h, hours, params) {
+    const val3 = +t_start_h;
     const val4 = +hours;
     let ptr0, len0, ptr1, len1;
     try {
@@ -22,7 +24,40 @@ export function grid_scores(grid, ephem, t_start, hours, weights) {
         if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
         throw e;
     }
-    const ret = wasm.grid_scores(ptr0, len0, ptr1, len1, val3, val4, weights);
+    const ret = wasm.grid_fracs(ptr0, len0, header, ptr1, len1, val3, val4, params);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v5 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+    return v5;
+}
+
+/**
+ * @param {Uint8Array | number[]} grid
+ * @param {any} header
+ * @param {Float32Array | number[]} ephem
+ * @param {number} t_start_h
+ * @param {number} hours
+ * @param {any} weights
+ * @param {any} params
+ * @returns {Float32Array}
+ */
+export function grid_scores(grid, header, ephem, t_start_h, hours, weights, params) {
+    const val3 = +t_start_h;
+    const val4 = +hours;
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArray8ToWasm0(grid, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArrayF32ToWasm0(ephem, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 4, 4); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.grid_scores(ptr0, len0, header, ptr1, len1, val3, val4, weights, params);
     if (ret[3]) {
         throw takeFromExternrefTable0(ret[2]);
     }
@@ -56,6 +91,42 @@ export function metrics_hash(list) {
 }
 
 /**
+ * Nearby | null.
+ * @param {Uint8Array | number[]} grid
+ * @param {any} header
+ * @param {Float32Array | number[]} fracs
+ * @param {any} weights
+ * @param {any} params
+ * @param {number} window_cells
+ * @param {number} x_m
+ * @param {number} y_m
+ * @param {number} radius_m
+ * @returns {any}
+ */
+export function nearby_better(grid, header, fracs, weights, params, window_cells, x_m, y_m, radius_m) {
+    const val3 = +window_cells;
+    const val4 = +x_m;
+    const val5 = +y_m;
+    const val6 = +radius_m;
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArray8ToWasm0(grid, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArrayF32ToWasm0(fracs, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 4, 4); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.nearby_better(ptr0, len0, header, ptr1, len1, weights, params, val3, val4, val5, val6);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
  * @param {Uint8Array | number[]} bytes
  * @returns {string}
  */
@@ -75,6 +146,24 @@ export function output_hash(bytes) {
 }
 
 /**
+ * 1 per permanently shadowed cell, else 0 (GREEDY decision 10).
+ * @param {Uint8Array | number[]} grid
+ * @param {any} header
+ * @returns {Uint8Array}
+ */
+export function psr_flags(grid, header) {
+    const ptr0 = passArray8ToWasm0(grid, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.psr_flags(ptr0, len0, header);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
+
+/**
  * Copy of `ephem` (rows of 6 f32) with angle columns snapped to `hash::QUANTUM_DEG`.
  * @param {Float32Array | number[]} ephem
  * @returns {Float32Array}
@@ -89,6 +178,35 @@ export function quantize_ephem(ephem) {
     var v2 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
     return v2;
+}
+
+/**
+ * @param {Uint8Array | number[]} grid
+ * @param {any} header
+ * @param {Float32Array | number[]} fracs
+ * @param {any} weights
+ * @param {any} params
+ * @returns {Float32Array}
+ */
+export function scores_from_fracs(grid, header, fracs, weights, params) {
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArray8ToWasm0(grid, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArrayF32ToWasm0(fracs, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 4, 4); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.scores_from_fracs(ptr0, len0, header, ptr1, len1, weights, params);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+    return v3;
 }
 
 /**
@@ -185,16 +303,64 @@ export function site_track(geom, mask_deg, ephem, t_start_h, hours, params) {
 
 /**
  * @param {Float32Array | number[]} scores
+ * @param {any} header
  * @param {number} window_cells
+ * @param {number} exclusion_m
  * @param {number} n
  * @returns {any}
  */
-export function top_areas(scores, window_cells, n) {
+export function top_areas(scores, header, window_cells, exclusion_m, n) {
     const val2 = +window_cells;
-    const val3 = +n;
+    const val3 = +exclusion_m;
+    const val4 = +n;
     const ptr0 = passArrayF32ToWasm0(scores, wasm.__wbindgen_malloc);
     const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.top_areas(ptr0, len0, val2, val3);
+    const ret = wasm.top_areas(ptr0, len0, header, val2, val3, val4);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * @param {number} base_m
+ * @param {number} cell_m
+ * @returns {number}
+ */
+export function window_cells(base_m, cell_m) {
+    const ret = wasm.window_cells(base_m, cell_m);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] >>> 0;
+}
+
+/**
+ * @param {Uint8Array | number[]} grid
+ * @param {any} header
+ * @param {Float32Array | number[]} fracs
+ * @param {any} params
+ * @param {number} window_cells
+ * @param {number} x_m
+ * @param {number} y_m
+ * @returns {any}
+ */
+export function window_factors(grid, header, fracs, params, window_cells, x_m, y_m) {
+    const val3 = +window_cells;
+    const val4 = +x_m;
+    const val5 = +y_m;
+    let ptr0, len0, ptr1, len1;
+    try {
+        ptr0 = passArray8ToWasm0(grid, wasm.__wbindgen_malloc);
+        len0 = WASM_VECTOR_LEN;
+        ptr1 = passArrayF32ToWasm0(fracs, wasm.__wbindgen_malloc);
+        len1 = WASM_VECTOR_LEN;
+    } catch (e) {
+        if (ptr1) { wasm.__wbindgen_free(ptr1, len1 * 4, 4); }
+        if (ptr0) { wasm.__wbindgen_free(ptr0, len0 * 1, 1); }
+        throw e;
+    }
+    const ret = wasm.window_factors(ptr0, len0, header, ptr1, len1, params, val3, val4, val5);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -250,6 +416,11 @@ function addToExternrefTable0(obj) {
 function getArrayF32FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getFloat32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
+}
+
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
 }
 
 let cachedDataViewMemory0 = null;

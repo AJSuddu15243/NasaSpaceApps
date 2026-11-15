@@ -4,6 +4,7 @@
 pub mod constants;
 pub mod contracts;
 pub mod geometry;
+pub mod greedy;
 pub mod grid;
 pub mod hash;
 pub mod mask;
@@ -11,12 +12,12 @@ pub mod metrics;
 pub mod score;
 pub mod thermal;
 
-pub use contracts::{Area, Metrics, Params, Weights};
+pub use contracts::{Area, GridHeader, Metrics, Params, Weights};
+pub use greedy::{Factors, Nearby, window_cells};
 pub use metrics::{Extras, SiteGeom};
+pub use score::{grid_fracs, psr_flags, scores_from_fracs};
 use serde::{Serialize, de::DeserializeOwned};
 use wasm_bindgen::prelude::*;
-
-// shortcut: grid_scores and top_areas are stubs returning neutral values, replaced by ENG-6/7.
 
 /// Site metrics over [t_start_h, t_start_h + hours), `t_start_h` in hours since the ephem t0.
 /// `mask_deg`: horizon per bin (any bin count); `ephem`: rows of 6 f32 (ephem.json).
@@ -59,20 +60,80 @@ pub fn site_track(
     metrics::track(geom, mask_deg, &b, params)
 }
 
-/// One score per grid cell, row-major. `grid`: the raw grid/{region}.bin bytes.
+/// One score per grid cell, row-major (NaN = excluded): `grid_fracs` then `scores_from_fracs`.
+/// `grid`: the raw grid/{region}.bin bytes; `t_start_h`: hours since the ephem t0.
+#[allow(clippy::too_many_arguments)]
 pub fn grid_scores(
-    _grid: &[u8],
-    _ephem: &[f32],
-    _t_start: f64,
-    _hours: f64,
-    _weights: &Weights,
-) -> Vec<f32> {
-    Vec::new()
+    grid: &[u8],
+    header: &GridHeader,
+    ephem: &[f32],
+    t_start_h: f64,
+    hours: f64,
+    weights: &Weights,
+    params: &Params,
+) -> Result<Vec<f32>, String> {
+    let fracs = grid_fracs(header, grid, ephem, t_start_h, hours, params)?;
+    scores_from_fracs(header, grid, &fracs, weights, params)
 }
 
-/// Ranked landing areas, best first.
-pub fn top_areas(_scores: &[f32], _window_cells: usize, _n: usize) -> Vec<Area> {
-    Vec::new()
+/// Ranked landing areas, best first (GREEDY step 4).
+pub fn top_areas(
+    scores: &[f32],
+    header: &GridHeader,
+    window_cells: usize,
+    exclusion_m: f64,
+    n: usize,
+) -> Result<Vec<Area>, &'static str> {
+    greedy::top_areas(scores, header, window_cells, exclusion_m, n)
+}
+
+/// Best window within `radius_m` of stereo (x_m, y_m) vs the site's own window (GREEDY step 5).
+#[allow(clippy::too_many_arguments)]
+pub fn nearby_better(
+    grid: &[u8],
+    header: &GridHeader,
+    fracs: &[f32],
+    weights: &Weights,
+    params: &Params,
+    window_cells: usize,
+    x_m: f64,
+    y_m: f64,
+    radius_m: f64,
+) -> Result<Option<Nearby>, String> {
+    let f = score::FactorGrid::new(header, grid, fracs)?;
+    let scores = f.scores(weights, params)?;
+    let l = f.layers();
+    Ok(greedy::nearby_better(
+        &scores,
+        &l,
+        header,
+        window_cells,
+        x_m,
+        y_m,
+        radius_m,
+        params.slope_limit_deg,
+    )?)
+}
+
+/// Normalised factor means over the window centred on the cell containing (x_m, y_m): why an area ranked.
+pub fn window_factors(
+    grid: &[u8],
+    header: &GridHeader,
+    fracs: &[f32],
+    params: &Params,
+    window_cells: usize,
+    x_m: f64,
+    y_m: f64,
+) -> Result<Factors, String> {
+    let f = score::FactorGrid::new(header, grid, fracs)?;
+    let i = greedy::cell_at(header, x_m, y_m)?;
+    Ok(greedy::window_factors(
+        &f.layers(),
+        header,
+        window_cells,
+        i,
+        params.slope_limit_deg,
+    ))
 }
 
 /// 16-hex FNV-1a 64 of `hash::ENGINE_TAG` + raw result bytes (e.g. grid scores as bytes).
@@ -135,20 +196,108 @@ pub fn site_track_js(
 }
 
 #[wasm_bindgen(js_name = grid_scores)]
+#[allow(clippy::too_many_arguments)]
 pub fn grid_scores_js(
     grid: &[u8],
+    header: JsValue,
     ephem: &[f32],
-    t_start: f64,
+    t_start_h: f64,
     hours: f64,
     weights: JsValue,
+    params: JsValue,
 ) -> Result<Vec<f32>, JsError> {
-    let weights: Weights = from_js(&weights)?;
-    Ok(grid_scores(grid, ephem, t_start, hours, &weights))
+    let (h, w, p): (GridHeader, Weights, Params) =
+        (from_js(&header)?, from_js(&weights)?, from_js(&params)?);
+    grid_scores(grid, &h, ephem, t_start_h, hours, &w, &p).map_err(|e| JsError::new(&e))
+}
+
+/// FRACS_PER_CELL (4) floats per cell: sun_frac, earth_frac, cold_frac, longest_dark_h.
+#[wasm_bindgen(js_name = grid_fracs)]
+pub fn grid_fracs_js(
+    grid: &[u8],
+    header: JsValue,
+    ephem: &[f32],
+    t_start_h: f64,
+    hours: f64,
+    params: JsValue,
+) -> Result<Vec<f32>, JsError> {
+    let (h, p): (GridHeader, Params) = (from_js(&header)?, from_js(&params)?);
+    grid_fracs(&h, grid, ephem, t_start_h, hours, &p).map_err(|e| JsError::new(&e))
+}
+
+#[wasm_bindgen(js_name = scores_from_fracs)]
+pub fn scores_from_fracs_js(
+    grid: &[u8],
+    header: JsValue,
+    fracs: &[f32],
+    weights: JsValue,
+    params: JsValue,
+) -> Result<Vec<f32>, JsError> {
+    let (h, w, p): (GridHeader, Weights, Params) =
+        (from_js(&header)?, from_js(&weights)?, from_js(&params)?);
+    scores_from_fracs(&h, grid, fracs, &w, &p).map_err(|e| JsError::new(&e))
+}
+
+/// 1 per permanently shadowed cell, else 0 (GREEDY decision 10).
+#[wasm_bindgen(js_name = psr_flags)]
+pub fn psr_flags_js(grid: &[u8], header: JsValue) -> Result<Vec<u8>, JsError> {
+    let h: GridHeader = from_js(&header)?;
+    psr_flags(&h, grid).map_err(|e| JsError::new(&e))
 }
 
 #[wasm_bindgen(js_name = top_areas)]
-pub fn top_areas_js(scores: &[f32], window_cells: usize, n: usize) -> Result<JsValue, JsError> {
-    to_js(&top_areas(scores, window_cells, n))
+pub fn top_areas_js(
+    scores: &[f32],
+    header: JsValue,
+    window_cells: usize,
+    exclusion_m: f64,
+    n: usize,
+) -> Result<JsValue, JsError> {
+    let h: GridHeader = from_js(&header)?;
+    to_js(&top_areas(scores, &h, window_cells, exclusion_m, n).map_err(JsError::new)?)
+}
+
+#[wasm_bindgen(js_name = window_cells)]
+pub fn window_cells_js(base_m: f64, cell_m: f64) -> Result<usize, JsError> {
+    window_cells(base_m, cell_m).map_err(JsError::new)
+}
+
+/// Nearby | null.
+#[wasm_bindgen(js_name = nearby_better)]
+#[allow(clippy::too_many_arguments)]
+pub fn nearby_better_js(
+    grid: &[u8],
+    header: JsValue,
+    fracs: &[f32],
+    weights: JsValue,
+    params: JsValue,
+    window_cells: usize,
+    x_m: f64,
+    y_m: f64,
+    radius_m: f64,
+) -> Result<JsValue, JsError> {
+    let (h, w, p): (GridHeader, Weights, Params) =
+        (from_js(&header)?, from_js(&weights)?, from_js(&params)?);
+    let nb = nearby_better(grid, &h, fracs, &w, &p, window_cells, x_m, y_m, radius_m)
+        .map_err(|e| JsError::new(&e))?;
+    to_js(&nb)
+}
+
+#[wasm_bindgen(js_name = window_factors)]
+pub fn window_factors_js(
+    grid: &[u8],
+    header: JsValue,
+    fracs: &[f32],
+    params: JsValue,
+    window_cells: usize,
+    x_m: f64,
+    y_m: f64,
+) -> Result<JsValue, JsError> {
+    let (h, p): (GridHeader, Params) = (from_js(&header)?, from_js(&params)?);
+    to_js(
+        &window_factors(grid, &h, fracs, &p, window_cells, x_m, y_m)
+            .map_err(|e| JsError::new(&e))?,
+    )
 }
 
 #[wasm_bindgen(js_name = output_hash)]
@@ -262,8 +411,6 @@ mod tests {
                 .unwrap()
                 .survives_night
         );
-        assert!(grid_scores(&[], &[], 0.0, 24.0, &weights()).is_empty());
-        assert!(top_areas(&[0.0; 6], 5, 3).is_empty());
         assert_eq!(output_hash(b"x").len(), 16);
         assert_ne!(output_hash(b"x"), output_hash(b"y"));
     }
