@@ -4,7 +4,7 @@ import type { Site } from '../../contracts/sites';
 import { GRID_REGIONS, loadGrid, type Grid, type GridRegion } from '../heatmap/grid';
 import { BASE_M, EXCLUSION_M, ICE_REF_KM, gridFactors, scoreCells, topAreas, type PreviewArea } from '../heatmap/score';
 import { loadBakedFracs } from '../heatmap/baked';
-import type { ScoreSource } from '../heatmap/layers';
+import type { ScoreSource, WindowFracs } from '../heatmap/layers';
 import { GRID_PARAMS, scoresFromFracs, topAreas as engineTopAreas, windowCells, windowFactors } from '../../engine';
 import { createPool, type EnginePool } from '../../engine/pool';
 import { ref } from '../../engine/protocol';
@@ -51,9 +51,11 @@ export function useMissionData(): MissionData {
 }
 
 type Factors = ReturnType<typeof gridFactors>;
-export interface RegionResult { grid: Grid; scores: Float32Array; areas: PreviewArea[]; factors: Factors; source: ScoreSource; error?: string }
+/** `window` = engine grid_fracs columns for the arrival window (absent on the preview). `computing` = the preview is showing
+ * while the engine request for this window is still in flight (false once it lands or failed). */
+export interface RegionResult { grid: Grid; scores: Float32Array; areas: PreviewArea[]; factors: Factors; source: ScoreSource; window?: WindowFracs; computing?: boolean; error?: string }
 type EngineSource = Exclude<ScoreSource, 'preview'>;
-interface EngineFracs { key: string; fracs: Float32Array; source: EngineSource }
+type EngineFracs = { key: string; fracs: Float32Array; source: EngineSource } | { key: string; failed: true };
 
 let pool: Promise<EnginePool> | undefined;
 /** One worker pool for the app; a failed start is forgotten so the next window retries. */
@@ -104,7 +106,8 @@ export function engineResult(grid: Grid, preview: Factors, fracs: Float32Array, 
       factors: { sun: nan(f.sun), earth: nan(f.earth), slope: nan(f.slope), crater: nan(f.crater), rock: nan(f.rock), thermal: nan(f.thermal), ice: 1 - Math.min(1, Math.max(0, iceKm / ICE_REF_KM)) } };
   });
   const column = (c: number) => { const out = new Float32Array(fracs.length / 4); for (let i = 0; i < out.length; i++) out[i] = fracs[i * 4 + c]; return out; };
-  return { grid, scores, areas, source, factors: { ...preview, sun_frac: column(0), earth_frac: column(1), cold_frac: column(2) } };
+  const window: WindowFracs = { sun_frac: column(0), earth_frac: column(1), cold_frac: column(2), dark_h: column(3) };
+  return { grid, scores, areas, source, window, computing: false, factors: { ...preview, sun_frac: window.sun_frac, earth_frac: window.earth_frac, cold_frac: window.cold_frac } };
 }
 
 /** Suitability per region for the arrival window [date + delay, + hours). Engine scores come from baked grid_fracs when
@@ -121,27 +124,29 @@ export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scena
       const grid = grids[region];
       if (!grid?.bytes) continue;
       regionFracs(region, grid, start, hours, table, () => current)
-        .then(r => { if (current && r) setEngine(value => ({ ...value, [region]: { key: `${start}|${hours}`, ...r } })); })
-        .catch((error: unknown) => console.warn(`engine heatmap for ${region} unavailable; showing the preview`, error));
+        // No ephem table (still loading or failed) and no baked file → preview, not "computing" forever; a later table re-runs this.
+        .then(r => { if (current && (r || !table)) setEngine(value => ({ ...value, [region]: r ? { key, ...r } : { key, failed: true } })); })
+        .catch((error: unknown) => { console.warn(`engine heatmap for ${region} unavailable; showing the preview`, error); if (current) setEngine(value => ({ ...value, [region]: { key, failed: true } })); });
     }
     return () => { current = false; };
-  }, [grids, table, start, hours]);
+  }, [grids, table, start, hours, key]);
   return useMemo(() => {
     const out: Partial<Record<GridRegion, RegionResult>> = {};
     for (const region of GRID_REGIONS) {
       const grid = grids[region]; const f = factors[region];
       if (!grid || !f) continue;
       const e = engine[region];
-      if (e?.key === key) {
+      if (e?.key === key && 'fracs' in e) {
         try { out[region] = engineResult(grid, f, e.fracs, weights, slopeLimit, e.source); continue; }
         catch (error) { console.warn(`engine scoring failed for ${region}; showing the preview`, error); }
       }
+      const computing = !!grid.bytes && e?.key !== key;
       try {
         // Preview on long-term averages: thermal stays 0 because there is no cold_frac layer without the engine.
         const scores = scoreCells(f, { ...weights, thermal: 0, ice }, slopeLimit);
-        out[region] = { grid, scores, factors: f, areas: topAreas(grid, scores, f, slopeLimit, 3), source: 'preview' };
+        out[region] = { grid, scores, factors: f, areas: topAreas(grid, scores, f, slopeLimit, 3), source: 'preview', computing };
       } catch (error) {
-        out[region] = { grid, scores: new Float32Array(grid.header.nx * grid.header.ny).fill(NaN), factors: f, areas: [], source: 'preview', error: error instanceof Error ? error.message : 'Scoring failed.' };
+        out[region] = { grid, scores: new Float32Array(grid.header.nx * grid.header.ny).fill(NaN), factors: f, areas: [], source: 'preview', computing, error: error instanceof Error ? error.message : 'Scoring failed.' };
       }
     }
     return out;

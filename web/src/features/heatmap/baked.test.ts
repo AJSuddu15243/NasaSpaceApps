@@ -99,6 +99,8 @@ describe('baked engine heatmap', () => {
     expect(r.source).toBe('baked');
     expect(r.scores).toEqual(scoresFromFracs(grid.bytes!, grid.header, fracs, weights, { ...GRID_PARAMS, slope_limit_deg: 10 }));
     expect(r.factors.sun_frac[0]).toBe(fracs[0]);
+    expect([r.window!.sun_frac[1], r.window!.earth_frac[1], r.window!.cold_frac[1], r.window!.dark_h[1]]).toEqual(Array.from(fracs.slice(4, 8)));
+    expect(r.computing).toBe(false);
     expect(r.areas.length).toBeGreaterThan(0);
     for (const a of r.areas) {
       expect(a.index).toBe(a.row * grid.header.nx + a.col);
