@@ -1,4 +1,4 @@
-# Start here: MVP plan for demo day (Nov 14, 2026, ~4 pm ET)
+# Start here: MVP plan for demo day (first planned for Nov 14, 2026)
 
 Read this first. Agents: read this file, then the issue file you were given in `docs/handoff/issues/`.
 
@@ -10,14 +10,15 @@ Four things make it different. Every UI hour goes into these:
 3. **Why**: horizon panorama showing terrain blocking the Sun or Earth (UI-4).
 4. **Trust**: real NASA/JPL data with visible validation numbers (UI-5, plus the landing).
 
-## Verified state of `main` (checked 20:50 UTC)
+## Verified state of `main` (checked 2026-11-15 at `b685f21`)
 | Area | State |
 |---|---|
-| Pipeline | PIPE-1/2/3/4/5/6/7/9/10 merged (#88, #91, #92, #94, #95, #97). Left: PIPE-8 (needs ENG-3 masks). |
-| Real data | On main: `validation/*.json` (Sun/Earth az/el for 3 sites, Horizons surface observer), NASA LROC/LOLA Moon textures. On branch `feat/eng-2-9-engine` (PR pending): `ephem.bin` (Horizons, 43,824 h), `masks/*.json` and the grid mask layer for 3 regions. |
-| Engine | ENG-1 scaffold + ENG-6 `score.rs` merged. `site_metrics`, `grid_scores`, `top_areas`, `output_hash` are still **stubs**. |
-| Web | Workspace runs on **mock** metrics (`web/src/engine/index.ts` → `./mock`). Workspace redesign #84 and /docs #96 merged; landing #85 replaced by this PR. Light/dark toggle #98 and /design #99 merged. CI (#87) on. |
-| Known failing | 2 tests in `web/src/shell/tests/shell.browser.ts` fail on `main` already (UI-2 fixes them). |
+| Pipeline | PIPE-1 to PIPE-10 merged; PIPE-8 masks landed with the engine in #120. |
+| Real data | `ephem.bin` (Horizons, 43,824 h), `masks/*.json` and `grid/*.bin` for 3 regions (Connecting Ridge, Haworth, Malapert Massif), `validation/*.json`, LROC/LOLA textures. Real `sites.json` (#125). |
+| Engine | ENG-1 to ENG-9 merged in #120: `site_metrics`, `grid_fracs`/`grid_scores`, `top_areas`, `nearby_better`, `metrics_hash`, `output_hash` are real WASM (`web/src/engine/pkg/`). |
+| Web | The 3 real regions run the WASM engine; `demo-*` sites stay on `mock.ts` and are labelled. #121 merged the #109/#111/#112 fixes and `web/vercel.json` (SPA rewrite). The heatmap score layer runs the engine: baked for 2027-01-15 + 0–14 d, live on the worker pool otherwise, JS preview while computing (#127). |
+| Demo-ready (merged #124–#127) | Thresholds 40/40/180/180, default scenario 2027-01-15 + 336 h, slip re-scores the cards, 233 K / 48 h site params, hash under the cards, baked engine heatmap, real `sites.json`. Open after the demo: rest of INT-1 (#48), engine-api schema PR. |
+| Not deployed | No Vercel URL yet (#5); settings are in the root `README.md`. |
 
 ## Who does what
 | Person | Issues | First action |

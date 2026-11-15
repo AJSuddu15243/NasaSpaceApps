@@ -67,10 +67,12 @@ explanations for students and the public).
   lit · sin(elev) (horizontal panel); % lit, longest darkness, time to sunset.
 - **Thermal exposure:** instantaneous radiative-equilibrium surface temperature,
   T = ((1 − A) · S · max(0, n·ŝ) · lit / (ε σ))^¼ with A ≈ 0.12, ε ≈ 0.95, S = 1361 W/m² × (1 AU / r)², n = local
-  surface normal from the DEM slope and aspect; a user-set floor for shadowed hours. Metrics: min/max temperature and hours below a user-set survival temperature. Label it "simplified, no thermal
+  surface normal from the DEM slope and aspect; shadowed hours are floored at a fixed 40 K (`T_FLOOR_K`, not user-set). Metrics: min/max temperature and hours below a user-set survival temperature (default 233 K with a 48 h battery night gate on the site cards, both editable in Planner; the heatmap's `GRID_PARAMS` sets `battery_h` 0, so its gate is off; `MOCK_PARAMS`, 100 K, applies to the demo-* fixtures only). Label it "simplified, no thermal
   inertia" and show Diviner measurements as a reference where available.
 - **DTE radio visibility:** Earth centre above the mask + antenna margin; % contact, longest blackout, time to
   Earthset. Stated assumption: a DSN station can see the Moon; no relays.
+- **Badge thresholds (fixed defaults, `DEFAULT_THRESHOLDS`):** sunlit ≥ 40 %, Earth contact ≥ 40 %,
+  longest darkness ≤ 180 h, longest blackout ≤ 180 h; 2+ failed checks = red, 1 = yellow.
 - **Terrain factors:** slope (hard limit, default 10°; a 160 m grid cell takes the max of its 80 m slopes), aspect
   (downhill direction, for the thermal surface normal), crater depth (detrended local relief within 500 m) and roughness
   (std-dev of slope over 5 × 5 cells of 80 m) from the DEM. **Rock distribution:** no public
@@ -104,7 +106,7 @@ The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per 
 
 - `mock/`: same layout and schemas, fake values (owned by W3).
 - `web/src/ephem/`: `sunEarthAt(date)` returns one row of the `ephem` fields (Astronomy Engine, quantized).
-- Engine API (`engine/`, wrapped by `web/src/engine/index.ts`; `mock.ts` until the WASM lands), with `Params`,
+- Engine API (`engine/`, wrapped by `web/src/engine/index.ts`; `mock.ts` serves `demo-*` sites only), with `Params`,
   `Weights`, `Metrics` and `Area` defined in the `engine-api` schema (proposed until the engine and web owners
   sign off):
   `site_metrics(mask, ephem, t_start, hours, params) -> Metrics` (solar, thermal, DTE),
@@ -115,7 +117,7 @@ The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per 
   slope_deg, aspect_deg?}`, `mask` a Float32Array (any bin count) and `t_start_h` in hours since the ephem `t0`;
   `site_extras` and `site_track` take the same arguments. The TS facade keeps
   `site_metrics(mask: SiteMask, table, t_start: ISO string, hours, params)`, builds `geom` from the SiteMask and
-  converts ISO to hours; demo-* sites stay on `mock.ts` until INT-1 loads real masks and ephem.
+  converts ISO to hours; real masks and ephem run the WASM; `demo-*` sites stay on `mock.ts`.
   Grid exports (ENG-6/7, same follow-up for the schema text; design in [`.agent/GREEDY.md`](.agent/GREEDY.md)):
   `grid_scores(grid, header, ephem, t_start_h, hours, weights, params)`,
   `top_areas(scores, header, window_cells, exclusion_m, n)`, plus `grid_fracs(grid, header, ephem, t_start_h,
@@ -130,7 +132,7 @@ area) · Chandrayaan-3 · Chang'e-7 target area · Apollo 11 and 17 (equatorial 
 
 ## Workstreams (one Conductor workspace each; no folder overlap)
 
-Issue-level breakdown (58 GitHub issues, owners, milestones, challenge coverage): [`docs/TASKS.md`](docs/TASKS.md).
+Issue-level breakdown (owners, milestones, challenge coverage): [`docs/TASKS.md`](docs/TASKS.md); GitHub issues hold the live status.
 Pipeline layout and rules: [`pipeline/AGENTS.md`](pipeline/AGENTS.md).
 
 Models assume Claude Pro + ChatGPT Pro. Claude seats (Fable, Opus) share one 5-hour window, so the volume work runs on Codex; if Claude runs low, move W3 to GPT-6.1 Sol.
@@ -156,7 +158,8 @@ Models assume Claude Pro + ChatGPT Pro. Claude seats (Fable, Opus) share one 5-h
 
 ## Demo script (2 min)
 1. Landing page intro flies into the south pole; one sentence on why the pole is hard.
-2. "Our launch slipped two weeks": drag the slider; Haworth turns red, Connecting Ridge stays green.
+2. Default scenario 2027-01-15, 336 h: Haworth red, Connecting Ridge and Malapert green. "Our launch slipped a
+   week": +7 d slip kills Earth contact at every site and all three turn red.
 3. Panorama + timeline: the Sun skims the ridge, Earth dips below the horizon; sunset/Earthset countdowns; temperature drops.
 4. Greedy evaluator: adjust weights, the heatmap updates, top-3 areas appear, "1.2 km away gets +18% sunlight".
 5. Validation vs JPL Horizons + the identical determinism hash on two laptops; Explorer mode for classrooms.

@@ -34,7 +34,7 @@ pnpm typecheck    # tsc --noEmit
 pnpm lint         # eslint
 pnpm test         # vitest (80 tests)
 pnpm build        # production build → dist/
-pnpm preview      # serve the production build
+pnpm exec vite preview  # serve the production build (no `preview` script)
 ```
 
 ## 2. Scenario database (Postgres + Drizzle + API)

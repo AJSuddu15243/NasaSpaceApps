@@ -1,13 +1,15 @@
 # Task board: Lunar Landing Site Navigator
 
 > Generated from the same data as our GitHub issues. Pick an issue on GitHub, assign yourself, and follow "How we work".
+> This board is a snapshot: GitHub holds the live status and owners. The demo-day UI work runs on UI-1 to UI-6
+> (#102 to #107, specs in [`handoff/issues/`](handoff/issues/)).
 
 ## Team roles (6 people)
 
 | Role | Owner | Folders | Issues |
 |---|---|---|---|
 | Pipeline (Sri) | Sri | `pipeline/`, `contracts/` | FND-1, PIPE-1, PIPE-2, PIPE-3, PIPE-4, PIPE-5, PIPE-6, PIPE-7, PIPE-8, PIPE-9, PIPE-10, INT-2 |
-| Rust engine | _add name_ | `engine/`, `web/src/engine/` | ENG-1, ENG-2, ENG-3, ENG-4, ENG-5, ENG-6, ENG-7, ENG-8, ENG-9 |
+| Rust engine | Ananth | `engine/`, `web/src/engine/` | ENG-1, ENG-2, ENG-3, ENG-4, ENG-5, ENG-6, ENG-7, ENG-8, ENG-9 |
 | App UI | _add name_ | `web/` app (features, shell) | FND-3, WEB-1, WEB-3, WEB-4, WEB-5, WEB-6, WEB-7, WEB-8, WEB-9, WEB-11, WEB-15, INT-1 |
 | 3D & graphics | _add name_ | `web/src/scene/` | SCN-1, SCN-2, SCN-3, SCN-4, SCN-5, SCN-6, SCN-7, SCN-8 |
 | Design & landing | _add name_ | `web/src/landing/`, `web/src/design/`, `web/src/brand/`, `web/src/features/modes/` | WEB-2, WEB-12, LND-1, LND-2, LND-3, LND-4, LND-5 |
