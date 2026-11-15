@@ -68,7 +68,7 @@ free tiers and need no card:
 cd server
 ASK_API_KEY=gsk_... \
 ASK_BASE_URL=https://api.groq.com/openai/v1/chat/completions \
-ASK_MODEL=llama-3.3-70b-versatile \
+ASK_MODEL=openai/gpt-oss-120b \
 pnpm api
 
 # or Gemini (aistudio.google.com → Get API key)
