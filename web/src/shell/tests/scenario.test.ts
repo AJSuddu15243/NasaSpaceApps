@@ -3,9 +3,14 @@ import { DEFAULT_SCENARIO, readScenario, validUtc, writeScenario } from '../scen
 import { createShellStore, type BrowserPort } from '../store';
 describe('shareable scenario boundary', () => {
   it('round-trips every supported field, including zero sites and weights', () => {
-    for (const scenario of [DEFAULT_SCENARIO, { ...DEFAULT_SCENARIO, sites: [], date: '2030-06-01T23:59:00.000Z', hours: 8760, mode: 'explorer' as const, view: 'map' as const, survivalK: 150, batteryH: 0, weights: { sun: 0, earth: 0, slope: 0, crater: 0, rock: 0, thermal: 10 } }]) {
+    for (const scenario of [DEFAULT_SCENARIO, { ...DEFAULT_SCENARIO, sites: [], date: '2030-06-01T23:59:00.000Z', hours: 8760, mode: 'explorer' as const, view: 'map' as const, survivalK: 150, batteryH: 0, weights: { sun: 0, earth: 0, slope: 0, crater: 0, rock: 0, thermal: 0 } }]) {
       expect(readScenario(writeScenario(scenario))).toEqual({ scenario, warnings: [] });
     }
+  });
+  it('keeps a zero thermal weight (Power/Comms/Ice presets) and reads older 4/5-value links with the default thermal', () => {
+    expect(readScenario(writeScenario({ ...DEFAULT_SCENARIO, weights: { ...DEFAULT_SCENARIO.weights, thermal: 0 } })).scenario.weights.thermal).toBe(0);
+    expect(readScenario('?weights=1,2,3,4,5').scenario.weights).toEqual({ sun: 1, earth: 2, slope: 3, crater: 4, rock: 5, thermal: 10 });
+    expect(readScenario('?weights=1,2,3,4,5,6,7').warnings).toHaveLength(1);
   });
   it.each(['2026-02-29T12:00:00Z', '2026-13-01T00:00:00Z', '2026-01-01T24:00:00Z', '2026-01-01T00:00:00+01:00', 'NaN', '<script>'])('rejects invalid UTC %s', date => expect(validUtc(date)).toBe(false));
   it('accepts a leap date and preserves UTC independent of timezone', () => expect(validUtc('2028-02-29T23:59:00Z')).toBe(true));

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { metricsHash, site_metrics, siteExtras, siteParams, MOCK_PARAMS, UnavailableScenario } from '../../engine';
 import { scenarioInstant } from '../../features/timeline/MissionTimeline';
 import type { DemoData } from '../data';
@@ -12,7 +12,7 @@ import { ChevronRight } from 'lucide-react';
 import { Badge } from '../ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../design';
 
-interface SiteResult {
+export interface SiteResult {
   id: string;
   name: string;
   metrics: Metrics | null;
@@ -37,12 +37,15 @@ const rows: { key: MetricKey; label: string; short: string; text: (m: Metrics) =
   { key: 'longestBlackoutHours', label: 'Longest blackout', short: 'Blackout', text: m => `${m.longest_blackout_h} h`, tip: 'Longest stretch without line of sight to Earth.' },
 ];
 
-export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: DemoData; scenario: Scenario; onCollapse?: () => void; scrub?: ScrubState }) {
+type ResultInputs = Pick<Scenario, 'sites' | 'date' | 'delay' | 'hours' | 'survivalK' | 'batteryH' | 'slopeLimit' | 'missionWeights'>;
+
+/** Engine results per site. `scenario.date` is the on-time launch; this function alone applies the slip, so callers must not. */
+export function siteResults(data: DemoData, scenario: ResultInputs): { start: string; results: SiteResult[] } {
   // Cards score the arrival window: date + launch slip, never the playhead.
   const start = scenarioInstant({ date: scenario.date, delay: scenario.delay });
   const slipped = (scenario.delay ?? 0) > 0;
   const params = siteParams(scenario);
-  const results: SiteResult[] = scenario.sites.map(id => {
+  const results = scenario.sites.map((id): SiteResult => {
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
     const coords = site ?? parseCustomSite(id);
@@ -62,6 +65,16 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
       return { id, name, metrics: null, baseline: null, survivesNight: null, message: error instanceof UnavailableScenario ? error.message : 'Engine results are unavailable.', timeline, readiness: null };
     }
   });
+  return { start, results };
+}
+
+export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: DemoData; scenario: Scenario; onCollapse?: () => void; scrub?: ScrubState }) {
+  // Up to 3 engine calls per site; skip them on playhead/layer/view changes. The store re-parses the URL on every set,
+  // so arrays are fresh objects each time: key on their serialized values.
+  const { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights } = scenario;
+  const sitesKey = sites.join(','), mwKey = JSON.stringify(missionWeights);
+  const params = siteParams(scenario);
+  const { results } = useMemo(() => siteResults(data, { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights }), [data, sitesKey, date, delay, hours, survivalK, batteryH, slopeLimit, mwKey]);
   const computed = results.map(result => result.metrics).filter((metrics): metrics is Metrics => metrics !== null);
   const best = bestValues(computed);
   const showTable = computed.length > 1;

@@ -13,7 +13,7 @@ export const DEFAULT_SCENARIO: Scenario = {
   survivalK: 233, batteryH: 48, mode: 'explorer', view: '3d',
 };
 const keys = ['sun', 'earth', 'slope', 'crater'] as const;
-const keys5 = [...keys, 'rock'] as const;
+const keys6 = [...keys, 'rock', 'thermal'] as const;
 const mwKeys = ['lit', 'earth', 'dark', 'blackout'] as const;
 export const MAX_SITES = 4;
 export function validUtc(value: string): boolean {
@@ -47,9 +47,9 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
   }
   if (q.has('weights')) {
     const values = q.get('weights')!.split(',');
-    // 4 values = links from before the rock weight was editable; 5 = sun, earth, slope, crater, rock.
-    if ((values.length === 4 || values.length === 5) && values.every(v => /^\d+(\.\d{1,2})?$/.test(v) && Number(v) <= 100)) {
-      keys5.slice(0, values.length).forEach((key, i) => { scenario.weights[key] = Number(values[i]); });
+    // 4 values = links from before the rock weight was editable, 5 = before thermal; 6 = sun, earth, slope, crater, rock, thermal.
+    if (values.length >= 4 && values.length <= 6 && values.every(v => /^\d+(\.\d{1,2})?$/.test(v) && Number(v) <= 100)) {
+      keys6.slice(0, values.length).forEach((key, i) => { scenario.weights[key] = Number(values[i]); });
     } else warnings.push('Invalid weights: defaults were restored.');
   }
   if (q.has('mw')) {
@@ -114,7 +114,7 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
 }
 export function writeScenario(scenario: Scenario): string {
   const q = new URLSearchParams({ v: '1', sites: scenario.sites.join(','), date: scenario.date,
-    hours: String(scenario.hours), weights: keys5.map(key => scenario.weights[key]).join(','),
+    hours: String(scenario.hours), weights: keys6.map(key => scenario.weights[key]).join(','),
     mw: mwKeys.map(key => scenario.missionWeights[key]).join(','), mode: scenario.mode, view: scenario.view });
   if (scenario.heat !== DEFAULT_SCENARIO.heat) q.set('heat', scenario.heat);
   if (scenario.ice !== DEFAULT_SCENARIO.ice) q.set('ice', String(scenario.ice));

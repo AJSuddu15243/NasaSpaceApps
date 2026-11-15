@@ -82,8 +82,9 @@ function WholeNumber({ id, label, min, max, value, set }: { id: string; label: s
   const n = Number(text);
   const valid = /^\d+$/.test(text) && n >= min && n <= max;
   return <div><Label htmlFor={id}>{label}</Label>
-    <Input id={id} type="number" min={min} max={max} step="1" value={text} aria-describedby="survival-help" aria-invalid={!valid}
-      onChange={event => { const next = event.target.value; setText(next); if (/^\d+$/.test(next) && Number(next) >= min && Number(next) <= max) set(Number(next)); }} /></div>;
+    <Input id={id} type="number" min={min} max={max} step="1" value={text} aria-describedby={`${id}-error survival-help`} aria-invalid={!valid}
+      onChange={event => { const next = event.target.value; setText(next); if (/^\d+$/.test(next) && Number(next) >= min && Number(next) <= max) set(Number(next)); }} />
+    <p id={`${id}-error`} className="sc-error" role={valid ? undefined : 'alert'}>{valid ? '' : `Whole number ${min}–${max}; using ${value}.`}</p></div>;
 }
 
 function DateWindow({ scenario, change }: { scenario: Scenario; change: (patch: Partial<Scenario>) => void }) {
