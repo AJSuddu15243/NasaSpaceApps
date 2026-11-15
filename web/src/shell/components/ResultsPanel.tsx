@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { GRID_PARAMS, metricsHash, site_metrics, siteExtras, siteParams, MOCK_PARAMS, UnavailableScenario } from '../../engine';
+import { metricsHash, site_metrics, siteExtras, siteParams, MOCK_PARAMS, UnavailableScenario } from '../../engine';
 import { scenarioInstant } from '../../features/timeline/MissionTimeline';
 import type { DemoData } from '../data';
 import type { Scenario } from '../scenario';
@@ -53,7 +53,7 @@ export function siteResults(data: DemoData, scenario: ResultInputs, regions?: Re
   const start = scenarioInstant({ date: scenario.date, delay: scenario.delay });
   const slipped = (scenario.delay ?? 0) > 0;
   // site_metrics/extras/track never read slope_limit_deg (only grid scoring does), so a slope drag must not rerun them.
-  const params = siteParams({ ...scenario, slopeLimit: GRID_PARAMS.slope_limit_deg });
+  const params = siteParams(scenario);
   const results = scenario.sites.map((id): SiteResult => {
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
