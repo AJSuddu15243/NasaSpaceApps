@@ -3,16 +3,29 @@ import { DEFAULT_SCENARIO, readScenario, validUtc, writeScenario } from '../scen
 import { createShellStore, type BrowserPort } from '../store';
 describe('shareable scenario boundary', () => {
   it('round-trips every supported field, including zero sites and weights', () => {
-    for (const scenario of [DEFAULT_SCENARIO, { ...DEFAULT_SCENARIO, sites: [], date: '2030-06-01T23:59:00.000Z', hours: 8760, mode: 'explorer' as const, view: 'map' as const, weights: { sun: 0, earth: 0, slope: 0, crater: 0, rock: 0, thermal: 0 } }]) {
+    for (const scenario of [DEFAULT_SCENARIO, { ...DEFAULT_SCENARIO, sites: [], date: '2030-06-01T23:59:00.000Z', hours: 8760, mode: 'explorer' as const, view: 'map' as const, survivalK: 150, batteryH: 0, weights: { sun: 0, earth: 0, slope: 0, crater: 0, rock: 0, thermal: 0 } }]) {
       expect(readScenario(writeScenario(scenario))).toEqual({ scenario, warnings: [] });
     }
+  });
+  it('keeps a zero thermal weight (Power/Comms/Ice presets) and reads older 4/5-value links with the default thermal', () => {
+    expect(readScenario(writeScenario({ ...DEFAULT_SCENARIO, weights: { ...DEFAULT_SCENARIO.weights, thermal: 0 } })).scenario.weights.thermal).toBe(0);
+    expect(readScenario('?weights=1,2,3,4,5').scenario.weights).toEqual({ sun: 1, earth: 2, slope: 3, crater: 4, rock: 5, thermal: 10 });
+    expect(readScenario('?weights=1,2,3,4,5,6,7').warnings).toHaveLength(1);
   });
   it.each(['2026-02-29T12:00:00Z', '2026-13-01T00:00:00Z', '2026-01-01T24:00:00Z', '2026-01-01T00:00:00+01:00', 'NaN', '<script>'])('rejects invalid UTC %s', date => expect(validUtc(date)).toBe(false));
   it('accepts a leap date and preserves UTC independent of timezone', () => expect(validUtc('2028-02-29T23:59:00Z')).toBe(true));
   it('does not let malformed links throw, add path traversal, or change unavailable weights', () => {
     const { scenario, warnings } = readScenario('?sites=../x,a,a,b,c,d,e&hours=Infinity&date=invalid&weights=NaN,2,3,4&mode=admin&view=unknown');
     expect(scenario.sites).toEqual(['a', 'b', 'c', 'd']); expect(scenario.hours).toBe(336);
-    expect(scenario.weights.rock).toBe(0); expect(scenario.weights.thermal).toBe(0); expect(warnings.length).toBe(6);
+    expect(scenario.weights.rock).toBe(0); expect(scenario.weights.thermal).toBe(10); expect(warnings.length).toBe(6);
+  });
+  it.each(['?surv=39', '?surv=401', '?surv=233.5', '?bat=-1', '?bat=721', '?bat=x'])('recovers bad survival params %s', search => {
+    const { scenario, warnings } = readScenario(search);
+    expect([scenario.survivalK, scenario.batteryH, warnings.length]).toEqual([233, 48, 1]);
+  });
+  it('writes survival params only when they differ from the defaults', () => {
+    expect(writeScenario(DEFAULT_SCENARIO)).not.toMatch(/surv|bat/);
+    expect(writeScenario({ ...DEFAULT_SCENARIO, survivalK: 200, batteryH: 72 })).toMatch(/&surv=200&bat=72/);
   });
   it.each(['0', '-1', '1.5', '8761', '', '1e2'])('recovers bad mission lengths %s', value => expect(readScenario(`?hours=${value}`).warnings).toHaveLength(1));
   it('handles unsupported versions, oversized links and duplicate fields', () => {
