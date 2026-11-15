@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { loadDemoData, type DemoData } from '../../shell/data';
+import { loadDemoData, loadSites, type DemoData } from '../../shell/data';
+import type { Site } from '../../contracts/sites';
 import { GRID_REGIONS, loadGrid, type Grid, type GridRegion } from '../heatmap/grid';
 import { gridFactors, scoreCells, topAreas, type PreviewArea } from '../heatmap/score';
 import type { Scenario } from '../../shell/scenario';
 
 export type Status = 'loading' | 'ready' | 'error';
 export interface MissionData {
+  /** The catalogue alone, so the picker and markers survive an ephem or mask failure. */
+  sites: { status: Status; data: Site[]; error?: string };
   demo: { status: Status; data?: DemoData; error?: string };
   grids: { status: Status; data: Partial<Record<GridRegion, Grid>>; error?: string };
   retry: () => void;
@@ -15,11 +18,16 @@ export interface MissionData {
 export function useMissionData(): MissionData {
   const [attempt, setAttempt] = useState(0);
   const [demo, setDemo] = useState<MissionData['demo']>({ status: 'loading' });
+  const [sites, setSites] = useState<MissionData['sites']>({ status: 'loading', data: [] });
   const [grids, setGrids] = useState<MissionData['grids']>({ status: 'loading', data: {} });
   useEffect(() => {
     const controller = new AbortController();
     setDemo(value => value.status === 'ready' ? value : { status: 'loading' });
-    loadDemoData(controller.signal).then(data => { if (!controller.signal.aborted) setDemo({ status: 'ready', data }); })
+    setSites(value => value.status === 'ready' ? value : { status: 'loading', data: [] });
+    const catalogue = loadSites(controller.signal);
+    catalogue.then(({ sites }) => { if (!controller.signal.aborted) setSites({ status: 'ready', data: sites }); })
+      .catch((error: unknown) => { if (!controller.signal.aborted) setSites({ status: 'error', data: [], error: error instanceof Error ? error.message : 'Catalogue could not load.' }); });
+    loadDemoData(controller.signal, fetch, catalogue).then(data => { if (!controller.signal.aborted) setDemo({ status: 'ready', data }); })
       .catch((error: unknown) => { if (!controller.signal.aborted) setDemo({ status: 'error', error: error instanceof Error ? error.message : 'Catalogue could not load.' }); });
     setGrids(value => value.status === 'ready' ? value : { status: 'loading', data: {} });
     Promise.allSettled(GRID_REGIONS.map(async region => [region, await loadGrid(region)] as const))
@@ -32,7 +40,7 @@ export function useMissionData(): MissionData {
       .catch((error: unknown) => { if (!controller.signal.aborted) setGrids({ status: 'error', data: {}, error: error instanceof Error ? error.message : 'Terrain grids could not load.' }); });
     return () => controller.abort();
   }, [attempt]);
-  return { demo, grids, retry: () => setAttempt(n => n + 1) };
+  return { sites, demo, grids, retry: () => setAttempt(n => n + 1) };
 }
 
 export interface RegionResult { grid: Grid; scores: Float32Array; areas: PreviewArea[]; factors: ReturnType<typeof gridFactors>; error?: string }

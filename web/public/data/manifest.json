@@ -272,8 +272,8 @@
     },
     {
       "path": "sites.json",
-      "bytes": 1715,
-      "sha256": "3469cdadebad13496f75429c2d395e4e929629d8f3b24d563f983c35db95a6c5",
+      "bytes": 1787,
+      "sha256": "59ae201f12828c0057fbdc84e76f69adc3f3a0373bcbce783d0ce9f09fafe443",
       "source_urls": [
         "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
         "https://iopscience.iop.org/article/10.3847/PSJ/ad1b50"

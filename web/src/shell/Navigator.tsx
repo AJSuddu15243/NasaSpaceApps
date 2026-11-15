@@ -48,8 +48,8 @@ export default function Navigator() {
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
 
-  // shortcut: the catalogue is empty until sites.json + ephem load, split the loader if the picker must show first.
-  const catalogue: Site[] = useMemo(() => mission.demo.data?.sites.map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site) ?? [], [mission.demo.data]);
+  // The bare catalogue shows first; the demo load swaps in notes carrying the mask elevation.
+  const catalogue: Site[] = useMemo(() => (mission.demo.data?.sites ?? mission.sites.data).map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site), [mission.demo.data, mission.sites.data]);
   const resolve = useCallback((id: string) => {
     const site = catalogue.find(item => item.id === id);
     if (site) return site;
@@ -116,7 +116,7 @@ export default function Navigator() {
     { label: 'LOLA terrain survey · 3 regions × 15,625 cells', detail: '160 m', status: mission.grids.status },
     { label: 'Sunlight · Earth visibility · permanent shadow', detail: 'PGDA 69', status: mission.grids.status },
     { label: 'Ephemeris · Astronomy Engine vs JPL Horizons', detail: 'GEOMETRIC', status: 'ready' as const },
-    { label: 'Site catalogue', detail: `${catalogue.length} SITES`, status: 'ready' as const },
+    { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.length} SITES` : '', status: mission.sites.status },
   ];
   const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => setScenario(patch, replace), [setScenario]);
   const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);

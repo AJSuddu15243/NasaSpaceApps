@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { expect, it } from 'vitest';
 import { parseEphem, parseMask, parseMetrics, parseSites } from '../validation';
-import { loadDemoData } from '../data';
+import { loadDemoData, loadSites } from '../data';
 import { MOCK_PARAMS, site_metrics, UnavailableScenario } from '../../engine';
 import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
@@ -37,6 +37,16 @@ it('reads the real catalogue from sites.json: elevation from the mask, or no ter
   expect(byId.get('demo-ridge-a')?.category).toBe('demo');
   const dup: typeof fetch = async input => String(input).endsWith('/data/sites.json') ? Response.json([...json('sites.json'), ...JSON.parse(readFileSync(resolve('public/data/sites.json'), 'utf8'))]) : request(input);
   await expect(loadDemoData(new AbortController().signal, dup)).rejects.toThrow('catalogue');
+});
+it('keeps the catalogue when ephem fails, and rejects a malformed manifest', async () => {
+  const noEphem: typeof fetch = async input => String(input).includes('ephem') ? new Response('', { status: 503 }) : request(input);
+  const catalogue = loadSites(new AbortController().signal, noEphem);
+  await expect(loadDemoData(new AbortController().signal, noEphem, catalogue)).rejects.toThrow('503');
+  const { sites, realIds } = await catalogue;
+  expect(sites.find(site => site.id === 'connecting-ridge')?.note).not.toMatch(/LOLA/);
+  expect(realIds.has('connecting-ridge') && !realIds.has('demo-ridge-a')).toBe(true);
+  const badManifest: typeof fetch = async input => String(input).endsWith('manifest.json') ? Response.json({}) : request(input);
+  await expect(loadDemoData(new AbortController().signal, badManifest)).rejects.toThrow('manifest');
 });
 it('rejects corrupt catalogue, mask geometry, ephemeris length and NaNs', () => {
   const sites = json('sites.json');
