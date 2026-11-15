@@ -6,7 +6,7 @@ test('docking real terrain layers preserves the scene and mission time', async (
   await page.goto('/app?focus=malapert-massif');
   await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
-  const layers = page.getByRole('group', { name: 'Select a scientific layer' });
+  const layers = page.getByRole('group', { name: 'Heatmap layer' });
   await expect(layers.getByRole('button', { name: 'NAC photo', exact: true })).toBeEnabled();
   await layers.getByRole('button', { name: 'NAC photo', exact: true }).click();
   await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'imagery');
@@ -17,7 +17,7 @@ test('docking real terrain layers preserves the scene and mission time', async (
   await expect(page.getByLabel('Interactive lunar terrain')).toBeVisible();
   await page.getByRole('button', { name: 'All layers', exact: true }).click();
   await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'stack');
-  await page.getByRole('button', { name: 'Return to globe', exact: true }).click();
+  await page.keyboard.press('Escape');
   await expect(page.locator('.holo-stage')).toHaveCount(0);
   await expect(page).toHaveURL(/delay=7/);
   expect(errors).toEqual([]);

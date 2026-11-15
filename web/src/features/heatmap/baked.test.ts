@@ -96,7 +96,7 @@ describe('baked engine heatmap', () => {
     expect(await regionFracs('haworth', grid, unbaked, 336, table, 233, () => false, () => pool, notFound)).toBeNull();
     expect(await regionFracs('haworth', grid, unbaked, 336, undefined, 233, () => true, () => pool, notFound)).toBeNull();
     (await pool).terminate();
-  });
+  }, 30_000); // real worker-pool engine run: ~3.5 s locally, >5 s on CI runners
 
   it('maps engine areas to the PreviewArea shape', () => {
     const weights = { sun: 35, earth: 25, slope: 20, crater: 10, rock: 0, thermal: 10 };
