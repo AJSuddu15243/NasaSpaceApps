@@ -34,7 +34,7 @@ const POLE_VIEW = { lat: -62, lng: -20, altitude: 1.9 };
 export default function Navigator() {
   const { scenario, warnings, setScenario } = useShell();
   const mission = useMissionData();
-  const results = useRegionResults(mission.grids.data, scenario);
+  const results = useRegionResults(mission.grids.data, scenario, mission.demo.data?.table);
   const narrow = useMediaQuery('(max-width: 1439px)');
   const reducedMotion = useMediaQuery(reducedMotionQuery);
   const [booted, setBooted] = useState(false);

@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:browser": "playwright test",
     "lint": "eslint src scripts",
-    "generate:mock": "node scripts/generate-mocks.mjs"
+    "generate:mock": "node scripts/generate-mocks.mjs",
+    "bake": "node scripts/bake.ts"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "5.3.0",
