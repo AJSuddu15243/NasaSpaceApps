@@ -14,7 +14,7 @@ Four things make it different. Every UI hour goes into these:
 | Area | State |
 |---|---|
 | Pipeline | PIPE-1/2/3/4/5/6/7/9/10 merged (#88, #91, #92, #94, #95, #97). Left: PIPE-8 (needs ENG-3 masks). |
-| Real data on main | `ephem.bin` (Horizons, 43,824 h); `validation/*.json` (Sun/Earth az/el for 3 sites, Horizons surface observer). NASA LROC/LOLA Moon textures. |
+| Real data | On main: `validation/*.json` (Sun/Earth az/el for 3 sites, Horizons surface observer), NASA LROC/LOLA Moon textures. On branch `feat/eng-2-9-engine` (PR pending): `ephem.bin` (Horizons, 43,824 h), `masks/*.json` and the grid mask layer for 3 regions. |
 | Engine | ENG-1 scaffold + ENG-6 `score.rs` merged. `site_metrics`, `grid_scores`, `top_areas`, `output_hash` are still **stubs**. |
 | Web | Workspace runs on **mock** metrics (`web/src/engine/index.ts` → `./mock`). Workspace redesign #84 and /docs #96 merged; landing #85 replaced by this PR. Light/dark toggle #98 and /design #99 merged. CI (#87) on. |
 | Known failing | 2 tests in `web/src/shell/tests/shell.browser.ts` fail on `main` already (UI-2 fixes them). |
