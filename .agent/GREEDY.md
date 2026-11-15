@@ -5,8 +5,8 @@
 > (`window_cells`, `top_areas`, `nearby_better`, `window_factors`); WASM exports + typed wrappers in `web/src/engine/index.ts`.
 > Contracts: `SPEC.md` (engine API, grid format). Issues: #21 (ENG-6), #22 (ENG-7).
 
-## Why this can be built now
-Scoring and greedy selection only read **per-cell factor layers** (plain `f32` arrays, `nx × ny`, row-major).
+## Why this could be built first
+(Historical: ENG-4/ENG-5 and the pipeline layers have since landed in #120.) Scoring and greedy selection only read **per-cell factor layers** (plain `f32` arrays, `nx × ny`, row-major).
 They never touch horizon masks, ephemeris, or the pipeline. So we build and test them on hand-made and mock
 grids now; later ENG-4/ENG-5 fill the sun/earth/thermal layers and the pipeline fills slope/crater/rock.
 
@@ -90,7 +90,7 @@ for w in cands:
 the header gives `nx, ny, x0, y0, cell_m` and the CRS for `Area.lat/lon`. Engine-only PR; the PR body flags the
 web/contracts owners that SPEC, the engine-api schema and TS types need the matching update.
 The same gap hits `grid_scores(grid, ...)`: raw `.bin` bytes carry no `nx, ny` or layer offsets, so it also needs
-the `GridHeader`. ENG-1 stubs keep SPEC's signatures until the team agrees (see the ENG-1 PR).
+the `GridHeader`. Implemented with these signatures in #120; the engine-api schema text update is a follow-up PR.
 
 ## Tests on hand-made grids (acceptance for #21 / #22)
 1. Single bright cell on a flat grid → it ranks #1; its neighbours within `exclusion_m` never appear.
@@ -110,10 +110,10 @@ the `GridHeader`. ENG-1 stubs keep SPEC's signatures until the team agrees (see 
 5. ~~Window validity~~: **decided, all cells valid**; empty result → "no landable area" UI state.
 
 6. ~~Survival temperature default~~: **decided, 233 K** (electronics/battery survival). The default lives in
-   the web `Params` (`web/src/engine/mock.ts` has 100 K, contract examples 120 K): flagged for the web owner.
+   the web `Params`: `GRID_PARAMS` and the contract examples use 233 K; `MOCK_PARAMS` keeps 100 K for the `demo-*` fixtures only.
 7. ~~ENG-6 scope~~: **decided, pure scoring first.** `score.rs::score_cells(layers, weights, slope_limit_deg)`
-   is built and tested on hand-made layers now; `grid_scores` (per-cell metrics on the 64-bin masks) is wired
-   once ENG-4 (sun/earth) and PIPE-5 (slope/crater) land.
+   was built and tested on hand-made layers first; `grid_scores` (per-cell metrics on the 64-bin masks) is now wired
+   on ENG-4 (sun/earth) and PIPE-5 (slope/crater).
 8. ~~`grid_scores` signature~~: **decided, `grid_scores(grid, header, ephem, t_start, hours, weights, params)`**
    (limits live in `Params`). Same engine-only PR rule as `top_areas`.
 9. ~~"Without copying"~~: **decided, one copy is fine**: return `Vec<f32>`, wasm-bindgen copies it once into a

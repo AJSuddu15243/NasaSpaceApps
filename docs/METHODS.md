@@ -100,8 +100,8 @@ For a scenario (set of sites + date/window + weights):
 - **Rock layer is a proxy** (DEM roughness), weight 0 by default, labelled as a proxy (PIPE-6).
 - **Synthetic demonstration data**: `web/public/data/mock/` supplies stand-ins for `demo-*` sites. The UI labels
   synthetic values explicitly and never presents them as measurements.
-- Ephemeris is tabulated hourly (2026–2030); a live "now" mode and
-  Astronomy-Engine fallback are planned (EPH-1/EPH-2).
+- Ephemeris is tabulated hourly (2026–2030). The Astronomy Engine Moon-fixed Sun/Earth module exists
+  (`web/src/ephem/`, EPH-1); using it as the out-of-table fallback and a live "now" mode is still open (EPH-2).
 
 ## Validation status
 

@@ -62,12 +62,11 @@ pipeline/
 `cd pipeline && make setup && make all` regenerates every data file. To use the data without running the
 pipeline, pull `main`: the outputs are committed under `web/public/data/` once they fit the size budget.
 
-## Scaffold status (PIPE-1)
+## Stage status
 
-All stages currently print their issue ID and exit 0; no output products are generated.
-`terrain` is a Make alias for CLI `terrain-fetch` then `tiles`. The CLI registry imports stages
-lazily; each stage implements `run(cfg: Config) -> None`. Helpers horizons.py, coords.py and
-terrain/pgda.py also expose stubs for their owners.
+PIPE-1 to PIPE-10 are implemented and their outputs are committed under `web/public/data/` (GitHub issues hold
+the live status). `terrain` is a Make alias for CLI `terrain-fetch` then `tiles`. The CLI registry imports stages
+lazily; each stage implements `run(cfg: Config) -> None`.
 
 Downstream issues edit their own modules and tests, leaving __main__.py, Makefile, pyproject.toml,
 uv.lock and config.yaml stable. Use sequential streaming downloads and raster windows on the

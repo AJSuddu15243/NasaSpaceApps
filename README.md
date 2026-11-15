@@ -12,8 +12,11 @@ engine and a React/Three.js front end.
 - **Methods, data sources, assumptions, validation status:** [docs/METHODS.md](docs/METHODS.md)
 - **Official challenge:** [docs/CHALLENGE.md](docs/CHALLENGE.md)
 
-> Demo status: until the data pipeline finishes packaging real outputs, the app
-> runs on clearly labelled synthetic demonstration data (`web/public/data/mock/`).
+> Demo status: the 3 surveyed regions (Connecting Ridge, Haworth, Malapert Massif)
+> run the real WASM engine on real LOLA masks and the JPL Horizons table. Only the
+> `demo-*` sites use clearly labelled synthetic data (`web/public/data/mock/`).
+
+Full local setup (prerequisites, scenario database, pipeline): [docs/LOCAL-DEV.md](docs/LOCAL-DEV.md).
 
 ## Repository layout
 
@@ -23,6 +26,7 @@ engine and a React/Three.js front end.
 | `engine/` | Simulation core: WASM lib for the app + native mask builder | Rust, wasm-bindgen, wasm-pack |
 | `pipeline/` | Data pipeline: NASA sources → versioned binary/JSON contracts | Python 3.12, uv |
 | `contracts/` | Shared JSON schemas and boundary validators | JSON Schema, Node |
+| `server/` | Optional scenario database (not used by the static demo) | Postgres, Drizzle |
 | `docs/` | Proposal, spec-adjacent docs, methods, task board | Markdown |
 | `LunarLandingSiteNavigation/` | Older ADC terrain grids and links (reference only) | — |
 
@@ -34,8 +38,17 @@ engine and a React/Three.js front end.
 cd web
 pnpm install
 pnpm dev        # http://127.0.0.1:4173  (landing at /, workspace at /app)
-pnpm test       # unit tests
-pnpm build      # typecheck + production build
+pnpm typecheck && pnpm lint && pnpm test   # the CI gates
+pnpm build      # typecheck + production build → web/dist
+pnpm exec vite preview   # serve the production build
+```
+
+### Contracts
+
+```sh
+cd contracts
+pnpm install
+pnpm test && pnpm check && pnpm validate-data   # schemas, generated types, data files
 ```
 
 ### Engine (Rust → WASM)
@@ -59,8 +72,23 @@ make all       # ephem → terrain → layers → masks → validate → imagery
 make test && make lint
 ```
 
+`make test` exports `PYTHONPATH=src`; to run pytest directly use
+`PYTHONPATH=src uv run --locked pytest`.
+
 Pipeline outputs land in `web/public/data/` and are committed once they fit the
 25 MB budget; raw downloads stay in `pipeline/data/` (gitignored).
+
+## Deploy (Vercel)
+
+| Setting | Value |
+|---|---|
+| Root directory | `web` |
+| Install command | `pnpm install` |
+| Build command | `pnpm build` |
+| Output directory | `dist` |
+
+`web/vercel.json` rewrites every path to `/index.html` so deep links such as
+`/app?...` load the SPA; files under `web/public/data/` are served as-is.
 
 ## How it fits together
 

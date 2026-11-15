@@ -23,7 +23,7 @@ deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a
 
 ## Active Work
 
-Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress**: ENG-1 to ENG-9 and PIPE-8 are done on branch `feat/eng-2-9-engine` (one PR, not merged yet). Follow-up PR: contract schema change and INT-1 real-data loading. Scope and details are in
+Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress**: ENG-1 to ENG-9 and PIPE-8 merged in #120; web fixes #109/#111/#112 (incl. `web/vercel.json`) merged in #121. Open: the rest of INT-1 (#48), the engine-api schema follow-up PR, and the demo-ready PRs in flight (thresholds and defaults, slip re-scores the cards, hash in the UI, baked engine heatmap, real `sites.json`). Scope and details are in
 the [Active Work section of `.agent/PLAN.md`](.agent/PLAN.md#active-work).
 
 Other agents: coordinate with Ananth before implementing a duplicate simulator or modifying the simulation
@@ -51,7 +51,6 @@ Skills currently installed in our Claude Code setup. Use the one that fits the t
 | Skill | Use it for |
 |---|---|
 | `dataviz` | Any chart, heatmap or slope map. Read it before writing plot code. |
-| `mathshow` | Render formulas (slope, A* cost and similar) in the terminal |
 | `artifact-design` / `artifact-diagramming` / `artifact-capabilities` | Shareable HTML pages, diagrams and interactive route viewers |
 | `xlsx` / `pdf` / `docx` / `pptx` | Read or produce spreadsheets, handbooks, reports and slide decks |
 | `docs` | Shared, editable project docs and write-ups |

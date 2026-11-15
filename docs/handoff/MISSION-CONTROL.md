@@ -90,7 +90,7 @@ branch renaming, unrelated rewrites, and the Higgsfield video remain out of scop
   were fixed and both passed on recheck. All 13 applicable tests therefore pass. Two development-only
   design-reference tests are skipped on production builds. Landing checks include axe contrast;
   mission checks include desktop/mobile axe, navigation, history, fallback, stale responses and retry.
-- Screenshots: `.context/qa/terrain-desktop.png`, `terrain-nac.png`, `terrain-mobile.png`,
+- Screenshots (local-only, never committed): `.context/qa/terrain-desktop.png`, `terrain-nac.png`, `terrain-mobile.png`,
   `moon-overview.png`. Screenshot run reported zero page exceptions. Chrome used SwiftShader and
   reduced motion; native M1 60 fps and normal-motion hardware timing remain unverified.
 - Three-region preview ranking: 20 local Node runs, median 4.56 ms, maximum 16.14 ms; factors cached,
@@ -98,7 +98,7 @@ branch renaming, unrelated rewrites, and the Higgsfield video remain out of scop
   Vite reports large optional 3D chunks and existing ignored dependency `use client` directives.
 - Preview: `http://127.0.0.1:55050/`, served from the checked production build.
 
-The copyable `.context/lunar-window.patch` includes the interrupted work and this continuation relative
+The copyable `.context/lunar-window.patch` (local-only, not in the repo) includes the interrupted work and this continuation relative
 to base `e23ab634558e957c4642fdaa6d40e0efbdfc4c58`. It includes binary grid changes and added files;
 review it against that base before applying elsewhere. Publication was authorized after visual approval.
 
