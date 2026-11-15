@@ -1,10 +1,22 @@
 import type { Grid, LayerName } from './grid';
+import type { Weights } from '../../contracts/engine-api';
 
 export type HeatLayer = 'score' | 'sun' | 'earth' | 'sun_lt' | 'earth_lt' | 'ice' | 'imagery' | 'elevation' | 'slope' | 'relief' | 'crater' | 'roughness' | 'favorability';
 /** Anatomy stack, bottom → top: the ground first, then what it looks like, its shape, and what it means. */
 export const STACK: HeatLayer[] = ['relief', 'imagery', 'elevation', 'slope', 'crater', 'roughness', 'ice', 'favorability', 'earth_lt', 'sun_lt', 'earth', 'sun', 'score'];
-/** Keep the workspace dock in the same order as the specimen controls. */
+/** Every heat layer (URL state, validation). */
 export const HEAT_LAYERS: HeatLayer[] = STACK;
+/** Shape-of-the-ground layers that share one "Terrain" dock button. */
+export const TERRAIN_LAYERS: HeatLayer[] = ['slope', 'elevation', 'relief'];
+export type DockLayer = Exclude<HeatLayer, 'slope' | 'elevation' | 'relief'> | 'terrain';
+/** Tie order for the weighted dock (same factor order as the priorities panel). */
+const DOCK_BASE: DockLayer[] = ['sun', 'sun_lt', 'earth', 'earth_lt', 'terrain', 'crater', 'ice', 'favorability', 'roughness'];
+/** Dock buttons: combined score first, then each factor by the user's weight (descending, stable on ties), unweighted photo last. */
+export function dockLayers(weights: Weights, ice: number): DockLayer[] {
+  const weight = (key: DockLayer) => key === 'sun' || key === 'sun_lt' ? weights.sun : key === 'earth' || key === 'earth_lt' ? weights.earth
+    : key === 'terrain' ? weights.slope : key === 'crater' ? weights.crater : key === 'roughness' ? weights.rock : ice;
+  return ['score', ...[...DOCK_BASE].sort((a, b) => weight(b) - weight(a)), 'imagery'];
+}
 /** Layers using the source imagery, elevation, or slope terrain shader; other layers use opaque scalar textures. */
 export const SURFACE_LAYERS: HeatLayer[] = ['relief', 'imagery', 'elevation', 'slope'];
 

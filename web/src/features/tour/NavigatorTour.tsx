@@ -5,7 +5,7 @@ import './tour.css';
 const STORAGE_KEY = 'lunar-window-tour-v2';
 export const TOUR_STEPS = [
   { anchor: 'sites', title: 'Choose a place', text: 'Pick one of the three Artemis III regions, search the catalogue, or click anywhere on the Moon. The camera flies in and a holographic survey lifts off the surface.' },
-  { anchor: 'layers', title: 'Read the heatmaps', text: 'Switch between sunlight, Earth contact (radio), ice traps, topography and slope. Every dot is a real 160 m patch of ground: move your cursor over the survey to read it.' },
+  { anchor: 'layers', title: 'Read the heatmaps', text: 'Switch between sunlight, Earth contact (radio), ice traps and terrain (slope, elevation, relief). Buttons are ordered by how much each factor weighs in your priorities. Every dot is a real 160 m patch of ground: move your cursor over the survey to read it.' },
   { anchor: 'timeline', title: 'Move the date', text: 'Drag the playhead or slip the launch by days. The Sun and Earth lanes show their elevation for the place you are looking at, and the shares count the hours the Sun is lit and Earth is in view over the real terrain horizon (Rust/WASM engine; flat horizon where no survey exists). All times are UTC.' },
   { anchor: 'mode', title: 'Set your priorities', text: 'Explorer gives plain-language mission presets. Planner gives exact weights, the slope limit and a CSV export. Both re-rank the landing areas instantly.' },
   { anchor: 'evidence', title: 'Compare and check the evidence', text: 'Shortlist up to four places and compare them side by side. Evidence lists every data source and checks our Sun and Earth positions against NASA JPL Horizons.' },
