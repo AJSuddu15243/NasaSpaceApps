@@ -43,11 +43,10 @@ describe('ephemAt', () => {
     expect(s!.earthLon).toBeCloseTo(105);
   });
 
-  it('clamps instants outside the table range', () => {
-    const early = ephemAt(table, '2026-11-14T00:00:00.000Z');
-    const late = ephemAt(table, '2026-11-15T00:00:00.000Z');
-    expect(early?.sunLat).toBe(0);
-    expect(late?.sunLat).toBe(4);
+  it('returns null outside the table range instead of clamping', () => {
+    expect(ephemAt(table, '2026-11-14T11:59:00.000Z')).toBeNull();
+    expect(ephemAt(table, '2026-11-14T14:01:00.000Z')).toBeNull();
+    expect(ephemAt(table, '2026-11-14T14:00:00.000Z')?.sunLat).toBe(4);
   });
 
   it('returns null for unparseable input', () => {

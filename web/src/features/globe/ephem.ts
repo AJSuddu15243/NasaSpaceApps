@@ -16,7 +16,7 @@ interface EphemTable {
 
 const wrapDelta = (from: number, to: number) => ((to - from + 540) % 360) - 180;
 
-/** Interpolates the hourly sub-solar / sub-Earth table at an ISO instant, clamped to the table range. */
+/** Interpolates the hourly sub-solar / sub-Earth table at an ISO instant; null outside the table range. */
 export function ephemAt(table: EphemTable, iso: string): EphemSample | null {
   const { header, rows } = table;
   const t0 = Date.parse(header.t0_iso);
@@ -24,7 +24,8 @@ export function ephemAt(table: EphemTable, iso: string): EphemSample | null {
   if (!Number.isFinite(t0) || !Number.isFinite(t) || header.n < 1 || rows.length < 6) return null;
 
   const stepMs = header.step_hours * 3_600_000;
-  const pos = Math.min(Math.max((t - t0) / stepMs, 0), header.n - 1);
+  const pos = (t - t0) / stepMs;
+  if (pos < 0 || pos > header.n - 1) return null;
   const i0 = Math.floor(pos);
   const i1 = Math.min(i0 + 1, header.n - 1);
   const f = pos - i0;
