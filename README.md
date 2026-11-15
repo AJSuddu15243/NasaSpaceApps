@@ -91,6 +91,16 @@ such as `/app?...` to the SPA; existing assets and `web/public/data/` are served
 as-is. `/version.json` records the deployment's source commit without credentials.
 Verify its SHA against the production branch after each deploy.
 
+The existing project currently uses CLI deployments. From a clean checkout of main,
+linked to that existing project, run:
+
+```sh
+vercel --prod --yes --build-env VERCEL_GIT_COMMIT_SHA="$(git rev-parse HEAD)"
+```
+
+The explicit public SHA is needed because CLI builds have no Git checkout. Main
+pushes alone will not deploy until the project has a Git integration.
+
 Solgaleo needs Production-only `ASK_API_KEY` (sensitive), `ASK_BASE_URL` and
 `ASK_MODEL`, plus one published SDK firewall rule `solgaleo-ip`: 10 requests/minute in a
 shared (`all`) bucket. This also bounds any individual visitor. Production functions run in
