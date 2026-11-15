@@ -6,6 +6,7 @@ export const grid_scores: (a: number, b: number, c: any, d: number, e: number, f
 export const metrics_hash: (a: any) => [number, number, number, number];
 export const nearby_better: (a: number, b: number, c: any, d: number, e: number, f: any, g: any, h: number, i: number, j: number, k: number) => [number, number, number];
 export const output_hash: (a: number, b: number) => [number, number];
+export const output_hash_f32: (a: number, b: number) => [number, number];
 export const psr_flags: (a: number, b: number, c: any) => [number, number, number, number];
 export const quantize_ephem: (a: number, b: number) => [number, number, number, number];
 export const scores_from_fracs: (a: number, b: number, c: any, d: number, e: number, f: any, g: any) => [number, number, number, number];

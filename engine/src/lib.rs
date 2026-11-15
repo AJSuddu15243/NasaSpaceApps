@@ -141,6 +141,12 @@ pub fn output_hash(bytes: &[u8]) -> String {
     hash::bytes_hex(bytes)
 }
 
+/// Same hash over f32 results written canonically (one NaN, -0 -> +0): what the UI shows for float arrays,
+/// since WASM NaN payloads are unspecified. Equals `output_hash` of the bytes when there is no NaN or -0.
+pub fn output_hash_f32(xs: &[f32]) -> String {
+    hash::f32s_hex(xs)
+}
+
 // --- wasm exports: plain JS objects in/out via serde, typed arrays for bulk data ---
 
 // Objects cross as JSON so serde_json applies the contract exactly: unknown fields rejected
@@ -305,6 +311,11 @@ pub fn output_hash_js(bytes: &[u8]) -> String {
     output_hash(bytes)
 }
 
+#[wasm_bindgen(js_name = output_hash_f32)]
+pub fn output_hash_f32_js(xs: &[f32]) -> String {
+    output_hash_f32(xs)
+}
+
 /// Hash of a Metrics[] list, every field canonical and in contract order (see hash.rs).
 #[wasm_bindgen(js_name = metrics_hash)]
 pub fn metrics_hash_js(list: JsValue) -> Result<String, JsError> {
@@ -413,5 +424,17 @@ mod tests {
         );
         assert_eq!(output_hash(b"x").len(), 16);
         assert_ne!(output_hash(b"x"), output_hash(b"y"));
+        let raw =
+            |xs: &[f32]| output_hash(&xs.iter().flat_map(|x| x.to_le_bytes()).collect::<Vec<u8>>());
+        assert_eq!(output_hash_f32(&[1.5, 2.0]), raw(&[1.5, 2.0]));
+        assert_eq!(output_hash_f32(&[-0.0]), output_hash_f32(&[0.0]));
+        assert_eq!(
+            output_hash_f32(&[f32::from_bits(0xffc0_0001)]),
+            output_hash_f32(&[f32::NAN])
+        );
+        assert_ne!(
+            output_hash(&(-0.0f32).to_le_bytes()),
+            output_hash(&0.0f32.to_le_bytes())
+        );
     }
 }

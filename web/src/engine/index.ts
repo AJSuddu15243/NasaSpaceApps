@@ -64,9 +64,10 @@ export function siteTrack(mask: SiteMask, ephem: Ephem, t_start: string, hours: 
   return call(() => wasm.site_track(...args(mask, ephem, t_start, hours), params));
 }
 
-/** 16-hex determinism hash (engine tag + bytes), e.g. of a Float32Array of results. */
+/** 16-hex determinism hash (engine tag + bytes). A Float32Array is hashed canonically (one NaN, -0 as +0). */
 export function outputHash(data: ArrayBufferView): string {
   if (!ready) throw new UnavailableScenario('The simulation engine has not loaded.');
+  if (data instanceof Float32Array) return wasm.output_hash_f32(data);
   return wasm.output_hash(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
 }
 

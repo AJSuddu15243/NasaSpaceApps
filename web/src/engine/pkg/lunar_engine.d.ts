@@ -20,6 +20,8 @@ export function nearby_better(grid: Uint8Array | number[], header: any, fracs: F
 
 export function output_hash(bytes: Uint8Array | number[]): string;
 
+export function output_hash_f32(xs: Float32Array | number[]): string;
+
 /**
  * 1 per permanently shadowed cell, else 0 (GREEDY decision 10).
  */
@@ -53,6 +55,7 @@ export interface InitOutput {
     readonly metrics_hash: (a: any) => [number, number, number, number];
     readonly nearby_better: (a: number, b: number, c: any, d: number, e: number, f: any, g: any, h: number, i: number, j: number, k: number) => [number, number, number];
     readonly output_hash: (a: number, b: number) => [number, number];
+    readonly output_hash_f32: (a: number, b: number) => [number, number];
     readonly psr_flags: (a: number, b: number, c: any) => [number, number, number, number];
     readonly quantize_ephem: (a: number, b: number) => [number, number, number, number];
     readonly scores_from_fracs: (a: number, b: number, c: any, d: number, e: number, f: any, g: any) => [number, number, number, number];

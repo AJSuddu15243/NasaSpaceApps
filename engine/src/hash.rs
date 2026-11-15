@@ -92,6 +92,16 @@ pub fn bytes_hex(bytes: &[u8]) -> String {
     h.finish_hex()
 }
 
+/// Tagged hash of f32 values written canonically (one NaN, -0 -> +0), e.g. grid scores or tracks.
+/// Same bytes as `bytes_hex` of the array when it holds no NaN and no -0.
+pub fn f32s_hex(xs: &[f32]) -> String {
+    let mut h = Fnv64::tagged();
+    for &x in xs {
+        h.write_f32(x);
+    }
+    h.finish_hex()
+}
+
 /// Tagged hash of a list of Metrics, in list order.
 pub fn metrics_hex(list: &[Metrics]) -> String {
     let mut h = Fnv64::tagged();
