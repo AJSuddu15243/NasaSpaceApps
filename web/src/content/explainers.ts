@@ -21,7 +21,7 @@ export const explainers: Explainer[] = [
     title: 'Why the Sun barely rises at the pole',
     deck: 'The Moon\u2019s axis is tilted only 1.5\u00B0 — the Sun stays near the horizon for weeks.',
     body: [
-      `Earth\u2019s axis tilts 23.4\u00B0, which is why we get seasons and a Sun that climbs high at noon. The Moon\u2019s axis tilts only about 1.5\u00B0 toward the Sun, so the point where the Sun is overhead never strays more than ${FACTS.subSolarLatDeg}\u00B0 from the lunar equator. At our three south-pole sites the Sun never climbs higher than ${SUN_PEAK_RANGE} over ${FACTS.years}.`,
+      `Earth\u2019s axis tilts 23.4\u00B0, which is why we get seasons and a Sun that climbs high at noon. The Moon\u2019s axis tilts only about 1.5\u00B0 from the ecliptic, so the point where the Sun is overhead never strays more than ${FACTS.subSolarLatDeg}\u00B0 from the lunar equator. At our three south-pole sites the Sun never climbs higher than ${SUN_PEAK_RANGE} over ${FACTS.years}.`,
       'That sounds tiny, but it changes everything: sunlight arrives at a grazing angle, every crater rim casts a long shadow, and small changes in terrain decide whether a spot is lit or dark.',
     ],
   },

@@ -125,7 +125,7 @@ export default function Navigator() {
   const gridHeaders = Object.values(mission.grids.data).flatMap(g => g ? [g.header] : []);
   const bootLines = [
     { label: 'Lunar globe · LRO imagery', detail: globeReady ? 'ONLINE' : '', status: globeReady ? 'ready' as const : globeError ? 'error' as const : 'loading' as const },
-    { label: `LOLA terrain survey · ${gridHeaders.length} regions · ${gridHeaders.reduce((n, h) => n + h.nx * h.ny, 0).toLocaleString('en-US')} cells`, detail: gridHeaders[0] ? `${gridHeaders[0].cell_m} m` : '', status: mission.grids.status },
+    { label: gridHeaders.length ? `LOLA terrain survey · ${gridHeaders.length} regions · ${gridHeaders.reduce((n, h) => n + h.nx * h.ny, 0).toLocaleString('en-US')} cells` : 'LOLA terrain survey', detail: gridHeaders[0] ? `${gridHeaders[0].cell_m} m` : '', status: mission.grids.status },
     { label: 'Sunlight · Earth visibility · permanent shadow', detail: 'PGDA 69', status: mission.grids.status },
     { label: 'Ephemeris · JPL Horizons table + Astronomy Engine', detail: mission.demo.data ? `${mission.demo.data.table.header.n.toLocaleString('en-US')} H` : '', status: mission.demo.status },
     { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.filter(site => site.category !== 'demo').length} SITES` : '', status: mission.sites.status },

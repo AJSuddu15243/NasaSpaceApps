@@ -39,7 +39,7 @@
       "id": "sub-solar",
       "term": "Sub-solar point",
       "short": "Where the Sun is directly overhead on the Moon.",
-      "long": "The point on the lunar surface where the Sun sits at zenith. Its latitude stays within ±1.59° of the equator (JPL Horizons, 2026–2030) because the Moon's spin axis tilts only about 1.5° toward the Sun.",
+      "long": "The point on the lunar surface where the Sun sits at zenith. Its latitude stays within ±1.59° of the equator (JPL Horizons, 2026–2030) because the Moon's spin axis tilts only about 1.5° from the ecliptic.",
       "category": "astronomy"
     },
     {

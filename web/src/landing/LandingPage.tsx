@@ -254,7 +254,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
         <p className="body">Libration swings Earth up to 6.86° north or south over a month. From a polar site that can lift it clear of a ridge, or drop it behind one and cut direct-to-Earth contact.</p>
         <dl className="stats">
           <div><dt>Earth latitude swing</dt><dd>±6.86°</dd></div>
-          <div><dt>Earth distance</dt><dd>357–407k km</dd></div>
+          <div><dt>Earth distance</dt><dd>356.6–406.7k km</dd></div>
         </dl>
       </Chapter>
 
