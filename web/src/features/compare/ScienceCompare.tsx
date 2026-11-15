@@ -56,7 +56,9 @@ export function ScienceCompare({ places, date, masks, table, params, onInspect, 
       <tbody>{rows.map(row => {
         const vals = places.map(row.value);
         const finite = vals.filter((v): v is number => v !== undefined && Number.isFinite(v));
-        const lead = finite.length >= 2 ? (row.better === 'high' ? Math.max(...finite) : Math.min(...finite)) : undefined;
+        // Engine-horizon vs flat-horizon values are not comparable: no lead mark in a mixed "now" row.
+        const mixed = row.flat && sky.some(s => s.flat) && sky.some(s => !s.flat);
+        const lead = finite.length >= 2 && !mixed ? (row.better === 'high' ? Math.max(...finite) : Math.min(...finite)) : undefined;
         return <tr key={`${row.label}|${row.note ?? ''}`}><th scope="row">{row.label}{row.note && <small> · {row.note}</small>}</th>
           {vals.map((v, i) => <td key={places[i].id} className={lead !== undefined && v === lead ? 'is-lead' : ''}>{v === undefined || !Number.isFinite(v) ? <span className="muted">{places[i].region ? '—' : 'no survey'}</span> : <>{row.format(v)}{row.flat && sky[i].flat && <small> · flat horizon</small>}{lead !== undefined && v === lead && <span className="lead-tag"> ▲ leads</span>}</>}</td>)}</tr>;
       })}</tbody>

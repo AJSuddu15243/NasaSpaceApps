@@ -73,7 +73,7 @@ export function siteResults(data: DemoData, scenario: ResultInputs, regions?: Re
       }
     }
     const region = coords ? regionAt(regions, coords.lat, coords.lon) : undefined;
-    const readiness = coords ? cellReadiness(region, coords.lat, coords.lon) : null;
+    const readiness = realReadiness(data, id, regions);
     // Curated 360-bin mask first; points inside a surveyed grid use that cell's 64-bin mask.
     const mask = data.masks.get(id) ?? (region && coords ? gridSiteMask(region.grid, id, coords.lat, coords.lon) ?? undefined : undefined);
     const flat = () => coords ? siteTimeline(data.table, coords.lat, coords.lon, start, scenario.hours, 0) : null;
@@ -92,13 +92,21 @@ export function siteResults(data: DemoData, scenario: ResultInputs, regions?: Re
   return { start, results };
 }
 
+/** Engine suitability at a real site's grid cell; cheap, so it can follow every weights change. */
+function realReadiness(data: DemoData, id: string, regions?: Regions): number | null {
+  const coords = data.sites.find(item => item.id === id) ?? parseCustomSite(id);
+  return coords ? cellReadiness(regionAt(regions, coords.lat, coords.lon), coords.lat, coords.lon) : null;
+}
+
 export function ResultsPanel({ data, scenario, regions, onCollapse, scrub }: { data: DemoData; scenario: Scenario; regions?: Regions; onCollapse?: () => void; scrub?: ScrubState }) {
-  // Up to 4 engine calls per site (regions changes with the Priorities weights: readiness); skip them on playhead/layer/view changes. The store re-parses the URL on every set,
-  // so arrays are fresh objects each time: key on their serialized values.
+  // Up to 4 engine calls per site; skip them on playhead/layer/view/weights changes. The store re-parses the URL on every set,
+  // so arrays and `regions` are fresh objects each time: key on serialized values. Only the loaded grid set (stable Grid objects)
+  // feeds the masks; readiness follows `regions` in the cheap pass below.
   const { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights } = scenario;
-  const sitesKey = sites.join(','), mwKey = JSON.stringify(missionWeights);
+  const sitesKey = sites.join(','), mwKey = JSON.stringify(missionWeights), gridsKey = Object.keys(regions ?? {}).join(',');
   const params = siteParams(scenario);
-  const { results } = useMemo(() => siteResults(data, { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights }, regions), [data, sitesKey, date, delay, hours, survivalK, batteryH, slopeLimit, mwKey, regions]);
+  const heavy = useMemo(() => siteResults(data, { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights }, regions).results, [data, sitesKey, date, delay, hours, survivalK, batteryH, slopeLimit, mwKey, gridsKey]);
+  const results = useMemo(() => heavy.map(r => r.id.startsWith('demo-') ? r : { ...r, readiness: realReadiness(data, r.id, regions) }), [heavy, data, regions]);
   const computed = results.map(result => result.metrics).filter((metrics): metrics is Metrics => metrics !== null);
   const best = bestValues(computed);
   const showTable = computed.length > 1;
@@ -149,7 +157,7 @@ export function ResultsPanel({ data, scenario, regions, onCollapse, scrub }: { d
         })}</div>}
       {hash && <HashLine hash={hash} />}
 
-      <details className="rs-assumptions"><summary>Assumptions &amp; thresholds</summary><p>Status badge uses fixed thresholds: {thresholdText(DEFAULT_THRESHOLDS)}. The survival temperature and battery set in Planner feed the engine (hours below survival, whether the battery outlasts the longest darkness) but do not change the badge. Hourly bar: engine Sun disk and Earth line of sight over the terrain horizon mask. Temperature model: simplified, no thermal inertia. Earth contact assumes a DSN station can see the Moon; no relay coverage.</p></details>
+      <details className="rs-assumptions"><summary>Assumptions &amp; thresholds</summary><p>Status badge uses fixed thresholds: {thresholdText(DEFAULT_THRESHOLDS)}. The survival temperature and battery set in Planner feed the engine (hours below survival, whether the battery outlasts the longest darkness) but do not change the badge. Hourly bar: for real sites, engine Sun disk and Earth line of sight over the terrain horizon mask; synthetic demo sites use mean-horizon geometry. Temperature model: simplified, no thermal inertia. Earth contact assumes a DSN station can see the Moon; no relay coverage.</p></details>
     </div>
   </aside>;
 }

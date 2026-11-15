@@ -113,7 +113,8 @@ export default function Navigator() {
     return p ? { name: p.name, lat: p.lat, lon: p.lon } : undefined;
   }, [focused, scenario.sites, resolve]);
   const comparePlaces = useMemo(() => scenario.sites.flatMap(id => { const p = resolve(id); return p ? [{ id, name: p.name, lat: p.lat, lon: p.lon, region: (() => { const r = coveringRegion(mission.grids.data, p); return r ? results[r] : undefined; })() }] : []; }), [scenario.sites, resolve, results, mission.grids.data]);
-  const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id));
+  // Curated masks, or any place inside a grid (its cell's 64-bin mask feeds the engine).
+  const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id)) || comparePlaces.some(p => p.region);
   const askContext = useMemo(() => [
     'Lunar Window — lunar landing site navigator (NASA Space Apps). The user is looking at the 3D Moon workspace.',
     `Mode: ${scenario.mode} · View: ${scenario.view} · heat layer: ${scenario.heat ? LAYERS[scenario.heat].label : 'none'}`,
