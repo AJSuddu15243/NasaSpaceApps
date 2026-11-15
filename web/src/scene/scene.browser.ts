@@ -1,20 +1,24 @@
 import { expect, test } from '@playwright/test';
-
-test('terrain and polar views render without crossing the React/R3F error boundaries', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/app?view=map&sites=custom-m85d994800-m0d235780');
+test('docking real terrain layers preserves the scene and mission time', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lunar-window-tour-v2', 'done'));
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/app?focus=malapert-massif');
+  await page.getByRole('button', { name: 'Continue to workspace' }).evaluate(button => (button as HTMLButtonElement).click(), undefined, { timeout: 2000 }).catch(() => {});
+  await expect(page.locator('.boot')).toHaveCount(0);
+  const layers = page.getByRole('group', { name: 'Select a scientific layer' });
+  await expect(layers.getByRole('button', { name: 'NAC photo', exact: true })).toBeEnabled();
+  await layers.getByRole('button', { name: 'NAC photo', exact: true }).click();
+  await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'imagery');
+  await expect(page).toHaveURL(/heat=imagery/);
+  await page.getByRole('button', { name: '+7d', exact: true }).click();
+  await expect(page.locator('.timeline-label time')).toContainText('2026-11-21');
+  await page.getByRole('button', { name: 'Polar map', exact: true }).click();
   await expect(page.getByLabel('Interactive lunar terrain')).toBeVisible();
-  await expect(page.getByText('Real LOLA terrain · 80 m')).toBeVisible();
-
-  await page.getByLabel('Terrain layer').selectOption('slope');
-  await expect(page.getByText('10° limit')).toBeVisible();
-  await page.getByRole('button', { name: '3D terrain' }).click();
-  await expect(page.getByLabel('Interactive Moon overview')).toBeVisible();
-  await page.getByRole('button', { name: 'Explore local terrain' }).click();
-  await expect(page.getByLabel('Interactive lunar terrain')).toBeVisible();
-
-  await expect(page.getByText('The interface could not load.')).toHaveCount(0);
-  await expect(page.getByText('The terrain view could not start.')).toHaveCount(0);
+  await page.getByRole('button', { name: 'All layers', exact: true }).click();
+  await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'stack');
+  await page.getByRole('button', { name: 'Return to globe', exact: true }).click();
+  await expect(page.locator('.holo-stage')).toHaveCount(0);
+  await expect(page).toHaveURL(/delay=7/);
   expect(errors).toEqual([]);
 });

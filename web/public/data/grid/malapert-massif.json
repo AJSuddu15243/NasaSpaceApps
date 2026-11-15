@@ -4,7 +4,12 @@
   "source_urls": [
     "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
     "https://pgda.gsfc.nasa.gov/products/90",
-    "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+    "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+    "https://pgda.gsfc.nasa.gov/products/69",
+    "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+    "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+    "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+    "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
   ],
   "region": "malapert-massif",
   "crs": "polar-stereo-south",
@@ -25,7 +30,11 @@
     "elev_m",
     "crater_depth_m",
     "roughness_deg",
-    "rock"
+    "rock",
+    "sun_avg",
+    "earth_avg",
+    "psr",
+    "ice_favorability"
   ],
   "layer_info": {
     "slope_deg": {
@@ -89,6 +98,50 @@
       "byte_length": 62500,
       "proxy": true,
       "note": "Proxy, not measured rocks: DEM roughness (std-dev of 80 m slope over 5 x 5) / 5 deg, clipped to [0, 1]; no rock-abundance or boulder map covers 85-90 S"
+    },
+    "sun_avg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 375000,
+      "byte_length": 62500,
+      "note": "Average fraction of time the Sun is visible over the 18.6-year cycle (Mazarico 2011)"
+    },
+    "earth_avg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 437500,
+      "byte_length": 62500,
+      "note": "Average fraction of time the Earth is visible: direct-to-Earth radio proxy, no link budget"
+    },
+    "psr": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 500000,
+      "byte_length": 62500,
+      "note": "Fraction of the cell permanently shadowed (cold trap; water ice can be stable)"
+    },
+    "ice_favorability": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": -9999,
+      "byte_offset": 562500,
+      "byte_length": 62500,
+      "note": "Cannon & Britt 2020 ice favorability model, native 591 m; nearest-neighbour reprojection, not measured ice abundance"
     }
   }
 }

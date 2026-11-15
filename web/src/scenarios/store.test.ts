@@ -54,3 +54,14 @@ describe('scenario store', () => {
     expect(scenarioShareUrl('a b', 'https://x.test')).toContain('scenario=a%20b');
   });
 });
+
+it('migrates old saved scenarios without losing new mission state on a round trip', () => {
+  const old = { ...DEFAULT_SCENARIO } as Partial<typeof DEFAULT_SCENARIO>;
+  delete old.heat; delete old.ice; delete old.slopeLimit;
+  localStorage.setItem('lunar-window-scenarios-v1', JSON.stringify([{ slug: 'legacy', name: 'Legacy', scenario: old, created_at: '2026-01-01T00:00:00Z' }]));
+  expect(getScenario('legacy')?.scenario.heat).toBe('score');
+  expect(getScenario('legacy')?.scenario.slopeLimit).toBe(10);
+  const scenario = { ...DEFAULT_SCENARIO, heat: 'imagery' as const, ice: 20, slopeLimit: 7, focus: 'haworth', delay: 3, playhead: 12 };
+  saveScenario('Layered', scenario);
+  expect(getScenario('layered')?.scenario).toEqual(scenario);
+});

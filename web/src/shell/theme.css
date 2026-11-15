@@ -4,6 +4,7 @@
 /* Workspace theme aligned with the landing page (Archivo display, Geist Mono labels, warm ink/paper, one amber accent).
    Loaded after styles.css and the WEB-2 tokens, so it only re-points tokens and touches chrome. */
 :root{
+  --mission-accent:#f0b979;--mission-text:#efe7da;--mission-muted:#b3a898;--mission-line:#f0b97933;--mission-background:#080807;
   --background:240 5% 4%;--foreground:36 22% 91%;--card:30 5% 7%;--card-foreground:36 22% 91%;--popover:30 5% 9%;
   --secondary:30 4% 14%;--muted:30 4% 10%;--muted-foreground:36 7% 64%;--accent:30 5% 15%;
   --border:36 7% 17%;--input:36 6% 34%;--ring:36 22% 91%;

@@ -7,6 +7,12 @@ const sites: Site[] = [
   { id: 'apollo-11', name: 'Apollo 11', lat: 0.67, lon: 23.47, category: 'apollo', note: 'Equatorial contrast', source_url: 'https://example.com' },
 ];
 
+it('cannot give the antimeridian two IDs after coordinate rounding', () => {
+  expect(customSiteId(-85, 180)).toBe(customSiteId(-85, -180));
+  expect(customSiteId(-85, 179.9999999)).toBe(customSiteId(-85, -180));
+  expect(parseCustomSite(customSiteId(-85, 540))).toBeNull();
+});
+
 describe('searchSites', () => {
   it('returns all sites for an empty query and filters by name, note or category', () => {
     expect(searchSites(sites, '  ')).toHaveLength(2);
@@ -24,7 +30,8 @@ describe('validateCoordinates', () => {
 
   it('rejects non-decimal input and out-of-range latitude', () => {
     expect(validateCoordinates('abc', '45')).toBe('Enter decimal latitude and longitude.');
-    expect(validateCoordinates('-70', '45')).toBe('Latitude must be from 90°S to 80°S.');
+    expect(validateCoordinates('-70', '45')).toEqual({ lat: -70, lon: 45 });
+    expect(validateCoordinates('91', '45')).toBe('Latitude must be from 90°S to 90°N.');
     expect(validateCoordinates('-85', '200')).toBe('Longitude must be from 180°W to 180°E.');
   });
 

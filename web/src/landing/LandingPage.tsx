@@ -3,6 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNod
 import mark from '../brand/assets/mark.svg';
 import { loadMoonTextures, type MoonTextures, type StageState } from './textures';
 import { copyOpacity, formatLat, formatLon, illustrativeDate, sampleStage, SITES } from './story';
+import { awaitNavigatorEntry, preloadNavigator } from '../shell/preload';
 import './landing.css';
 
 const MoonStage = lazy(() => import('./MoonStage'));
@@ -77,6 +78,16 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
   const [date, setDate] = useState('2026.11.14');
   const [hovered, setHovered] = useState<string | null>(null);
   const [diving, setDiving] = useState(false);
+  const [entryError, setEntryError] = useState('');
+  const entryRef = useRef<AbortController | null>(null);
+  const entryStatusRef = useRef<HTMLDivElement>(null);
+  const entryTriggerRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => () => entryRef.current?.abort(), []);
+  useEffect(() => {
+    if (diving) entryStatusRef.current?.focus();
+    else entryTriggerRef.current?.focus();
+  }, [diving]);
   const [clock, setClock] = useState(() => new Date().toISOString().slice(11, 19));
 
   useEffect(() => {
@@ -136,13 +147,36 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
     else el.scrollIntoView();
   };
 
-  const enter = () => {
-    if (diving) return;
-    if (state.current.stepped || !webgl) { onOpen(); return; }
+  const warmNavigator = () => { void preloadNavigator().catch(() => { /* Entry reports download failures with a retry action. */ }); };
+
+  const cancelEntry = () => {
+    entryRef.current?.abort();
+    entryRef.current = null;
+    state.current.diveStart = null;
+    setDiving(false);
+    lenisRef.current?.start();
+  };
+
+  const enter = async () => {
+    if (entryRef.current) return;
+    entryTriggerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const controller = new AbortController();
+    entryRef.current = controller;
+    setEntryError('');
     setDiving(true);
-    state.current.diveStart = performance.now();
+    const animate = !matchMedia('(prefers-reduced-motion: reduce)').matches && webgl;
+    state.current.diveStart = animate ? performance.now() : null;
     lenisRef.current?.stop();
-    window.setTimeout(() => { window.scrollTo(0, 0); onOpen(); }, 1250);
+    try {
+      await awaitNavigatorEntry(preloadNavigator(), controller.signal, animate ? 1250 : 0);
+      if (controller.signal.aborted) return;
+      window.scrollTo(0, 0);
+      onOpen();
+    } catch (error) {
+      if (controller.signal.aborted) return;
+      cancelEntry();
+      setEntryError(error instanceof Error ? error.message : 'The navigator could not load. Try again.');
+    }
   };
 
   const ready = loaded || (textures !== null && progress >= 1);
@@ -164,14 +198,14 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </span>)}
     </div>
 
-    <header className="lw-header">
+    <header className="lw-header" inert={diving}>
       <a className="lw-brand" href="/" onClick={e => { e.preventDefault(); scrollTo('top'); }}>
         <img src={mark} alt="" /><span>Lunar Window</span>
       </a>
       <nav className="lw-pill" aria-label="Story chapters">
-        {NAV.map(([id, label], i) => <a key={id} href={`#${id}`} aria-current={CHAPTERS[active].id === id ? 'true' : undefined} onClick={e => { e.preventDefault(); scrollTo(id); }}>{label}<sup>{String(i + 1).padStart(2, '0')}</sup></a>)}
+        {NAV.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={CHAPTERS[active].id === id ? 'true' : undefined} onClick={e => { e.preventDefault(); scrollTo(id); }}>{label}</a>)}
       </nav>
-      <button type="button" className="lw-cta-pill" onClick={enter}>Open navigator <span aria-hidden="true">↗</span></button>
+      <button type="button" className="lw-cta-pill" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Open navigator <span aria-hidden="true">↗</span></button>
     </header>
 
     <div className="lw-rail" aria-hidden="true"><span ref={railRef} /></div>
@@ -182,14 +216,14 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       <span>UTC {clock}</span>
     </footer>
 
-    <main id="main" className="lw-story" tabIndex={-1}>
+    <main id="main" className="lw-story" tabIndex={-1} inert={diving}>
       <Chapter index={0} id="top" copyRefs={copyRefs}>
         <p className="micro">Lunar south pole · landing window planner</p>
         <h1 id="top-title">Land where<br />the <em>light</em> stays.</h1>
         <div className="hero-foot">
           <p>Compare Artemis south-pole sites by sunlight, Earth contact and terrain. Then move the arrival date and watch the window change.</p>
           <div className="hero-actions">
-            <button type="button" className="btn-solid" onClick={enter}>Open the navigator <span aria-hidden="true">↗</span></button>
+            <button type="button" className="btn-solid" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Open the navigator <span aria-hidden="true">↗</span></button>
             <button type="button" className="btn-text" onClick={() => scrollTo('pole')}>Scroll to descend <span aria-hidden="true">↓</span></button>
           </div>
         </div>
@@ -265,7 +299,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       <Chapter index={7} id="enter" className="align-center" copyRefs={copyRefs}>
         <p className="micro">07 / Enter</p>
         <h2 id="enter-title">Pick a site. Move the date.<br /><em>Read the horizon.</em></h2>
-        <button type="button" className="btn-solid btn-large" onClick={enter}>Enter the navigator <span aria-hidden="true">↗</span></button>
+        <button type="button" className="btn-solid btn-large" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Enter the navigator <span aria-hidden="true">↗</span></button>
         <p className="fine">NASA Space Apps 2026 · independent team prototype, not a mission recommendation.</p>
         <p className="fine links">
           <a href="https://quickmap.lroc.asu.edu/" target="_blank" rel="noreferrer">LROC QuickMap ↗</a>
@@ -277,5 +311,9 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
     </main>
     <div className="lw-dive-veil" aria-hidden="true" />
+    {(diving || entryError) && <div className="lw-entry-status" ref={entryStatusRef} tabIndex={-1} onKeyDown={event => { if (event.key === 'Escape') cancelEntry(); }}>
+      <p role={entryError ? 'alert' : 'status'}>{entryError || 'Approaching mission control…'}</p>
+      {entryError ? <button type="button" className="btn-text" onClick={enter}>Try again</button> : <button type="button" className="btn-text" onClick={cancelEntry}>Cancel entrance</button>}
+    </div>}
   </div>;
 }

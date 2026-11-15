@@ -1,4 +1,4 @@
-import { DEFAULT_SCENARIO, type Scenario } from '../shell/scenario';
+import { DEFAULT_SCENARIO, readScenario, writeScenario, type Scenario } from '../shell/scenario';
 
 /**
  * Local persistence for named mission scenarios.
@@ -23,7 +23,7 @@ function readAll(): StoredScenario[] {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as StoredScenario[]).filter(isStored) : [];
+    return Array.isArray(parsed) ? (parsed as StoredScenario[]).filter(isStored).map(item => ({ ...item, scenario: readScenario(writeScenario({ ...structuredClone(DEFAULT_SCENARIO), ...item.scenario })).scenario })) : [];
   } catch {
     return [];
   }
@@ -104,6 +104,7 @@ function toPayload(scenario: Scenario) {
     weights: { ...scenario.weights },
     missionWeights: { ...scenario.missionWeights },
     mode: scenario.mode, view: scenario.view,
+    focus: scenario.focus, layer: scenario.layer, heat: scenario.heat, ice: scenario.ice, slopeLimit: scenario.slopeLimit, playhead: scenario.playhead, delay: scenario.delay,
   };
 }
 
@@ -111,12 +112,13 @@ function fromRecord(record: { slug: string; name: string; payload: ScenarioRecor
   const p = record.payload;
   return {
     slug: record.slug, name: record.name,
-    scenario: { sites: p.sites, date: p.date, hours: p.hours, weights: p.weights as unknown as Scenario['weights'], missionWeights: { ...DEFAULT_SCENARIO.missionWeights, ...(p.missionWeights ?? {}) } as unknown as Scenario['missionWeights'], mode: p.mode as Scenario['mode'], view: p.view as Scenario['view'] },
+    scenario: readScenario(writeScenario({ ...structuredClone(DEFAULT_SCENARIO), ...p, sites: p.sites, date: p.date, hours: p.hours, weights: p.weights as unknown as Scenario['weights'], missionWeights: { ...DEFAULT_SCENARIO.missionWeights, ...(p.missionWeights ?? {}) } as unknown as Scenario['missionWeights'], mode: p.mode as Scenario['mode'], view: p.view as Scenario['view'] })).scenario,
     created_at: record.created_at ?? record.createdAt ?? new Date().toISOString(),
   };
 }
 
 interface ScenarioRecordPayload {
+  focus?: string; layer?: Scenario['layer']; heat?: Scenario['heat']; ice?: number; slopeLimit?: number; playhead?: number; delay?: number;
   sites: string[]; date: string; hours: number;
   weights: Record<string, number>; missionWeights?: Record<string, number>;
   mode: string; view: string;
