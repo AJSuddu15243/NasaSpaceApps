@@ -353,6 +353,11 @@ body:has(.mission) .app-header{--shell-text:#efe7da;--shell-muted:#b3a898;--shel
 :root[data-theme='light'] body:has(.mission) .app-header .ui-button{color:#2a241c}
 @media(max-width:1020px){:root[data-theme='light'] .hud-right{background:#fffffff5}}
 :root[data-theme='light'] .hud-dock button[aria-pressed=true],:root[data-theme='light'] .hud-dock button[aria-expanded=true]{background:#0000000d}
+.hud-min{margin-left:auto;display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:6px;background:none;color:var(--shell-muted);transition:background .15s,color .15s;flex:none}
+.hud-min:hover{background:#e8cca81f;color:var(--shell-text)}
+.hud-min-bottom{position:absolute;top:6px;right:8px;z-index:3}
+.hud-fab-bottom{left:50%;transform:translateX(-50%);bottom:14px}
+:root[data-theme='light'] .hud-min:hover{background:#0000000f}
 :root[data-theme='light'] .hud-icon:hover,:root[data-theme='light'] .hud-fab:hover{background:#0000000f}
 :root[data-theme='light'] .hud-icon{color:#6e665a}
 :root[data-theme='light'] .hud-fab{color:#2a241c}
