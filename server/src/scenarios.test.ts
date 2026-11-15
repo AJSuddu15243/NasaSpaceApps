@@ -17,3 +17,8 @@ test('old rows without extras keep their defaults', () => {
   const row = { id: 'x', name: 'X', sites: [], landingDateUtc: '2027-01-15 00:00:00+00', durationHours: 24, weights: { engine: { sun: 1 } }, createdAt: 'now' };
   assert.deepEqual(toRecord(row).payload, { sites: [], date: '2027-01-15T00:00:00.000Z', hours: 24, weights: { sun: 1 }, missionWeights: {}, mode: 'planner', view: '3d' });
 });
+
+test('unknown payload keys are not stored', () => {
+  const payload = { sites: [], date: '2027-01-15T00:00:00.000Z', hours: 24, weights: {}, missionWeights: {}, mode: 'planner', view: '3d', survivalK: 150, junk: 'x' };
+  assert.deepEqual(toWeights(payload), { survivalK: 150, engine: {}, mission: {}, mode: 'planner', view: '3d' });
+});

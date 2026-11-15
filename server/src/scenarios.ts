@@ -63,10 +63,12 @@ export async function deleteScenario(slug: string): Promise<void> {
   await db.delete(scenarios).where(eq(scenarios.id, slug));
 }
 
-/** Row `weights` jsonb: both weight sets, mode/view, and every extra payload field (no migration needed). */
+const EXTRA_KEYS = ['survivalK', 'batteryH', 'ice', 'slopeLimit', 'focus', 'layer', 'heat', 'playhead', 'delay'];
+
+/** Row `weights` jsonb: both weight sets, mode/view, and the known extra payload fields (no migration needed). */
 export function toWeights(payload: ScenarioRecord['payload']): Record<string, unknown> {
-  const { sites: _s, date: _d, hours: _h, weights: engine, missionWeights: mission, mode, view, ...extras } = payload;
-  return { ...extras, engine, mission, mode, view };
+  const extras = Object.fromEntries(EXTRA_KEYS.filter((k) => k in payload).map((k) => [k, payload[k]]));
+  return { ...extras, engine: payload.weights, mission: payload.missionWeights, mode: payload.mode, view: payload.view };
 }
 
 export function toRecord(row: typeof scenarios.$inferSelect): ScenarioRecord {
