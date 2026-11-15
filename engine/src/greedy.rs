@@ -95,7 +95,8 @@ pub fn top_areas(
     }
     let (nx, ny) = dims(h);
     let means = window_means(scores, nx, ny, window_cells);
-    let mut picked: Vec<Area> = Vec::with_capacity(n);
+    // No with_capacity(n): wasm-bindgen maps a JS n = -1 to u32::MAX, which would trap on allocation.
+    let mut picked: Vec<Area> = Vec::new();
     for i in ranked(&means) {
         let p = cell_xy(h, i);
         if picked
@@ -405,6 +406,13 @@ mod tests {
         // Edge windows are invalid: only the 3 x 3 interior centres can be picked.
         let a = top_areas(&[0.5; 25], &h, 3, 1.0, 25).unwrap();
         assert_eq!(a.len(), 9);
+        // JS n = -1 arrives as u32::MAX: no huge allocation, just every pickable area.
+        assert_eq!(
+            top_areas(&[0.5; 25], &h, 3, 1.0, u32::MAX as usize)
+                .unwrap()
+                .len(),
+            9
+        );
         let (lat, lon) = (a[0].lat, a[0].lon);
         assert!(lat < -88.0 && (-180.0..180.0).contains(&lon));
     }
