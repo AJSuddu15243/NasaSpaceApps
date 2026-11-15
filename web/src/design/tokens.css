@@ -55,33 +55,3 @@
   :root { --motion-fast: 0ms; --motion-base: 0ms; --motion-slow: 0ms; }
 }
 
-/* Light theme: same token names, re-valued. Activated by [data-theme='light']. */
-:root[data-theme='light'] {
-  color-scheme: light;
-  --background: 220 20% 97%;
-  --foreground: 222 20% 14%;
-  --card: 0 0% 100%;
-  --card-foreground: 222 20% 14%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 20% 14%;
-  --primary: 222 20% 14%;
-  --primary-foreground: 220 20% 97%;
-  --secondary: 220 14% 92%;
-  --secondary-foreground: 222 20% 14%;
-  --muted: 220 14% 93%;
-  --muted-foreground: 215 12% 42%;
-  --accent: 220 14% 90%;
-  --accent-foreground: 222 20% 14%;
-  --destructive: 0 72% 45%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 220 12% 86%;
-  --input: 220 10% 50%;
-  --ring: 222 20% 14%;
-  --sun: 38 90% 30%;
-  --earth: 207 80% 35%;
-  --success: 145 55% 28%;
-  --warning: 45 90% 22%;
-  --danger: 0 75% 42%;
-  --shadow-panel: 0 1px 2px hsl(220 20% 20% / 0.06), 0 8px 24px hsl(220 20% 20% / 0.08);
-  --shadow-raised: 0 1px 2px hsl(220 20% 20% / 0.08), 0 16px 40px hsl(220 20% 20% / 0.12);
-}

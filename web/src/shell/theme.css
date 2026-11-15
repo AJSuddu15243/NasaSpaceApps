@@ -39,9 +39,4 @@ h1,h2,h3{letter-spacing:-.025em}
 /* Fix: the hidden checkbox is absolutely positioned, so it must not reserve a grid column (names wrapped per word). */
 .site-catalogue .site-row{grid-template-columns:.5rem minmax(0,1fr)}
 
-/* Light theme keeps the same token names; mission stage overrides live in mission.css. */
-:root[data-theme='light']{
-  --mission-accent:#9a5b16;--mission-text:#2a241c;--mission-muted:#6e665a;--mission-line:#00000026;--mission-background:#ece7da;
-}
-
 @media(prefers-reduced-motion:reduce){.workspace{animation:none}}
