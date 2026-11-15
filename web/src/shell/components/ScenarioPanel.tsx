@@ -14,8 +14,8 @@ export function ScenarioPanel({ scenario, data, change, onCollapse, onInspect }:
     <SitePicker onInspect={onInspect} sites={data.sites} selected={scenario.sites} onChange={sites => change({ sites: sites.slice(0, MAX_SITES) })} />
     <DateWindow key={`${scenario.date}/${scenario.hours}`} scenario={scenario} change={change} />
     {scenario.mode === 'planner' && <SurvivalParams scenario={scenario} change={change} />}
-    {scenario.mode === 'planner' && <details className="sc-advanced">
-      <summary><ChevronDown size={13} aria-hidden="true" /> Readiness score weights · synthetic demo sites</summary>
+    {scenario.mode === 'planner' && scenario.sites.some(id => id.startsWith('demo-')) && <details className="sc-advanced">
+      <summary><ChevronDown size={13} aria-hidden="true" /> Readiness score weights · synthetic demo sites only</summary>
       <MissionWeightsPanel scenario={scenario} change={change} />
     </details>}
     <div className="sc-foot">

@@ -126,8 +126,8 @@ export default function Navigator() {
     return p ? { id: p.id, name: p.name, lat: p.lat, lon: p.lon } : undefined;
   }, [focused, scenario.sites, resolve]);
   // Stable engine inputs so the panels' site_track memos cache (a new mask/params object each render reruns them).
-  const { batteryH, survivalK, slopeLimit } = scenario;
-  const engineParams = useMemo(() => siteParams({ batteryH, survivalK, slopeLimit }), [batteryH, survivalK, slopeLimit]);
+  const { batteryH, survivalK } = scenario;
+  const engineParams = useMemo(() => siteParams({ batteryH, survivalK }), [batteryH, survivalK]);
   const masks = mission.demo.data?.masks; const table = mission.demo.data?.table; const grids = mission.grids.data;
   const focusedMask = useMemo(() => focused ? siteMaskFor(focused, masks, grids) : null, [focused, masks, grids]);
   const placeMask = useMemo(() => place ? siteMaskFor(place, masks, grids) : null, [place, masks, grids]);
@@ -152,7 +152,8 @@ export default function Navigator() {
     { label: 'Ephemeris · JPL Horizons table + Astronomy Engine', detail: mission.demo.data ? `${mission.demo.data.table.header.n.toLocaleString('en-US')} H` : '', status: mission.demo.status },
     { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.filter(site => site.category !== 'demo').length} SITES` : '', status: mission.sites.status },
   ];
-  const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => { if ('heat' in patch) setHeatPick(n => n + 1); setScenario(patch, replace); }, [setScenario]);
+  // Bump only when the stage shows another layer: a bump per slider tick would clear the probe on every step.
+  const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => { if ('heat' in patch && patch.heat !== shownHeat) setHeatPick(n => n + 1); setScenario(patch, replace); }, [setScenario, shownHeat]);
   const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);
   const finishBoot = useCallback(() => setBooted(true), []);
   const globeOnline = useCallback(() => setGlobeReady(true), []);

@@ -125,7 +125,9 @@ export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scena
   const key = `${start}|${hours}|${survivalK}`;
   const factors = useMemo(() => Object.fromEntries(Object.entries(grids).map(([region, grid]) => [region, gridFactors(grid!)])) as Partial<Record<GridRegion, Factors>>, [grids]);
   const [engine, setEngine] = useState<Partial<Record<GridRegion, EngineFracs>>>({});
+  const idle = ENGINE_KEYS.every(k => weights[k] === 0);
   useEffect(() => {
+    if (idle) return; // all-zero weights rank nothing (ZERO_WEIGHTS below), so skip the grid_fracs run
     let current = true;
     for (const region of GRID_REGIONS) {
       const grid = grids[region];
@@ -138,7 +140,7 @@ export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scena
         .catch((error: unknown) => { console.warn(`engine heatmap for ${region} unavailable; showing the preview`, error); if (current) setEngine(value => ({ ...value, [region]: { key, failed: true } })); });
     }
     return () => { current = false; };
-  }, [grids, table, start, hours, survivalK, key]);
+  }, [grids, table, start, hours, survivalK, key, idle]);
   return useMemo(() => {
     const out: Partial<Record<GridRegion, RegionResult>> = {};
     for (const region of GRID_REGIONS) {

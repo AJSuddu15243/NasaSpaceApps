@@ -2,7 +2,9 @@ import { readFileSync } from 'node:fs';
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { initEngine } from '../../engine';
+import { initEngine, siteParams } from '../../engine';
+import { ScenarioPanel } from '../../shell/components/ScenarioPanel';
+import { DEFAULT_SCENARIO } from '../../shell/scenario';
 import { decodeFracs, bakedFile } from '../heatmap/baked';
 import { parseGrid } from '../heatmap/grid';
 import { gridFactors } from '../heatmap/score';
@@ -57,5 +59,16 @@ describe('region results', () => {
     expect(zero.areas).toEqual([]);
     expect(zero.error).toBe(ZERO_WEIGHTS);
     expect(run(weights, 40).areas.length).toBeGreaterThan(0);
+  });
+});
+
+describe('planner panel', () => {
+  const html = (sites: string[]) => renderToString(createElement(ScenarioPanel, { scenario: { ...DEFAULT_SCENARIO, mode: 'planner', sites }, data: { sites: [] }, change: () => {} }));
+  it('readiness weights show only with a synthetic demo-* site in the shortlist', () => {
+    expect(html(['haworth'])).not.toContain('Readiness score weights');
+    expect(html(['haworth', 'demo-ridge'])).toContain('synthetic demo sites only');
+  });
+  it('site params ignore the slope limit (site metrics never read it)', () => {
+    expect(siteParams({ batteryH: 48, survivalK: 233 })).toEqual(siteParams({ ...DEFAULT_SCENARIO, slopeLimit: 20 } as typeof DEFAULT_SCENARIO));
   });
 });
