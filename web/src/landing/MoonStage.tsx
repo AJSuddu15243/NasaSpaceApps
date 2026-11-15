@@ -4,7 +4,8 @@ import {
   AdditiveBlending, BufferAttribute, BufferGeometry, Color, Euler, Group, LinearMipmapLinearFilter, Mesh, MeshBasicMaterial,
   Quaternion, ShaderMaterial, SphereGeometry, SRGBColorSpace, Texture, Vector2, Vector3,
 } from 'three';
-import { DIVE, easeOut, lonLatToVec, mixKeys, sampleStage, SITES, type StageKey } from './story';
+import { DIVE, easeOut, lonLatToVec, mixKeys, sampleStage, SITES, stageDate, type StageKey } from './story';
+import { sunEarthAt } from '../ephem';
 import type { MoonTextures, StageState } from './textures';
 
 
@@ -119,8 +120,6 @@ function Rig({ state, textures, onSiteHover, labels }: {
   const moonGeo = useMemo(() => new SphereGeometry(1, 256, 192), []);
   useEffect(() => () => { moonMat.dispose(); starMat.dispose(); earthMat.dispose(); moonGeo.dispose(); stars.dispose(); }, [moonMat, starMat, earthMat, moonGeo, stars]);
 
-  // Earth sits ~5.5° below the lunar equator so a south-polar observer sees it just above the horizon (libration ±6.86°).
-  const earthPos = useMemo(() => new Vector3(...lonLatToVec(-3.4, 3.2)).multiplyScalar(38), []);
   const sitePos = useMemo(() => SITES.map(s => new Vector3(...lonLatToVec(s.lat, s.lon)).multiplyScalar(1.0025)), []);
   const siteRot = useMemo(() => sitePos.map(p => new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), p.clone().normalize())), [sitePos]);
 
@@ -145,7 +144,10 @@ function Rig({ state, textures, onSiteHover, labels }: {
     camera.position.set(cur.camera[0] * xs, cur.camera[1], cur.camera[2] * zs);
     camera.lookAt(tmp.target.set(cur.target[0] * xs, cur.target[1], cur.target[2]));
 
-    tmp.sun.set(...lonLatToVec(-1.2, cur.sunLon)).applyQuaternion(tmp.q).normalize();
+    // Real Moon-fixed sub-solar / sub-Earth points for the scroll date (Earth at 38 units, not to scale).
+    const sky = sunEarthAt(stageDate(cur.sunLon));
+    tmp.sun.set(...lonLatToVec(sky.sun_lat, sky.sun_lon)).applyQuaternion(tmp.q).normalize();
+    earth.current?.position.set(...lonLatToVec(sky.earth_lat, sky.earth_lon)).multiplyScalar(38);
     moonMat.uniforms.sunDir.value.copy(tmp.sun);
     earthMat.uniforms.sunDir.value.copy(tmp.sun);
     earthMat.uniforms.opacity.value = cur.earth;
@@ -190,7 +192,7 @@ function Rig({ state, textures, onSiteHover, labels }: {
         <ringGeometry args={[0.0062, 0.0085, 48]} />
         <meshBasicMaterial color={new Color('#efa767')} transparent depthWrite={false} />
       </mesh>)}
-      <mesh ref={earth} position={earthPos}>
+      <mesh ref={earth}>
         <sphereGeometry args={[0.95, 48, 32]} />
         <primitive object={earthMat} attach="material" />
       </mesh>

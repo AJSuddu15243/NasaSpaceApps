@@ -122,12 +122,13 @@ export default function Navigator() {
     comparePlaces.length ? `Comparing: ${comparePlaces.map(p => `${p.name} (${p.lat.toFixed(2)}°,${p.lon.toFixed(2)}°)`).join('; ')}` : '',
   ].filter(Boolean).join('\n'), [scenario.mode, scenario.view, scenario.heat, scenario.date, scenario.delay, scenario.hours, instant, telemetry, focused, region, covered, comparePlaces]);
 
+  const gridHeaders = Object.values(mission.grids.data).flatMap(g => g ? [g.header] : []);
   const bootLines = [
     { label: 'Lunar globe · LRO imagery', detail: globeReady ? 'ONLINE' : '', status: globeReady ? 'ready' as const : globeError ? 'error' as const : 'loading' as const },
-    { label: 'LOLA terrain survey · 3 regions × 15,625 cells', detail: '160 m', status: mission.grids.status },
+    { label: `LOLA terrain survey · ${gridHeaders.length} regions · ${gridHeaders.reduce((n, h) => n + h.nx * h.ny, 0).toLocaleString('en-US')} cells`, detail: gridHeaders[0] ? `${gridHeaders[0].cell_m} m` : '', status: mission.grids.status },
     { label: 'Sunlight · Earth visibility · permanent shadow', detail: 'PGDA 69', status: mission.grids.status },
-    { label: 'Ephemeris · Astronomy Engine vs JPL Horizons', detail: 'GEOMETRIC', status: 'ready' as const },
-    { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.length} SITES` : '', status: mission.sites.status },
+    { label: 'Ephemeris · JPL Horizons table + Astronomy Engine', detail: mission.demo.data ? `${mission.demo.data.table.header.n.toLocaleString('en-US')} H` : '', status: mission.demo.status },
+    { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.filter(site => site.category !== 'demo').length} SITES` : '', status: mission.sites.status },
   ];
   const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => setScenario(patch, replace), [setScenario]);
   const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);

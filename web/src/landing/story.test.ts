@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { copyOpacity, DIVE, illustrativeDate, KEYS, lonLatToVec, polarStereo, sampleStage, SITES } from './story';
+import { copyOpacity, DIVE, KEYS, lonLatToVec, polarStereo, sampleStage, SITES, STAGE_EPOCH_MS, stageDate } from './story';
+import { DEFAULT_SCENARIO } from '../shell/scenario';
 
 describe('landing stage keys', () => {
   it('lands exactly on each chapter key and stays finite between them', () => {
@@ -60,10 +61,23 @@ describe('Moon-fixed frame', () => {
     expect(polarStereo(-80, 0)[1]).toBeCloseTo(304000, -2);
   });
 
-  it('advances the illustrative date by one synodic month per Sun turn', () => {
-    const a = illustrativeDate(KEYS[1].sunLon).getTime();
-    const b = illustrativeDate(KEYS[1].sunLon + 360).getTime();
+  it('starts the stage date at the navigator default and advances one synodic month per Sun turn', () => {
+    expect(new Date(STAGE_EPOCH_MS).toISOString()).toBe(DEFAULT_SCENARIO.date);
+    expect(stageDate(KEYS[0].sunLon).getTime()).toBe(STAGE_EPOCH_MS);
+    const a = stageDate(KEYS[1].sunLon).getTime();
+    const b = stageDate(KEYS[1].sunLon + 360).getTime();
+    expect(a).toBe(STAGE_EPOCH_MS);
     expect((b - a) / 86_400_000).toBeCloseTo(29.53);
+  });
+
+  it('uses sites.json names and the rounded mask elevations', () => {
+    const sites = JSON.parse(readFileSync(new URL('../../public/data/sites.json', import.meta.url), 'utf8')) as { id: string; name: string; lat: number; lon: number }[];
+    for (const site of SITES) {
+      const real = sites.find(s => s.id === site.id)!;
+      expect([real.name, real.lat, real.lon]).toEqual([site.name, site.lat, site.lon]);
+      const mask = JSON.parse(readFileSync(new URL(`../../public/data/masks/${site.id}.json`, import.meta.url), 'utf8')) as { elev_m: number };
+      expect(Math.round(mask.elev_m)).toBe(site.elevation_m);
+    }
   });
 });
 
@@ -73,8 +87,8 @@ describe('landing copy', () => {
     for (const word of ['seamless', 'revolutionize', 'unlock', 'cutting-edge', 'harness', 'leverage', 'empower', 'game-changer', 'delve']) {
       expect(source.toLowerCase()).not.toContain(word);
     }
-    expect(source).toContain('In progress');
+    expect(source).not.toContain('In progress');
     expect(source).toContain('not a mission recommendation');
-    expect(source).toContain('Illustrative lighting');
+    expect(source).toContain('Astronomy Engine');
   });
 });
