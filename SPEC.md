@@ -78,7 +78,8 @@ explanations for students and the public).
 - **Determinism:** fixed time step, fixed loop order, no fast-math, no unseeded randomness; `output_hash()`
   shown in the UI. ENG-8: FNV-1a 64 (16 hex) over an engine tag + canonical little-endian bytes (one NaN,
   -0 → +0, a tag byte before optional fields, contract field order); extra exports `metrics_hash(Metrics[])`
-  and `quantize_ephem(Float32Array)`.
+  and `quantize_ephem(Float32Array)`. `output_hash(bytes)` hashes raw bytes; `output_hash_f32(Float32Array)` is the
+  canonical one, and the facade's `outputHash` uses it for every Float32Array (WASM NaN payloads are unspecified).
 
 ## File contracts (agree first; build on mocks until real data lands)
 The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per kind in `contracts/schemas/`
@@ -110,6 +111,12 @@ The source of truth is [`contracts/`](contracts/README.md): one JSON Schema per 
   `site_extras` and `site_track` take the same arguments. The TS facade keeps
   `site_metrics(mask: SiteMask, table, t_start: ISO string, hours, params)`, builds `geom` from the SiteMask and
   converts ISO to hours; demo-* sites stay on `mock.ts` until INT-1 loads real masks and ephem.
+  Grid exports (ENG-6/7, same follow-up for the schema text; design in [`.agent/GREEDY.md`](.agent/GREEDY.md)):
+  `grid_scores(grid, header, ephem, t_start_h, hours, weights, params)`,
+  `top_areas(scores, header, window_cells, exclusion_m, n)`, plus `grid_fracs(grid, header, ephem, t_start_h,
+  hours, params)`, `scores_from_fracs(grid, header, fracs, weights, params)`, `psr_flags(grid, header)`,
+  `window_cells(base_m, cell_m)`, `nearby_better(grid, header, fracs, weights, params, window_cells, x_m, y_m,
+  radius_m)` and `window_factors(grid, header, fracs, params, window_cells, x_m, y_m)`.
 
 ## Curated sites (seed list; W6 verifies coordinates and cites sources)
 Artemis III candidate regions (Peak near Cabeus B, Haworth, Malapert Massif, Mons Mouton Plateau, Mons Mouton,

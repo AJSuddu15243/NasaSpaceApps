@@ -74,9 +74,12 @@ For a scenario (set of sites + date/window + weights):
   - The observer stands **2 m above the DEM surface** (`--observer-m 2`, a CLI flag, not stored in the mask
     file). Without it, bilinear sampling makes a site shade itself.
   - Rays march great circles on the 1737.4 km sphere out to **150 km** (`--max-km`), so far mountains set the
-    horizon (SPEC guardrail 4).
+    horizon (SPEC guardrail 4). The shipped far tiles stop short of that on their edges: the shortest ray
+    reaches **139.5 km (Haworth), 139.8 km (Connecting Ridge), 139.3 km (Malapert Massif)**, so a few azimuths
+    miss terrain between ~139 and 150 km (the bin warns; widen the far tile to close it).
   - **Fixed step = the cell size of the tile being sampled** (80 m near tile, then 240 m far tile). The first
-    sample is one step out.
+    sample is one step out. Measured 2026-11-14 (release, 8 threads, Apple-silicon laptop): **~10 s per region**
+    (15,625 grid cells + its site, ~1,530 cells/s), so the growing step was not needed.
   - **Each bin is a sector max**: the highest elevation over 4 sub-rays spread across the bin (360 bins per
     curated site, 64 per grid cell). This errs towards less Sun and Earth, the safe side.
 - **Time steps**: windows are sampled at a **fixed step** (`step_hours`, default 1 h, from the hourly Horizons
