@@ -245,17 +245,16 @@ pub fn steps(geom: &SiteGeom, mask: &[f32], b: &Bodies, margin_deg: f64) -> Vec<
 }
 
 /// Hours from t_start to the first "on -> off" transition, linear in the margin between the two
-/// samples; 0 when already off at t_start, None when it never goes off.
+/// samples; None when it never goes off. When the body is down at t_start this is the first set
+/// after it rises (Extras sun_el_at_start_deg / earth_visible_at_start say it started down).
 fn first_set(
     on: impl Fn(&Step) -> bool,
     margin: impl Fn(&Step) -> f64,
     s: &[Step],
     step_h: f64,
 ) -> Option<f64> {
-    if !on(&s[0]) {
-        return Some(0.0);
-    }
-    let k = (1..s.len()).find(|&k| !on(&s[k]))?;
+    let rise = s.iter().position(&on)?;
+    let k = (rise + 1..s.len()).find(|&k| !on(&s[k]))?;
     let (a, b) = (margin(&s[k - 1]), margin(&s[k]));
     // An eclipse can turn the Sun off with the disk still above the mask: snap to the sample.
     let f = if a > b {
@@ -433,7 +432,7 @@ mod tests {
         let (m, e) = run(&pole_site(), &[3.0; 64], &eph, 2.0, 24.0, &params());
         assert_eq!(
             (m.pct_lit, m.longest_dark_h, m.h_to_first_sunset),
-            (0.0, 24.0, Some(0.0))
+            (0.0, 24.0, None)
         );
         assert_eq!(
             (m.mean_power_vertical, m.t_min_k, m.t_max_k),
@@ -495,7 +494,7 @@ mod tests {
                 m.longest_blackout_h,
                 m.h_to_first_earthset
             ),
-            (0.0, 24.0, Some(0.0))
+            (0.0, 24.0, None)
         );
         assert!(!e.earth_visible_at_start && e.pct_sun_and_earth == 0.0);
         let p = Params {
@@ -649,6 +648,25 @@ mod tests {
         });
         let (m, _) = run(&pole_site(), &[0.0; 360], &eph, 0.0, 24.0, &params());
         assert_eq!((m.longest_dark_h, m.h_to_first_sunset), (3.0, Some(5.0)));
+    }
+
+    #[test]
+    fn starts_dark_then_rises_and_sets_reports_the_later_sunset() {
+        // Behind a 2 deg wall: Sun el 1 (dark) for k < 4, el 10 (lit) for 4..10, el 1 again after.
+        let eph = ephem(30, |k| {
+            (
+                if (4..10).contains(&k) { -10.0 } else { -1.0 },
+                0.0,
+                0.0,
+                0.0,
+            )
+        });
+        let (m, e) = run(&pole_site(), &[2.0; 360], &eph, 0.0, 24.0, &params());
+        let sunset = m.h_to_first_sunset.unwrap();
+        // Set between samples 9 and 10; the margin lerp puts it inside that hour.
+        assert!(sunset > 9.0 && sunset <= 10.0, "{sunset}");
+        assert!(e.sun_el_at_start_deg < 2.0);
+        assert_eq!(m.longest_dark_h, 14.0);
     }
 
     #[test]
