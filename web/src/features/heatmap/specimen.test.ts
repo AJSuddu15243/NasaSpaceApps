@@ -34,6 +34,13 @@ describe('specimen registration attacks', () => {
     expect(uv.getX(0)).toBeCloseTo((grid.header.x0 - tile.x0M) / ((tile.columns - 1) * tile.cellM));
     expect(position.getZ(0)).toBeCloseTo(1 - 2 * uv.getY(0));
     expect(position.getY(0)).toBeGreaterThanOrEqual(0);
+    // Scalar layers carry real heights so their 100 m contours match the terrain layers' contours.
+    const elevation = geometry.getAttribute('elevationM');
+    expect(elevation.count).toBe(position.count);
+    for (let i = 0; i < elevation.count; i += 97) {
+      expect(elevation.getX(i)).toBeGreaterThanOrEqual(lo - 1e-3); expect(elevation.getX(i)).toBeLessThanOrEqual(hi + 1e-3);
+      expect(position.getY(i)).toBeCloseTo((elevation.getX(i) - lo) / (hi - lo) * 0.3, 4);
+    }
     geometry.dispose();
   });
   it('finds coverage by coordinate without changing the selected custom point', () => {
