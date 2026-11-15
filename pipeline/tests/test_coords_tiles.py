@@ -139,11 +139,12 @@ def test_run_writes_far_pipeline_only_and_near_shipped(dem, tmp_path, monkeypatc
     dem.rename(raw / pgda.FILENAME)
     cfg = replace(
         cfg,
-        terrain=replace(cfg.terrain, max_distance_km=2.4),
+        terrain=replace(cfg.terrain, max_distance_km=2.16),
         paths=replace(cfg.paths, raw=raw, out=out),
         regions=MappingProxyType({"test-site": region}),
     )
     monkeypatch.setattr(tiles, "NEAR_HALF_M", 800)
+    monkeypatch.setattr(tiles, "FAR_MARGIN_M", 240)  # far half-width = 2160 + 240 = 2400 m
     tiles.run(cfg)
     far, far_h = read_array(tmp_path / "tiles" / "test-site_240m.bin")
     near, near_h = read_array(out / "tiles" / "test-site_80m.bin")

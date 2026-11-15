@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-15T03:37:10Z",
+  "generated_at": "2026-11-15T04:16:39Z",
   "files": [
     {
       "path": "ephem.bin",
@@ -28,8 +28,8 @@
     },
     {
       "path": "grid/connecting-ridge.bin",
-      "bytes": 625000,
-      "sha256": "5eab335b3d1d23cd1156b4f699d96d1f1a310a66be32ff8245551a270832e58c",
+      "bytes": 2625000,
+      "sha256": "4552d0427325cdebabe9fe0512404911ee5e620a73521af5fbb13c618d6b5eb4",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -43,8 +43,8 @@
     },
     {
       "path": "grid/connecting-ridge.json",
-      "bytes": 3983,
-      "sha256": "3b05931c554b71163acc92cafe2e8bf307ec3caa862265a0968dceb6eedd8c27",
+      "bytes": 4375,
+      "sha256": "a9265039f305e377fde28175f268b4917d21be0f0730a58208dffd2ae4c1ba55",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -58,8 +58,8 @@
     },
     {
       "path": "grid/haworth.bin",
-      "bytes": 625000,
-      "sha256": "7a5b78a2f74f009ec0ec440a06b7dac891f181ebd04c12ba2041b678c1f7cddc",
+      "bytes": 2625000,
+      "sha256": "4e26bbacefded2ec87c674407375257e62f09ae50c4104cc2482ca5070e0ed8f",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -73,8 +73,8 @@
     },
     {
       "path": "grid/haworth.json",
-      "bytes": 3973,
-      "sha256": "4e1b5070a6df2ead31fffcfa9fbcf1ed53a5738aa8388f7f38bee3d36024e7bd",
+      "bytes": 4365,
+      "sha256": "12c85ff543ebc6104be622eed46a2d8ce9e204b2d206b1cd2d9f7d7b05b31f9a",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -88,8 +88,8 @@
     },
     {
       "path": "grid/malapert-massif.bin",
-      "bytes": 625000,
-      "sha256": "bd327f13adcbabd9453c559387e5845a558ae4c9599e9d387efad438ba63bff2",
+      "bytes": 2625000,
+      "sha256": "443bebd2d9364601458e634f45d45a025891e45115a28cd9f5567550d7094ee5",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -103,8 +103,8 @@
     },
     {
       "path": "grid/malapert-massif.json",
-      "bytes": 3982,
-      "sha256": "b0e52018cb363f4b4a6f20ee5eafbab64eaf8842fe691ee9a9929acea0a79536",
+      "bytes": 4374,
+      "sha256": "db8f846ae679b196c9a09d38f98bbeec26b7b9852c02a02c8ae3b910dd7b4142",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -174,6 +174,36 @@
         "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
         "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
         "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
+      ]
+    },
+    {
+      "path": "masks/connecting-ridge.json",
+      "bytes": 4366,
+      "sha256": "d3ae4d74169ef4f6df98e2e99a48206641fbaa3ba6431fe52aa7e98b278814a4",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "masks/haworth.json",
+      "bytes": 4209,
+      "sha256": "bedc9fc69b0ae6326c5de7dbc3d485921c1301001c849a46a727c39b6f9c69f9",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+      ]
+    },
+    {
+      "path": "masks/malapert-massif.json",
+      "bytes": 4342,
+      "sha256": "8e32f2b8975f398c2502fabeb5d9bf6bd829000bda35bbaadad90967a3774de4",
+      "source_urls": [
+        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+        "https://pgda.gsfc.nasa.gov/products/90",
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
       ]
     },
     {
@@ -253,7 +283,7 @@
     {
       "path": "tiles/connecting-ridge_80m.json",
       "bytes": 660,
-      "sha256": "f31a04aa6e09503a47693d4cd893dc78f348986354868652fa51d0ee9d0a0d11",
+      "sha256": "b836e44a991d36b797cdae2e313e8c2e77d3755a13a0e572cae9f897b16f7417",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -273,7 +303,7 @@
     {
       "path": "tiles/haworth_80m.json",
       "bytes": 650,
-      "sha256": "32be344a4791e039efb15a5c18b0bd5dc2d40a22e64749125dd7bf371f98bfaf",
+      "sha256": "3c45110ce7120905e265e0cc50fdf4176baf4e24b633dc56495eff1845612113",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
@@ -293,7 +323,7 @@
     {
       "path": "tiles/malapert-massif_80m.json",
       "bytes": 659,
-      "sha256": "7cd86d9c5773b85f150f66f5dea0df760e064d5d8aeb98542abd393ea76cb1c7",
+      "sha256": "db688732308621b5c88879288a8104e4447ac04b55c6cfe37f02eab0bb3ca8e0",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",

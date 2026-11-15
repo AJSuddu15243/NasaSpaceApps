@@ -68,8 +68,8 @@ Jul 2028). Each run also recomputes them from PIPE-2 sub-points and fails above 
 
 `make tiles` (PIPE-4) cuts the DEM per config region into float32 tiles (contract `tile`; rows grow
 with +y, so the DEM is flipped; cells are block means snapped to DEM pixel edges):
-- far field ±`max_distance_km` at `far_field_m` → `pipeline/data/tiles/{region}_240m.bin` (pipeline-only:
-  ~6 MB each, mask-builder input);
+- far field ±(`max_distance_km` + 15 km margin, so off-centre heatmap cells also reach 150 km) at
+  `far_field_m` → `pipeline/data/tiles/{region}_240m.bin` (pipeline-only: ~7.5 MB each, mask-builder input);
 - near field ±10 km at `near_field_m` → `web/public/data/tiles/{region}_80m.bin` (shipped, 250 KB each).
 `coords.to_xy` / `to_latlon` convert lat/lon ↔ south polar stereographic metres (R = 1737.4 km).
 

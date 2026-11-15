@@ -302,7 +302,8 @@ fn run(a: &Args) -> Result<String, String> {
         (serde_json::to_string_pretty(&h).map_err(|e| e.to_string())? + "\n").as_bytes(),
     )?;
 
-    if min_reach < max_m {
+    // Reach is the last sample at or before max_m, so a full ray ends within one far step of it.
+    if min_reach < max_m - far.header.cell_m {
         eprintln!(
             "masks: {}: shortest ray reached {:.1} km < {} km (far tile edge)",
             a.region,

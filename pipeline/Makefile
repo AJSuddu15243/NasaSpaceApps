@@ -1,4 +1,6 @@
 .DEFAULT_GOAL := all
+# uv's editable install is a .pth file, which macOS can mark hidden so Python skips it; import from src directly.
+export PYTHONPATH := src
 .PHONY: setup ephem terrain terrain-fetch tiles layers science masks validate imagery package all test lint
 setup:
 	uv sync --locked
