@@ -8,7 +8,7 @@ export interface StageKey {
   tilt: number;
   camera: Vec3;
   target: Vec3;
-  /** Sub-solar longitude used for the illustrative light, degrees east. */
+  /** Scroll clock in degrees of one Sun turn; stageDate turns it into the date whose real Sun and Earth the stage shows. */
   sunLon: number;
   /** 0..1 how strongly site markers show. */
   sites: number;
@@ -77,11 +77,12 @@ export function copyOpacity(index: number, chapter: number): number {
   return clamp01(1 - (d - 0.18) / 0.32);
 }
 
-/** Real region centres from pipeline/config.yaml (NASA M2M Lunar Surface Data Book), LOLA heights from PIPE-3. */
+/** Region centres and names from sites.json (NASA M2M Lunar Surface Data Book); heights are the rounded LOLA elev_m of
+ *  masks/{id}.json. Pinned here so the landing chunk skips the fetch; story.test.ts checks them against those files. */
 export const SITES = [
-  { id: 'connecting-ridge', name: 'Connecting ridge', lat: -89.4632, lon: -137.49, elevation_m: 1946 },
-  { id: 'haworth', name: 'Haworth', lat: -86.7639, lon: -22.777, elevation_m: 1632 },
-  { id: 'malapert-massif', name: 'Malapert massif', lat: -85.9948, lon: -0.23578, elevation_m: 4785 },
+  { id: 'connecting-ridge', name: 'Shackleton Connecting Ridge', lat: -89.4632, lon: -137.49, elevation_m: 1943 },
+  { id: 'haworth', name: 'Haworth', lat: -86.7639, lon: -22.777, elevation_m: 1628 },
+  { id: 'malapert-massif', name: 'Malapert Massif', lat: -85.9948, lon: -0.23578, elevation_m: 4785 },
 ] as const;
 
 export function formatLat(lat: number): string {
@@ -91,10 +92,12 @@ export function formatLon(lon: number): string {
   return `${Math.abs(lon).toFixed(2)}° ${lon < 0 ? 'W' : 'E'}`;
 }
 
-/** Illustrative date readout for the time chapter: one sweep of the Sun = one synodic month from the demo epoch. */
+/** Date the stage shows: the navigator's default window start (DEFAULT_SCENARIO.date) at the pole chapter, then one
+ *  Sun turn per synodic month. The hero holds at the epoch. MoonStage places the Sun and Earth with sunEarthAt(date). */
 export const SYNODIC_DAYS = 29.53;
-export function illustrativeDate(sunLon: number, epochMs = Date.UTC(2026, 10, 14, 12)): Date {
-  const turns = (sunLon - KEYS[1].sunLon) / 360;
+export const STAGE_EPOCH_MS = Date.UTC(2027, 0, 15);
+export function stageDate(sunLon: number, epochMs = STAGE_EPOCH_MS): Date {
+  const turns = Math.max(0, sunLon - KEYS[1].sunLon) / 360;
   return new Date(epochMs + turns * SYNODIC_DAYS * 86_400_000);
 }
 

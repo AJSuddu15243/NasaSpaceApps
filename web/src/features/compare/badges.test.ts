@@ -49,5 +49,5 @@ it('ResultsPanel applies the slip once: cards score date + delay, the baseline i
   expect(slipped.results.map(r => siteStatus(r.metrics!, DEFAULT_THRESHOLDS).status)).toEqual(['red', 'red', 'red']);
   // Navigator must hand ResultsPanel the on-time scenario; a pre-slipped date would score +14 d.
   const nav = readFileSync(new URL('../../shell/Navigator.tsx', import.meta.url), 'utf8');
-  expect(nav).toMatch(/<ResultsPanel data=\{engineData\} scenario=\{scenario\} \/>/);
+  expect(nav).toMatch(/<ResultsPanel data=\{engineData\} scenario=\{scenario\} regions=\{results\} \/>/);
 });

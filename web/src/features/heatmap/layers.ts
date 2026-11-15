@@ -1,8 +1,8 @@
 import type { Grid, LayerName } from './grid';
 
-export type HeatLayer = 'score' | 'sun' | 'earth' | 'ice' | 'imagery' | 'elevation' | 'slope' | 'relief' | 'crater' | 'roughness' | 'favorability';
+export type HeatLayer = 'score' | 'sun' | 'earth' | 'sun_lt' | 'earth_lt' | 'ice' | 'imagery' | 'elevation' | 'slope' | 'relief' | 'crater' | 'roughness' | 'favorability';
 /** Anatomy stack, bottom → top: the ground first, then what it looks like, its shape, and what it means. */
-export const STACK: HeatLayer[] = ['relief', 'imagery', 'elevation', 'slope', 'crater', 'roughness', 'ice', 'favorability', 'earth', 'sun', 'score'];
+export const STACK: HeatLayer[] = ['relief', 'imagery', 'elevation', 'slope', 'crater', 'roughness', 'ice', 'favorability', 'earth_lt', 'sun_lt', 'earth', 'sun', 'score'];
 /** Keep the workspace dock in the same order as the specimen controls. */
 export const HEAT_LAYERS: HeatLayer[] = STACK;
 /** Layers using the source imagery, elevation, or slope terrain shader; other layers use opaque scalar textures. */
@@ -14,7 +14,7 @@ export interface LayerSpec {
   key: HeatLayer;
   label: string;
   short: string;
-  /** Grid layer read for this heatmap (score is computed). */
+  /** Grid layer read for this heatmap (score, sun and earth come from the engine window). */
   source?: LayerName;
   units: string;
   status: Status;
@@ -32,6 +32,7 @@ export interface LayerSpec {
 
 const pct = (v: number) => `${Math.round(v * 100)}%`;
 const MAZARICO = 'Mazarico et al. 2011 · LOLA · PGDA product 69';
+const WINDOW = 'engine/src/score.rs grid_fracs · 64-bin LOLA horizon masks · JPL Horizons ephemeris';
 const LOLA = 'LOLA 80 m DEM (PGDA product 90) → 160 m cells';
 
 export const LAYERS: Record<HeatLayer, LayerSpec> = {
@@ -39,13 +40,21 @@ export const LAYERS: Record<HeatLayer, LayerSpec> = {
     explain: 'Your priorities combined into one score per 160 m cell. Steeper than the slope limit = excluded (grey cells).',
     caveat: 'Preview computed in the browser with the engine\'s formula on long-term averages. The Rust engine\'s date-specific grid_scores will replace it.',
     citation: 'Formula: engine/src/score.rs · inputs below' },
-  sun: { key: 'sun', label: 'Sunlight (solar power)', short: 'Sunlight', source: 'sun_avg', units: '% of time', status: 'real', ramp: ['#744314', '#d98a1c', '#ffe1a3'], format: pct, better: 'high',
-    explain: 'How often the Sun is above the local terrain horizon. More sunlight means more solar power and shorter cold nights.',
-    caveat: 'Average over the 18.6-year lunar cycle, not your launch date. Move the timeline for date-specific Sun position.',
+  sun: { key: 'sun', label: 'Sunlight (solar power)', short: 'Sunlight', units: '% of window', status: 'real', ramp: ['#744314', '#d98a1c', '#ffe1a3'], format: pct, better: 'high',
+    explain: 'How much of your arrival window the Sun is above the local terrain horizon. More sunlight means more solar power and shorter cold nights.',
+    caveat: 'Rust/WASM engine for your arrival window (date + delay, window length). Move the timeline date or delay to recompute.',
+    citation: WINDOW },
+  earth: { key: 'earth', label: 'Earth visibility (radio contact)', short: 'Radio', units: '% of window', status: 'real', ramp: ['#24496a', '#2f7fd9', '#bfe0ff'], format: pct, better: 'high',
+    explain: 'How much of your arrival window Earth is above the horizon, so a lander can talk directly to the Deep Space Network without a relay.',
+    caveat: 'Rust/WASM engine for your arrival window. Line-of-sight only: no antenna link budget, no relay satellites.',
+    citation: WINDOW },
+  sun_lt: { key: 'sun_lt', label: 'Sunlight, long-term (18.6 yr)', short: 'Sun 18.6 yr', source: 'sun_avg', units: '% of time', status: 'real', ramp: ['#744314', '#d98a1c', '#ffe1a3'], format: pct, better: 'high',
+    explain: 'How often the Sun is above the local terrain horizon, averaged over the 18.6-year lunar precession cycle.',
+    caveat: 'Long-term (18.6 yr) average, not your launch date: it does not move with the timeline. The Sunlight layer is the window value.',
     citation: MAZARICO },
-  earth: { key: 'earth', label: 'Earth visibility (radio contact)', short: 'Radio', source: 'earth_avg', units: '% of time', status: 'real', ramp: ['#24496a', '#2f7fd9', '#bfe0ff'], format: pct, better: 'high',
-    explain: 'How often Earth is above the horizon, so a lander can talk directly to the Deep Space Network without a relay.',
-    caveat: 'Line-of-sight only: no antenna link budget, no relay satellites. Long-term average; Earth bobs with libration.',
+  earth_lt: { key: 'earth_lt', label: 'Earth visibility, long-term (18.6 yr)', short: 'Radio 18.6 yr', source: 'earth_avg', units: '% of time', status: 'real', ramp: ['#24496a', '#2f7fd9', '#bfe0ff'], format: pct, better: 'high',
+    explain: 'How often Earth is above the horizon, averaged over the 18.6-year cycle; Earth bobs with libration.',
+    caveat: 'Long-term (18.6 yr) average, not your launch date: it does not move with the timeline. The Radio layer is the window value.',
     citation: MAZARICO },
   ice: { key: 'ice', label: 'Permanent shadow (water-ice traps)', short: 'Ice traps', source: 'psr', units: '% of cell', status: 'real', ramp: ['#1c6670', '#1aa6b8', '#b8f6ff'], format: pct, better: 'neither',
     explain: 'Ground that never sees the Sun. Some permanently shadowed cold traps can preserve water ice. This layer measures shadow, not temperature or ice abundance.',
@@ -91,6 +100,16 @@ export function scoreLayer(source: ScoreSource): LayerSpec {
     citation: 'engine/src/score.rs grid_fracs + scores_from_fracs · inputs below' };
 }
 
+/** A layer's spec for the region's score source: score uses scoreLayer; window layers say baked or live. */
+export function layerSpec(key: HeatLayer, source: ScoreSource): LayerSpec {
+  if (key === 'score') return scoreLayer(source);
+  if ((key === 'sun' || key === 'earth') && source !== 'preview') return { ...LAYERS[key], caveat: `${LAYERS[key].caveat} ${source === 'baked' ? 'Precomputed with the shipped engine (0.4 % steps).' : 'Computed in your browser.'}` };
+  return LAYERS[key];
+}
+
+/** Engine grid_fracs columns for the arrival window, one value per cell. */
+export interface WindowFracs { sun_frac: Float32Array; earth_frac: Float32Array; cold_frac: Float32Array; dark_h: Float32Array }
+
 export function isHeatLayer(value: unknown): value is HeatLayer {
   return typeof value === 'string' && (HEAT_LAYERS as string[]).includes(value);
 }
@@ -104,8 +123,11 @@ export function displayRange(values: Float32Array): [number, number] {
   return hi > lo ? [lo, hi] : [finite[0], finite[finite.length - 1] + 1e-6];
 }
 
-export function layerValues(grid: Grid, key: HeatLayer, score?: Float32Array): Float32Array | undefined {
+/** Values drawn for a layer; sun/earth are undefined until the engine window fractions arrive. */
+export function layerValues(grid: Grid, key: HeatLayer, score?: Float32Array, window?: WindowFracs): Float32Array | undefined {
   if (key === 'score') return score;
+  if (key === 'sun') return window?.sun_frac;
+  if (key === 'earth') return window?.earth_frac;
   const source = LAYERS[key].source;
   return source ? grid.layers[source] : undefined;
 }

@@ -39,14 +39,14 @@
       "id": "sub-solar",
       "term": "Sub-solar point",
       "short": "Where the Sun is directly overhead on the Moon.",
-      "long": "The point on the lunar surface where the Sun sits at zenith. Its latitude wobbles only a few degrees because the Moon's spin axis is tilted just 1.5° to its orbit.",
+      "long": "The point on the lunar surface where the Sun sits at zenith. Its latitude stays within ±1.59° of the equator (JPL Horizons, 2026–2030) because the Moon's spin axis tilts only about 1.5° from the ecliptic.",
       "category": "astronomy"
     },
     {
       "id": "sub-earth",
       "term": "Sub-Earth point",
       "short": "Where Earth sits directly overhead on the Moon.",
-      "long": "Earth is tidally locked to the Moon, so this point barely moves — which is why Earth is always near the same part of the lunar sky and often near the horizon at the poles.",
+      "long": "The Moon keeps one face toward Earth, so this point only wobbles: within ±6.86° latitude and ±8.05° longitude over 2026–2030 (JPL Horizons). That is why Earth stays in the same part of the lunar sky and sits near the horizon at the poles.",
       "category": "astronomy"
     },
     {
@@ -74,7 +74,7 @@
       "id": "solar-elevation",
       "term": "Solar elevation",
       "short": "How high the Sun is above the local horizon, in degrees.",
-      "long": "At the lunar equator the Sun can reach 90°. At the south pole it never gets higher than about 1.5° — it skims the horizon like a sunrise that never finishes.",
+      "long": "At the lunar equator the Sun can reach 90°. At our three south-pole sites it peaks at 2.06–5.59° over 2026–2030 (engine, JPL Horizons) — it skims the horizon like a sunrise that never finishes.",
       "category": "lighting"
     },
     {

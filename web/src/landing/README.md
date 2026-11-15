@@ -14,7 +14,7 @@ Design references: Ascenta Studio (Last Dept., Basalte, Nival, Ciel) and fojcikd
 - Moon: NASA SVS CGI Moon Kit LROC colour + LOLA elevation (`public/textures/moon_*.jpg`).
 - Sites: region centres from `pipeline/config.yaml`; heights from PIPE-3. A test checks both match.
 - Numbers in the copy come from PIPE-2 / PIPE-3 checks (±1.59° Sun latitude, ±6.86° Earth latitude, 43,824 rows, 80 m grid).
-- The Sun on this page is illustrative (one turn per synodic month); the navigator uses the Horizons table.
+- Scroll sets a date (from the navigator default 2027-01-15, one Sun turn per synodic month); the Sun and Earth are placed for it with Astronomy Engine (`sunEarthAt`). The navigator uses the Horizons table.
 
 ## Real south-pole relief (do this once, on the machine with the DEM)
     cd pipeline && make terrain-fetch

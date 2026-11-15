@@ -14,7 +14,9 @@ import { HoloStage } from '../features/heatmap/HoloStage';
 import { HEAT_LAYERS, LAYERS, type HeatLayer } from '../features/heatmap/layers';
 import { coveringRegion } from '../features/heatmap/specimen';
 import { geographicPoint } from '../scene/coordinates';
-import { isGridRegion } from '../features/heatmap/grid';
+import { isGridRegion, siteMaskFor } from '../features/heatmap/grid';
+import { siteParams } from '../engine';
+import { tryTrack } from '../features/timeline/MissionTimeline';
 import { ScienceCompare } from '../features/compare/ScienceCompare';
 import { BootSequence } from '../features/mission/BootSequence';
 import { PrioritiesPanel } from '../features/mission/PrioritiesPanel';
@@ -117,10 +119,18 @@ export default function Navigator() {
   const telemetry = useMemo(() => sunEarthAt(instant), [instant]);
   const place = useMemo(() => {
     const p = focused ?? (scenario.sites[0] ? resolve(scenario.sites[0]) : undefined);
-    return p ? { name: p.name, lat: p.lat, lon: p.lon } : undefined;
+    return p ? { id: p.id, name: p.name, lat: p.lat, lon: p.lon } : undefined;
   }, [focused, scenario.sites, resolve]);
+  // Stable engine inputs so the panels' site_track memos cache (a new mask/params object each render reruns them).
+  const { batteryH, survivalK, slopeLimit } = scenario;
+  const engineParams = useMemo(() => siteParams({ batteryH, survivalK, slopeLimit }), [batteryH, survivalK, slopeLimit]);
+  const masks = mission.demo.data?.masks; const table = mission.demo.data?.table; const grids = mission.grids.data;
+  const focusedMask = useMemo(() => focused ? siteMaskFor(focused, masks, grids) : null, [focused, masks, grids]);
+  const placeMask = useMemo(() => place ? siteMaskFor(place, masks, grids) : null, [place, masks, grids]);
+  const focusedSunLit = useMemo(() => tryTrack(focusedMask, table, instant, 1, engineParams)?.sunLit[0], [focusedMask, table, instant, engineParams]);
   const comparePlaces = useMemo(() => scenario.sites.flatMap(id => { const p = resolve(id); return p ? [{ id, name: p.name, lat: p.lat, lon: p.lon, region: (() => { const r = coveringRegion(mission.grids.data, p); return r ? results[r] : undefined; })() }] : []; }), [scenario.sites, resolve, results, mission.grids.data]);
-  const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id));
+  // Curated masks, or any place inside a grid (its cell's 64-bin mask feeds the engine).
+  const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id)) || comparePlaces.some(p => p.region);
   const askContext = useMemo(() => [
     'Lunar Window — lunar landing site navigator (NASA Space Apps). The user is looking at the 3D Moon workspace.',
     `Mode: ${scenario.mode} · View: ${scenario.view} · heat layer: ${scenario.heat ? LAYERS[scenario.heat].label : 'none'}`,
@@ -130,12 +140,13 @@ export default function Navigator() {
     comparePlaces.length ? `Comparing: ${comparePlaces.map(p => `${p.name} (${p.lat.toFixed(2)}°,${p.lon.toFixed(2)}°)`).join('; ')}` : '',
   ].filter(Boolean).join('\n'), [scenario.mode, scenario.view, scenario.heat, scenario.date, scenario.delay, scenario.hours, instant, telemetry, focused, region, covered, comparePlaces]);
 
+  const gridHeaders = Object.values(mission.grids.data).flatMap(g => g ? [g.header] : []);
   const bootLines = [
     { label: 'Lunar globe · LRO imagery', detail: globeReady ? 'ONLINE' : '', status: globeReady ? 'ready' as const : globeError ? 'error' as const : 'loading' as const },
-    { label: 'LOLA terrain survey · 3 regions × 15,625 cells', detail: '160 m', status: mission.grids.status },
+    { label: gridHeaders.length ? `LOLA terrain survey · ${gridHeaders.length} regions · ${gridHeaders.reduce((n, h) => n + h.nx * h.ny, 0).toLocaleString('en-US')} cells` : 'LOLA terrain survey', detail: gridHeaders[0] ? `${gridHeaders[0].cell_m} m` : '', status: mission.grids.status },
     { label: 'Sunlight · Earth visibility · permanent shadow', detail: 'PGDA 69', status: mission.grids.status },
-    { label: 'Ephemeris · Astronomy Engine vs JPL Horizons', detail: 'GEOMETRIC', status: 'ready' as const },
-    { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.length} SITES` : '', status: mission.sites.status },
+    { label: 'Ephemeris · JPL Horizons table + Astronomy Engine', detail: mission.demo.data ? `${mission.demo.data.table.header.n.toLocaleString('en-US')} H` : '', status: mission.demo.status },
+    { label: 'Site catalogue', detail: mission.sites.status === 'ready' ? `${catalogue.filter(site => site.category !== 'demo').length} SITES` : '', status: mission.sites.status },
   ];
   const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => setScenario(patch, replace), [setScenario]);
   const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);
@@ -181,18 +192,19 @@ export default function Navigator() {
     {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} source={region.source} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
       <AnalysisPanel location={focused} date={instant} layer={scenario.layer ?? 'terrain'} mode={scenario.mode} region={region} slopeLimit={scenario.slopeLimit}
+        mask={focusedMask} table={table} params={engineParams}
         onLayerChange={layer => setScenario({ layer }, true)} onClose={closeAnalysis} onAdd={addFocused} canAdd={scenario.sites.length < MAX_SITES && !scenario.sites.includes(focused.id)} feedback={feedback} />
     </div>}
     {focused && narrow && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab hud-inspector" aria-expanded={analysisOpen} aria-label={analysisOpen ? 'Close analysis' : 'Why this place?'} onClick={() => setAnalysisOpen(v => !v)}>{analysisOpen ? <X size={16} /> : <ScanSearch size={16} />}</button></TooltipTrigger><TooltipContent>{analysisOpen ? 'Close analysis' : 'Why this place?'}</TooltipContent></Tooltip></TooltipProvider>}
     {compareOpen && <div className="hud hud-right mission-comparison">
       <header className="analysis-heading"><div><span className="eyebrow">SHORTLIST · {scenario.sites.length}/{MAX_SITES}</span><h2>Compare places</h2></div><button type="button" onClick={() => setCompareOpen(false)} aria-label="Close comparison">×</button></header>
-      <ScienceCompare places={comparePlaces} date={instant} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
-      {engineInShortlist && engineData && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={engineData} scenario={scenario} /></details>}
+      <ScienceCompare places={comparePlaces} date={instant} masks={masks} table={table} params={engineParams} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
+      {engineInShortlist && engineData && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={engineData} scenario={scenario} regions={results} /></details>}
     </div>}
     {!focused && !compareOpen && booted && <section className="mission-intro" aria-label="Getting started">
       <p className="eyebrow">LUNAR SOUTH POLE · ARTEMIS III REGIONS</p>
@@ -216,7 +228,7 @@ export default function Navigator() {
     </nav>
 
     {bottomOpen
-      ? <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} />
+      ? <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} mask={placeMask} table={table} params={engineParams} />
           <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min hud-min-bottom" aria-label="Minimize timeline" onClick={() => setBottomOpen(false)}><ChevronDown size={14} /></button></TooltipTrigger><TooltipContent>Minimize timeline</TooltipContent></Tooltip></TooltipProvider>
         </div>
       : <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab hud-fab-bottom" aria-label="Show mission timeline" onClick={() => setBottomOpen(true)}><ChevronUp size={16} /></button></TooltipTrigger><TooltipContent>Mission timeline</TooltipContent></Tooltip></TooltipProvider>}

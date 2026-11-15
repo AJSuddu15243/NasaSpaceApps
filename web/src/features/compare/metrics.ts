@@ -18,6 +18,11 @@ export const DEFAULT_THRESHOLDS: CompareThresholds = {
   maxBlackoutHours: 180,
 };
 
+/** "≥40% sunlit, ≥40% Earth contact, ≤180 h darkness, ≤180 h blackout": the badge rules, from the thresholds siteStatus uses. */
+export function thresholdText(t: CompareThresholds): string {
+  return `≥${t.minLitPercent}% sunlit, ≥${t.minEarthContactPercent}% Earth contact, ≤${t.maxDarknessHours} h darkness, ≤${t.maxBlackoutHours} h blackout`;
+}
+
 const directions: Record<MetricKey, 'max' | 'min'> = {
   litPercent: 'max', longestDarknessHours: 'min',
   earthContactPercent: 'max', longestBlackoutHours: 'min',

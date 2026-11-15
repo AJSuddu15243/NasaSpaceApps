@@ -1,5 +1,10 @@
 import type { Metrics } from '../../contracts/engine-api';
+import type { SiteMask } from '../../contracts/site-mask';
 import type { MissionWeights } from '../../shell/scenario';
+import type { Track } from '../../engine/track';
+import { maskAt, type Grid } from '../heatmap/grid';
+import type { RegionResult } from '../mission/useMissionData';
+import { projectedPoint } from '../../scene/coordinates';
 
 /** Hourly visibility states for the mission timeline bar. */
 export const TL_DARK = 0;
@@ -73,6 +78,49 @@ export function siteTimeline(table: EphemTable, siteLat: number, siteLon: number
   return out;
 }
 
+/** Engine track → TL_* per step: Sun when any of the disk clears the terrain mask, Earth when the engine says it is visible. */
+export function trackTimeline(t: Track): Uint8Array {
+  const out = new Uint8Array(t.hours);
+  for (let i = 0; i < t.hours; i++) out[i] = (t.sunLit[i] > 0 ? TL_SUN : 0) | (t.earthVis[i] > 0 ? TL_EARTH : 0);
+  return out;
+}
+
+/** Index of the grid cell whose centre is nearest the point, or null outside the grid. */
+export function cellIndex(grid: Grid, lat: number, lon: number): number | null {
+  const p = projectedPoint(lat, lon);
+  if (!p) return null;
+  const h = grid.header;
+  const col = Math.round((p.x - h.x0) / h.cell_m), row = Math.round((p.y - h.y0) / h.cell_m);
+  return col >= 0 && col < h.nx && row >= 0 && row < h.ny ? row * h.nx + col : null;
+}
+
+/** The region whose grid contains the point. */
+export function regionAt(regions: Partial<Record<string, RegionResult>> | undefined, lat: number, lon: number): RegionResult | undefined {
+  return Object.values(regions ?? {}).find(r => r && cellIndex(r.grid, lat, lon) !== null);
+}
+
+/**
+ * SiteMask for a point inside a grid, from that cell's 64-bin int16 horizon layer (scale/offset from layer_info) and
+ * its elev/slope/aspect layers. Null outside the grid or when the cell has no terrain.
+ * shortcut: 64 bins (5.6°) vs 360 for curated masks, cell centre within 80 m of the point; bake a 360-bin mask for points that matter.
+ */
+export function gridSiteMask(grid: Grid, id: string, lat: number, lon: number): SiteMask | null {
+  // One decoder (heatmap/grid.ts maskAt, which also honours nodata); keep the place's own id and coordinates.
+  const m = maskAt(grid, lat, lon);
+  return m && { ...m, id, lat, lon };
+}
+
+/**
+ * Readiness (0–100): the engine suitability (scoresFromFracs for the scenario weights) at the cell containing the point.
+ * Null outside the grids, while only the JS preview has scored the region, or on a cell the slope limit excludes.
+ */
+export function cellReadiness(region: RegionResult | undefined, lat: number, lon: number): number | null {
+  if (!region || region.source === 'preview') return null;
+  const i = cellIndex(region.grid, lat, lon);
+  const v = i === null ? NaN : region.scores[i];
+  return Number.isFinite(v) ? Math.round(v * 1000) / 10 : null;
+}
+
 /** Table coverage in ISO instants, for honest "outside coverage" UI. */
 export function ephemCoverage(table: EphemTable): { start: string; end: string } | null {
   const t0 = Date.parse(table.header.t0_iso);
@@ -82,7 +130,7 @@ export function ephemCoverage(table: EphemTable): { start: string; end: string }
 }
 
 /**
- * Composite readiness heuristic (0–100): weighted mean of four 0–100 subscores.
+ * Readiness heuristic for the synthetic demo-* sites only (0–100): weighted mean of four 0–100 subscores.
  * lit/earth are the engine's window percentages; dark/blackout score is the
  * inverse of the longest streak expressed as a share of the window.
  * shortcut: heuristic for UI comparison only — not an engine score; replace with

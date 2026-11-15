@@ -51,7 +51,7 @@ const mwLabels: { key: keyof MissionWeights; label: string; tip: string }[] = [
   { key: 'lit', label: 'Sunlit window', tip: 'Weight on share of the window in sunlight (solar power).' },
   { key: 'earth', label: 'Earth contact', tip: 'Weight on share of the window with a clear view of Earth (comms).' },
   { key: 'dark', label: 'Max darkness', tip: 'Weight on minimizing the longest unbroken darkness stretch.' },
-  { key: 'blackout', label: 'Max blackout', tip: 'Weight on minimizing the longest stretch with neither Sun nor Earth visible.' },
+  { key: 'blackout', label: 'Max blackout', tip: 'Weight on minimizing the longest stretch without line of sight to Earth.' },
 ];
 
 function MissionWeightsPanel({ scenario, change }: { scenario: Scenario; change: (patch: Partial<Scenario>, replace?: boolean) => void }) {
@@ -64,7 +64,7 @@ function MissionWeightsPanel({ scenario, change }: { scenario: Scenario; change:
       <Label htmlFor={`mw-${key}`} title={tip}>{label} <output htmlFor={`mw-${key}`}>{mw[key]} · {share(mw[key])}%</output></Label>
       <input id={`mw-${key}`} type="range" min="0" max="100" step="1" value={mw[key]} aria-label={label} onChange={event => change({ missionWeights: { ...mw, [key]: Number(event.target.value) } }, true)} />
     </div>)}
-    <p className="sc-hint">Drives the readiness score in Compare. Saved in your link as <code>mw</code>.</p>
+    <p className="sc-hint">Drives the readiness heuristic for the synthetic demo sites only; real sites show the engine suitability from the Priorities weights. Saved in your link as <code>mw</code>.</p>
   </div>;
 }
 

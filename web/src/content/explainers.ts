@@ -2,8 +2,9 @@
  * Explorer-mode plain-language copy (DOC-1).
  * Reading level target: grade 8. Tone: friendly mission-control — precise,
  * never breathless. UI consumes these strings; keep them honest about
- * synthetic vs real data per docs/QUALITY.md.
+ * synthetic vs real data per docs/QUALITY.md. Quoted numbers come from FACTS (engine-computed, pinned by facts.test.ts).
  */
+import { DARK_RANGE, FACTS, SUN_PEAK_RANGE } from './facts';
 
 export interface Explainer {
   id: string;
@@ -20,7 +21,7 @@ export const explainers: Explainer[] = [
     title: 'Why the Sun barely rises at the pole',
     deck: 'The Moon\u2019s axis is tilted only 1.5\u00B0 — the Sun stays near the horizon for weeks.',
     body: [
-      'Earth\u2019s axis tilts 23.4\u00B0, which is why we get seasons and a Sun that climbs high at noon. The Moon\u2019s axis tilts just 1.5\u00B0 to its orbit, so at the south pole the Sun never gets more than about 1.5\u00B0 above the horizon.',
+      `Earth\u2019s axis tilts 23.4\u00B0, which is why we get seasons and a Sun that climbs high at noon. The Moon\u2019s axis tilts only about 1.5\u00B0 from the ecliptic, so the point where the Sun is overhead never strays more than ${FACTS.subSolarLatDeg}\u00B0 from the lunar equator. At our three south-pole sites the Sun never climbs higher than ${SUN_PEAK_RANGE} over ${FACTS.years}.`,
       'That sounds tiny, but it changes everything: sunlight arrives at a grazing angle, every crater rim casts a long shadow, and small changes in terrain decide whether a spot is lit or dark.',
     ],
   },
@@ -38,8 +39,8 @@ export const explainers: Explainer[] = [
     title: 'Why we can see more than half the Moon',
     deck: 'A slight wobble in the Moon\u2019s orbit reveals about 59% of the surface over time.',
     body: [
-      'The Moon keeps the same face toward Earth, but its orbit is tilted and a little elliptical. That wobble — called libration — lets us peek a few degrees around the edges.',
-      'Over a month we see roughly 59% of the surface rather than exactly 50%. For landing-site work the bigger effect is that the Earth\u2019s position in the sky shifts slightly, which changes contact windows at the margin.',
+      `The Moon keeps the same face toward Earth, but its orbit is tilted and a little elliptical. That wobble — called libration — lets us peek up to ${FACTS.earthLatDeg}\u00B0 over the poles and ${FACTS.earthLonDeg}\u00B0 around the sides (${FACTS.years}).`,
+      'Over a month we see roughly 59% of the surface rather than exactly 50%. For landing-site work the bigger effect is that Earth\u2019s position in the sky shifts by those same few degrees, enough to lift it over a ridge or drop it behind one.',
     ],
   },
   {
@@ -54,9 +55,9 @@ export const explainers: Explainer[] = [
   {
     id: 'why-one-km-matters',
     title: 'Why one kilometre changes everything',
-    deck: 'At the pole, a 1 km ridge can be the difference between light and permanent dark.',
+    deck: 'At the pole, moving about 1 km can be the difference between steady light and none at all.',
     body: [
-      'Because the Sun sits at most ~1.5° above the horizon, a hill just a few kilometres away casts a shadow tens of kilometres long. Moving a landing site by 1 km can move it in or out of that shadow entirely.',
+      `Because the Sun sits only a few degrees above the horizon, a hill a few kilometres away casts a shadow tens of kilometres long. On the Connecting ridge survey, two spots ${FACTS.nearbyContrast.metres} m apart differ by ${FACTS.nearbyContrast.sunPoints} points of sunlight over the default two weeks: one is lit the whole time, the other never.`,
     ],
   },
   {
@@ -75,10 +76,10 @@ export const earthMoonComparison = {
   id: 'earth-vs-moon',
   title: 'Earth vs. Moon, side by side',
   rows: [
-    { label: 'Noon Sun height (example site)', earth: '~50–70\u00B0 at mid-latitudes', moon: '~0\u20131.5\u00B0 at the pole' },
+    { label: 'Noon Sun height (example site)', earth: '~50–70\u00B0 at mid-latitudes', moon: `${SUN_PEAK_RANGE} at most at our three sites` },
     { label: 'Atmosphere', earth: 'Scatters light; sky is blue', moon: 'Essentially none; sky is black' },
     { label: 'Horizon blockers', earth: 'Haze and distant terrain', moon: 'Terrain only — every ray is straight' },
-    { label: 'Longest night', earth: 'Hours (polar winter aside)', moon: 'Up to ~14 Earth days' },
+    { label: 'Longest night', earth: 'Hours (polar winter aside)', moon: `${DARK_RANGE} at our three sites (${FACTS.years})` },
     { label: 'Radio sky', earth: 'Many satellites and ground stations', moon: 'Earth hangs near the horizon; terrain can block it' },
   ],
 } as const;
