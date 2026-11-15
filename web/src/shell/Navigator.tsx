@@ -15,6 +15,7 @@ import { coveringRegion } from '../features/heatmap/specimen';
 import { geographicPoint } from '../scene/coordinates';
 import { isGridRegion } from '../features/heatmap/grid';
 import { ScienceCompare } from '../features/compare/ScienceCompare';
+import { siteParams } from '../engine';
 import { BootSequence } from '../features/mission/BootSequence';
 import { PrioritiesPanel } from '../features/mission/PrioritiesPanel';
 import { useMissionData, useRegionResults } from '../features/mission/useMissionData';
@@ -180,8 +181,8 @@ export default function Navigator() {
     {focused && narrow && <button type="button" className="hud-fab hud-inspector" aria-expanded={analysisOpen} onClick={() => setAnalysisOpen(v => !v)}>{analysisOpen ? 'Close analysis' : 'Why this place?'}</button>}
     {compareOpen && <div className="hud hud-right mission-comparison">
       <header className="analysis-heading"><div><span className="eyebrow">SHORTLIST · {scenario.sites.length}/{MAX_SITES}</span><h2>Compare places</h2></div><button type="button" onClick={() => setCompareOpen(false)} aria-label="Close comparison">×</button></header>
-      <ScienceCompare places={comparePlaces} date={instant} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
-      {engineInShortlist && engineData && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={engineData} scenario={scenario} /></details>}
+      <ScienceCompare places={comparePlaces} date={instant} masks={mission.demo.data?.masks} table={mission.demo.data?.table} params={siteParams(scenario)} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
+      {engineInShortlist && engineData && <details className="demo-results" open><summary>Engine results (Sun, Earth, thermal)</summary><ResultsPanel data={engineData} scenario={scenario} regions={results} /></details>}
     </div>}
     {!focused && !compareOpen && booted && <section className="mission-intro" aria-label="Getting started">
       <p className="eyebrow">LUNAR SOUTH POLE · ARTEMIS III REGIONS</p>

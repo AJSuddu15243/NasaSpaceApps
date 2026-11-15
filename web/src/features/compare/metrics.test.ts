@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Metrics } from '../../contracts/engine-api';
-import { bestValues, countdown, DEFAULT_THRESHOLDS, metricValue, siteStatus, slipDeltas } from './metrics';
+import { bestValues, countdown, DEFAULT_THRESHOLDS, metricValue, siteStatus, slipDeltas, thresholdText } from './metrics';
 
 const metrics: Metrics = {
   pct_lit: 82, longest_dark_h: 32, pct_earth_visible: 64, longest_blackout_h: 18,
@@ -48,4 +48,8 @@ describe('slipDeltas', () => {
     expect(slipDeltas(metrics, { ...metrics, pct_earth_visible: 0, longest_blackout_h: 336 })).toBe('Earth contact 64% → 0% · Blackout 18 h → 336 h');
     expect(slipDeltas(metrics, metrics)).toBe('no change in the status metrics');
   });
+});
+
+it('thresholdText states the badge rules from the thresholds', () => {
+  expect(thresholdText(DEFAULT_THRESHOLDS)).toBe('≥40% sunlit, ≥40% Earth contact, ≤180 h darkness, ≤180 h blackout');
 });
