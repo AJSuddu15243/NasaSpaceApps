@@ -1,0 +1,47 @@
+[
+  {
+    "id": "connecting-ridge",
+    "name": "Shackleton Connecting Ridge",
+    "lat": -89.4632,
+    "lon": -137.49,
+    "category": "artemis3",
+    "note": "Artemis III candidate region; near the Shackleton rim with long illumination windows.",
+    "source_url": "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+  },
+  {
+    "id": "peak-near-shackleton",
+    "name": "Peak Near Shackleton",
+    "lat": -88.963,
+    "lon": 129.783,
+    "category": "artemis3",
+    "note": "Artemis III candidate region; elevated terrain near Shackleton crater.",
+    "source_url": "https://iopscience.iop.org/article/10.3847/PSJ/ad1b50"
+  },
+  {
+    "id": "malapert-massif",
+    "name": "Malapert Massif",
+    "lat": -85.9948,
+    "lon": -0.23578,
+    "category": "artemis3",
+    "note": "Artemis III candidate region; massif with near-continuous Earth visibility.",
+    "source_url": "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+  },
+  {
+    "id": "haworth",
+    "name": "Haworth",
+    "lat": -86.7639,
+    "lon": -22.777,
+    "category": "artemis3",
+    "note": "Artemis III candidate region; crater floor site west of the pole.",
+    "source_url": "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+  },
+  {
+    "id": "nobile-rim-1",
+    "name": "Nobile Rim 1",
+    "lat": -85.47,
+    "lon": 36.209,
+    "category": "artemis3",
+    "note": "Artemis III candidate region; rim of Nobile crater near Leibnitz Beta plateau.",
+    "source_url": "https://iopscience.iop.org/article/10.3847/PSJ/ad1b50"
+  }
+]

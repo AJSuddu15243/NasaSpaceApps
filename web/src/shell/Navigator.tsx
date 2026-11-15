@@ -6,7 +6,6 @@ import { ScenarioPanel } from './components/ScenarioPanel';
 import { ResultsPanel } from './components/ResultsPanel';
 import { MoonGlobeView, type GlobeMarker } from '../features/globe/MoonGlobeView';
 import { customSiteId, formatCoordinates, parseCustomSite } from '../features/sites/sites';
-import { SITES } from '../landing/story';
 import { MissionTimeline, scenarioInstant } from '../features/timeline/MissionTimeline';
 import { NavigatorTour } from '../features/tour/NavigatorTour';
 import { AnalysisPanel } from '../features/analysis/AnalysisPanel';
@@ -26,7 +25,6 @@ import { syncRemoteScenarios } from '../scenarios/store';
 import './workspace.css';
 import './mission.css';
 
-const curated: Site[] = SITES.map(site => ({ id: site.id, name: site.name, lat: site.lat, lon: site.lon, category: 'artemis3', note: 'Surveyed: LOLA terrain, sunlight, Earth visibility, permanent shadow', source_url: 'https://ntrs.nasa.gov/citations/20250002845' }));
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 /** Tilted toward the south pole so the Artemis III regions are in view from the start. */
 const POLE_VIEW = { lat: -62, lng: -20, altitude: 1.9 };
@@ -50,8 +48,8 @@ export default function Navigator() {
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
 
-  const demoSites = useMemo(() => mission.demo.data?.sites.map(site => ({ ...site, name: `${site.name} (synthetic demo)` })) ?? [], [mission.demo.data]);
-  const catalogue = useMemo(() => [...curated, ...demoSites], [demoSites]);
+  // shortcut: the catalogue is empty until sites.json + ephem load, split the loader if the picker must show first.
+  const catalogue: Site[] = useMemo(() => mission.demo.data?.sites.map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site) ?? [], [mission.demo.data]);
   const resolve = useCallback((id: string) => {
     const site = catalogue.find(item => item.id === id);
     if (site) return site;
@@ -78,12 +76,12 @@ export default function Navigator() {
   }, [scenario.focus, scenario.view, scenario.sites, resolve, setScenario]);
 
   const markers: GlobeMarker[] = useMemo(() => {
-    const ids = [...new Set([...curated.map(site => site.id), ...scenario.sites, ...(scenario.focus ? [scenario.focus] : [])])];
+    const ids = [...new Set([...catalogue.filter(site => site.category !== 'demo').map(site => site.id), ...scenario.sites, ...(scenario.focus ? [scenario.focus] : [])])];
     return ids.flatMap((id, index) => {
       const point = resolve(id);
       return point ? [{ id, lat: point.lat, lng: point.lon, name: point.name, kind: 'site' as const, index, variant: isGridRegion(id) ? 'region' as const : id.startsWith('custom') ? 'point' as const : 'site' as const, active: id === scenario.focus }] : [];
     });
-  }, [resolve, scenario.sites, scenario.focus]);
+  }, [catalogue, resolve, scenario.sites, scenario.focus]);
 
   const inspect = useCallback((id: string, layer?: AnalysisLayer) => { setScenario({ focus: id, layer: layer ?? scenario.layer ?? 'terrain' }); setCompareOpen(false); setAnalysisOpen(false); setFeedback(''); if (narrow) setLeftOpen(false); }, [setScenario, scenario.layer, narrow]);
   const closeAnalysis = useCallback(() => setScenario({ focus: undefined, layer: undefined, view: 'globe' }), [setScenario]);
