@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 4173",
-    "build": "tsc --noEmit && vite build && node scripts/write-version.mjs",
-    "typecheck": "tsc --noEmit",
+    "build": "pnpm typecheck && vite build && node scripts/write-version.mjs",
+    "typecheck": "tsc --noEmit && tsc --project tsconfig.api.json",
     "test": "vitest run",
     "test:browser": "playwright test",
     "lint": "eslint src scripts server api",
