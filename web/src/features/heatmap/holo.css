@@ -43,8 +43,16 @@
 .specimen-controls button,.specimen-layer-list button,.holo-loading button{border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);padding:6px 9px;border-radius:4px;font:10px var(--font-data);min-height:30px}
 .specimen-controls button[aria-pressed=true],.specimen-layer-list button[aria-pressed=true]{border-color:var(--mission-accent);color:var(--mission-accent);background:#37291c}
 .specimen-controls button:disabled,.specimen-layer-list button:disabled,.strata-labels button:disabled{opacity:.45;cursor:not-allowed}
-.specimen-controls label{display:flex;gap:5px;align-items:center;font:10px var(--font-data);color:var(--mission-muted)}
-.specimen-controls input{width:65px;accent-color:var(--mission-accent)}
+.specimen-controls>button{display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:6px}
+.specimen-controls summary{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);border-radius:6px;cursor:pointer;list-style:none}
+.specimen-controls summary::-webkit-details-marker{display:none}
+.specimen-controls summary:hover,.specimen-controls>button:hover{border-color:var(--mission-accent)}
+.display-menu{position:relative}
+.display-pop{position:absolute;top:calc(100% + 6px);right:0;z-index:30;display:grid;gap:9px;min-width:180px;padding:11px 13px;border:1px solid var(--mission-line);border-radius:8px;background:#14120de8;backdrop-filter:blur(10px);box-shadow:0 14px 34px #000b}
+.display-toggle{display:flex;gap:8px;align-items:center;font:10px var(--font-data);color:var(--mission-text);cursor:pointer;white-space:nowrap}
+.display-toggle input{accent-color:var(--mission-accent)}
+.display-slider{display:grid;gap:5px;font:9px var(--font-data);letter-spacing:.08em;text-transform:uppercase;color:var(--mission-muted)}
+.display-slider input{width:150px;accent-color:var(--mission-accent)}
 .strata-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .strata-labels button{position:absolute;left:0;top:0;pointer-events:auto;white-space:nowrap;opacity:0;transform:translate(-1000px,-1000px);background:#100e0bdb;border:1px solid var(--mission-line);border-left:2px solid var(--mission-accent);padding:5px 8px;font:10px var(--font-data);color:var(--mission-text);border-radius:2px}
 .strata-labels button span{color:var(--mission-accent);margin-right:7px}
@@ -59,7 +67,7 @@
 @media(max-width:700px){
  .holo-stage{grid-template-rows:auto minmax(140px,1fr) auto}
  .holo-title{padding:8px 12px 4px}.holo-title h2{font-size:18px}.holo-status{font-size:8px}
- .specimen-controls{gap:4px}.specimen-controls button{padding:4px 6px;font-size:9px}
+ .specimen-controls{gap:4px}.specimen-controls>button,.specimen-controls summary{width:26px;height:26px}.display-pop{min-width:150px}
  .holo-footer{padding:4px 12px 6px}.specimen-layer-list{flex-wrap:nowrap;overflow:auto;scrollbar-width:thin}
  .specimen-layer-list button{white-space:nowrap;flex-shrink:0}.specimen-explain{max-height:48px;overflow:auto;font-size:10px}
  .specimen-caption{font-size:8px}.strata-labels{display:none}.holo-legend{font-size:9px}

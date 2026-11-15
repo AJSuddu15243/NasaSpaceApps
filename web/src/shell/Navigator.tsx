@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpenCheck, Columns3, MapPin, SlidersHorizontal } from 'lucide-react';
+import { BookOpenCheck, ChevronDown, ChevronUp, ChevronLeft, Columns3, MapPin, RotateCcw, ScanSearch, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../design';
 import { useShell } from './store';
 import { MAX_SITES, type AnalysisLayer, type Scenario } from './scenario';
 import { ScenarioPanel } from './components/ScenarioPanel';
@@ -44,13 +45,20 @@ export default function Navigator() {
   const [globeAttempt, setGlobeAttempt] = useState(0);
   const [leftTab, setLeftTab] = useState<'sites' | 'priorities'>('sites');
   const [leftOpen, setLeftOpen] = useState(true);
+  const [bottomOpen, setBottomOpen] = useState(true);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [tourReplay, setTourReplay] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [askOpen, setAskOpen] = useState(false);
+  const [solgCast, setSolgCast] = useState(false);
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
+  useEffect(() => {
+    const open = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setAskOpen(true); } };
+    addEventListener('keydown', open);
+    return () => removeEventListener('keydown', open);
+  }, []);
 
   // The bare catalogue shows first; the demo load swaps in notes carrying the mask elevation.
   const catalogue: Site[] = useMemo(() => (mission.demo.data?.sites ?? mission.sites.data).map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site), [mission.demo.data, mission.sites.data]);
@@ -154,24 +162,27 @@ export default function Navigator() {
         <div className="t-earth"><dt>Earth wobble</dt><dd>{telemetry.earth_lat.toFixed(2)}°, {telemetry.earth_lon.toFixed(2)}°</dd></div>
         <div><dt>Earth range</dt><dd>{Math.round(telemetry.earth_dist_km).toLocaleString()} km</dd></div>
       </dl>
-      <div style={{ display: 'flex', gap: 4 }}>
-        <button type="button" className="hud-link" onClick={() => setAskOpen(v => !v)} aria-expanded={askOpen}>Ask AI</button>
-        <button type="button" className="hud-link" onClick={() => setTourReplay(n => n + 1)}>Replay briefing</button>
-      </div>
+      <TooltipProvider delayDuration={200}>
+        <div className="hud-actions">
+          <Tooltip><TooltipTrigger asChild><button type="button" className={`hud-icon solg-btn${solgCast ? ' is-casting' : ''}`} aria-label="Ask Solgaleo, the lunar copilot" aria-expanded={askOpen}
+            onClick={() => { setSolgCast(true); setTimeout(() => setSolgCast(false), 750); setAskOpen(v => !v); }}><Sparkles size={15} /></button></TooltipTrigger><TooltipContent>Solgaleo · ask about what you see</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" className="hud-icon" aria-label="Replay mission briefing" onClick={() => setTourReplay(n => n + 1)}><RotateCcw size={15} /></button></TooltipTrigger><TooltipContent>Replay briefing</TooltipContent></Tooltip>
+        </div>
+      </TooltipProvider>
     </header>
 
-    {(leftOpen || !narrow) && <aside className="hud hud-left" data-tour="sites" aria-label="Sites and priorities">
+    {leftOpen && <aside className="hud hud-left" data-tour="sites" aria-label="Sites and priorities">
       <div className="hud-tabs" role="tablist" aria-label="Left panel">
         <button type="button" role="tab" aria-selected={leftTab === 'sites'} onClick={() => setLeftTab('sites')}>Sites <span>{scenario.sites.length}/{MAX_SITES}</span></button>
         <button type="button" role="tab" aria-selected={leftTab === 'priorities'} onClick={() => setLeftTab('priorities')}>Priorities</button>
-        {narrow && <button type="button" className="hud-close" aria-label="Close panel" onClick={() => setLeftOpen(false)}>×</button>}
+        <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min" aria-label="Minimize panel" onClick={() => setLeftOpen(false)}><ChevronLeft size={14} /></button></TooltipTrigger><TooltipContent>Minimize</TooltipContent></Tooltip></TooltipProvider>
       </div>
       <div className="hud-scroll" role="tabpanel">
         {leftTab === 'sites' ? <ScenarioPanel scenario={scenario} data={{ sites: catalogue }} change={change} onInspect={id => inspect(id)} />
           : <PrioritiesPanel scenario={scenario} change={change} results={results} />}
       </div>
     </aside>}
-    {narrow && !leftOpen && <button type="button" className="hud-fab" onClick={() => setLeftOpen(true)}><MapPin size={16} /> Sites & priorities</button>}
+    {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
       <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={tryTrack(siteMaskFor(focused, mission.demo.data?.masks, mission.grids.data), mission.demo.data?.table, instant, 1, siteParams(scenario))?.sunLit[0]} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
@@ -182,7 +193,7 @@ export default function Navigator() {
         mask={siteMaskFor(focused, mission.demo.data?.masks, mission.grids.data)} table={mission.demo.data?.table} params={siteParams(scenario)}
         onLayerChange={layer => setScenario({ layer }, true)} onClose={closeAnalysis} onAdd={addFocused} canAdd={scenario.sites.length < MAX_SITES && !scenario.sites.includes(focused.id)} feedback={feedback} />
     </div>}
-    {focused && narrow && <button type="button" className="hud-fab hud-inspector" aria-expanded={analysisOpen} onClick={() => setAnalysisOpen(v => !v)}>{analysisOpen ? 'Close analysis' : 'Why this place?'}</button>}
+    {focused && narrow && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab hud-inspector" aria-expanded={analysisOpen} aria-label={analysisOpen ? 'Close analysis' : 'Why this place?'} onClick={() => setAnalysisOpen(v => !v)}>{analysisOpen ? <X size={16} /> : <ScanSearch size={16} />}</button></TooltipTrigger><TooltipContent>{analysisOpen ? 'Close analysis' : 'Why this place?'}</TooltipContent></Tooltip></TooltipProvider>}
     {compareOpen && <div className="hud hud-right mission-comparison">
       <header className="analysis-heading"><div><span className="eyebrow">SHORTLIST · {scenario.sites.length}/{MAX_SITES}</span><h2>Compare places</h2></div><button type="button" onClick={() => setCompareOpen(false)} aria-label="Close comparison">×</button></header>
       <ScienceCompare places={comparePlaces} date={instant} masks={mission.demo.data?.masks} table={mission.demo.data?.table} params={siteParams(scenario)} onInspect={id => inspect(id)} onRemove={id => setScenario({ sites: scenario.sites.filter(s => s !== id) })} />
@@ -201,14 +212,20 @@ export default function Navigator() {
         {HEAT_LAYERS.map(key => <button type="button" key={key} aria-pressed={!!region && scenario.heat === key} onClick={() => chooseHeat(key)} title={LAYERS[key].label}><i style={{ background: LAYERS[key].ramp[2] }} />{LAYERS[key].short}</button>)}
       </div>
       <div className="dock-tools" data-tour="evidence">
-        <button type="button" aria-expanded={compareOpen} onClick={() => setCompareOpen(v => !v)}><Columns3 size={15} /> Compare <span>{scenario.sites.length}</span></button>
-        <button type="button" onClick={() => { inspect(focused?.id ?? 'connecting-ridge', 'evidence'); setAnalysisOpen(true); }}><BookOpenCheck size={15} /> Evidence</button>
-        <button type="button" className="dock-priorities" onClick={() => { setLeftTab('priorities'); setLeftOpen(true); }}><SlidersHorizontal size={15} /> Priorities</button>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip><TooltipTrigger asChild><button type="button" aria-expanded={compareOpen} onClick={() => setCompareOpen(v => !v)} aria-label={`Compare sites (${scenario.sites.length})`}><Columns3 size={15} /><span className="dock-count">{scenario.sites.length}</span></button></TooltipTrigger><TooltipContent>Compare sites ({scenario.sites.length}/{MAX_SITES})</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => { inspect(focused?.id ?? 'connecting-ridge', 'evidence'); setAnalysisOpen(true); }} aria-label="Evidence"><BookOpenCheck size={15} /></button></TooltipTrigger><TooltipContent>Evidence &amp; sources</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" className="dock-priorities" onClick={() => { setLeftTab('priorities'); setLeftOpen(true); }} aria-label="Mission priorities"><SlidersHorizontal size={15} /></button></TooltipTrigger><TooltipContent>Mission priorities</TooltipContent></Tooltip>
+        </TooltipProvider>
       </div>
     </nav>
 
-    <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} mask={place && siteMaskFor(place, mission.demo.data?.masks, mission.grids.data)} table={mission.demo.data?.table} params={siteParams(scenario)} /></div>
-    {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} />}
+    {bottomOpen
+      ? <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} mask={place && siteMaskFor(place, mission.demo.data?.masks, mission.grids.data)} table={mission.demo.data?.table} params={siteParams(scenario)} />
+          <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min hud-min-bottom" aria-label="Minimize timeline" onClick={() => setBottomOpen(false)}><ChevronDown size={14} /></button></TooltipTrigger><TooltipContent>Minimize timeline</TooltipContent></Tooltip></TooltipProvider>
+        </div>
+      : <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab hud-fab-bottom" aria-label="Show mission timeline" onClick={() => setBottomOpen(true)}><ChevronUp size={16} /></button></TooltipTrigger><TooltipContent>Mission timeline</TooltipContent></Tooltip></TooltipProvider>}
+    {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} onReplay={() => setTourReplay(n => n + 1)} />}
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}
     {!booted && <BootSequence lines={bootLines} onDone={finishBoot} onRetry={() => { mission.retry(); if (globeError) { setGlobeError(false); setGlobeAttempt(n => n + 1); } }} />}
