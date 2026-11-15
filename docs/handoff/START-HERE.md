@@ -14,10 +14,10 @@ Four things make it different. Every UI hour goes into these:
 | Area | State |
 |---|---|
 | Pipeline | PIPE-1 to PIPE-10 merged; PIPE-8 masks landed with the engine in #120. |
-| Real data | `ephem.bin` (Horizons, 43,824 h), `masks/*.json` and `grid/*.bin` for 3 regions (Connecting Ridge, Haworth, Malapert Massif), `validation/*.json`, LROC/LOLA textures. No real `sites.json` yet (in flight). |
+| Real data | `ephem.bin` (Horizons, 43,824 h), `masks/*.json` and `grid/*.bin` for 3 regions (Connecting Ridge, Haworth, Malapert Massif), `validation/*.json`, LROC/LOLA textures. No real `sites.json` yet (planned). |
 | Engine | ENG-1 to ENG-9 merged in #120: `site_metrics`, `grid_fracs`/`grid_scores`, `top_areas`, `nearby_better`, `metrics_hash`, `output_hash` are real WASM (`web/src/engine/pkg/`). |
 | Web | The 3 real regions run the WASM engine; `demo-*` sites stay on `mock.ts` and are labelled. #121 merged the #109/#111/#112 fixes and `web/vercel.json` (SPA rewrite). The heatmap score layer is still a JS preview that ignores the date. |
-| In flight | Demo-ready PRs: thresholds 40/40/180/180, default scenario 2027-01-15 + 336 h, slip re-scores the cards, hash under the cards, baked engine heatmap, real `sites.json`. Open after the demo: rest of INT-1 (#48), engine-api schema PR. |
+| Planned (not started) | Demo-ready work, no PRs open yet: thresholds 40/40/180/180, default scenario 2027-01-15 + 336 h, slip re-scores the cards, hash under the cards, baked engine heatmap, real `sites.json`. Open after the demo: rest of INT-1 (#48), engine-api schema PR. |
 | Not deployed | No Vercel URL yet (#5); settings are in the root `README.md`. |
 
 ## Who does what

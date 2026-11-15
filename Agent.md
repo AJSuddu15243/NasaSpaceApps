@@ -23,7 +23,7 @@ deterministic Rust/WASM engine, a weighted greedy site evaluator, heatmaps and a
 
 ## Active Work
 
-Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress**: ENG-1 to ENG-9 and PIPE-8 merged in #120; web fixes #109/#111/#112 (incl. `web/vercel.json`) merged in #121. Open: the rest of INT-1 (#48), the engine-api schema follow-up PR, and the demo-ready PRs in flight (thresholds and defaults, slip re-scores the cards, hash in the UI, baked engine heatmap, real `sites.json`). Scope and details are in
+Ananth owns the Rust → WASM simulator work (all ENG issues) as of 2026-11-14; status: **in progress**: ENG-1 to ENG-9 and PIPE-8 merged in #120; web fixes #109/#111/#112 (incl. `web/vercel.json`) merged in #121. Open: the rest of INT-1 (#48), the engine-api schema follow-up PR, and the planned demo-ready work, not started (thresholds and defaults, slip re-scores the cards, hash in the UI, baked engine heatmap, real `sites.json`). Scope and details are in
 the [Active Work section of `.agent/PLAN.md`](.agent/PLAN.md#active-work).
 
 Other agents: coordinate with Ananth before implementing a duplicate simulator or modifying the simulation

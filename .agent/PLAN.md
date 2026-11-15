@@ -7,7 +7,7 @@
 ## Active Work
 
 - **Owner:** Ananth (this user), since 2026-11-14
-- **Status:** **in progress**: ENG-1 to ENG-9 and PIPE-8 merged in #120 (real masks, `ephem.bin`, WASM engine, real/mock routing); #121 merged the #109/#111/#112 web fixes (ephem clamp, SPA rewrite). Open: the rest of INT-1 (#48), the engine-api schema follow-up PR, and the demo-ready PRs in flight (thresholds 40/40/180/180, default scenario 2027-01-15, slip re-scores the cards, hash in the UI, baked engine heatmap, real `sites.json`). Decisions: [`GREEDY.md`](GREEDY.md). Engine guide: [`engine/AGENTS.md`](../engine/AGENTS.md)
+- **Status:** **in progress**: ENG-1 to ENG-9 and PIPE-8 merged in #120 (real masks, `ephem.bin`, WASM engine, real/mock routing); #121 merged the #109/#111/#112 web fixes (ephem clamp, SPA rewrite). Open: the rest of INT-1 (#48), the engine-api schema follow-up PR, and the planned demo-ready work, not started (thresholds 40/40/180/180, default scenario 2027-01-15, slip re-scores the cards, hash in the UI, baked engine heatmap, real `sites.json`). Decisions: [`GREEDY.md`](GREEDY.md). Engine guide: [`engine/AGENTS.md`](../engine/AGENTS.md)
 - **Scope:** the Rust simulator core and the native/WASM interface. UI, rendering, and data work are not claimed.
 - **Overlap rule:** other agents should coordinate with Ananth before implementing a duplicate simulator or
   modifying the simulation core / native-WASM interface.

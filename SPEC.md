@@ -67,12 +67,12 @@ explanations for students and the public).
   lit · sin(elev) (horizontal panel); % lit, longest darkness, time to sunset.
 - **Thermal exposure:** instantaneous radiative-equilibrium surface temperature,
   T = ((1 − A) · S · max(0, n·ŝ) · lit / (ε σ))^¼ with A ≈ 0.12, ε ≈ 0.95, S = 1361 W/m² × (1 AU / r)², n = local
-  surface normal from the DEM slope and aspect; shadowed hours are floored at a fixed 40 K (`T_FLOOR_K`, not user-set). Metrics: min/max temperature and hours below a user-set survival temperature (default 233 K, with a 48 h battery night gate). Label it "simplified, no thermal
+  surface normal from the DEM slope and aspect; shadowed hours are floored at a fixed 40 K (`T_FLOOR_K`, not user-set). Metrics: min/max temperature and hours below a user-set survival temperature (planned P0 default 233 K with a 48 h battery night gate on the site cards; the heatmap's `GRID_PARAMS` sets `battery_h` 0, so its gate is off; main's cards still use `MOCK_PARAMS`, 100 K). Label it "simplified, no thermal
   inertia" and show Diviner measurements as a reference where available.
 - **DTE radio visibility:** Earth centre above the mask + antenna margin; % contact, longest blackout, time to
   Earthset. Stated assumption: a DSN station can see the Moon; no relays.
-- **Badge thresholds (defaults, editable in Planner):** sunlit ≥ 40 %, Earth contact ≥ 40 %, longest darkness
-  ≤ 180 h, longest blackout ≤ 180 h.
+- **Badge thresholds (editable in Planner; planned P0 defaults, not on main yet):** sunlit ≥ 40 %, Earth contact ≥ 40 %,
+  longest darkness ≤ 180 h, longest blackout ≤ 180 h. Main still ships 70 % / 60 % / 48 h / 24 h (`DEFAULT_THRESHOLDS`).
 - **Terrain factors:** slope (hard limit, default 10°; a 160 m grid cell takes the max of its 80 m slopes), aspect
   (downhill direction, for the thermal surface normal), crater depth (detrended local relief within 500 m) and roughness
   (std-dev of slope over 5 × 5 cells of 80 m) from the DEM. **Rock distribution:** no public
@@ -158,7 +158,7 @@ Models assume Claude Pro + ChatGPT Pro. Claude seats (Fable, Opus) share one 5-h
 
 ## Demo script (2 min)
 1. Landing page intro flies into the south pole; one sentence on why the pole is hard.
-2. Default scenario 2027-01-15, 336 h: Haworth red, Connecting Ridge and Malapert green. "Our launch slipped a
+2. (Planned P0; main still defaults to 2026-11-14.) Default scenario 2027-01-15, 336 h: Haworth red, Connecting Ridge and Malapert green. "Our launch slipped a
    week": +7 d slip kills Earth contact at every site and all three turn red.
 3. Panorama + timeline: the Sun skims the ridge, Earth dips below the horizon; sunset/Earthset countdowns; temperature drops.
 4. Greedy evaluator: adjust weights, the heatmap updates, top-3 areas appear, "1.2 km away gets +18% sunlight".
