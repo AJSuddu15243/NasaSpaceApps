@@ -1,4 +1,4 @@
-# Running Lunar Window locally
+# Running Lunala locally
 
 Everything you need to run the web app, the scenario database, and the data
 pipeline on one machine. Commands assume macOS/Linux; Windows uses the same

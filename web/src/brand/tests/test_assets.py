@@ -11,7 +11,7 @@ SVG = '{http://www.w3.org/2000/svg}'
 class BrandAssets(unittest.TestCase):
     def test_manifest_resolves_local_svg_assets(self):
         brand = json.loads((ROOT / 'brand.json').read_text())
-        self.assertEqual(brand['name'], 'Lunar Window')
+        self.assertEqual(brand['name'], 'Lunala')
         for relative in brand['assets'].values():
             path = (ROOT / relative).resolve()
             self.assertTrue(path.is_relative_to(ROOT))
@@ -39,7 +39,7 @@ class BrandAssets(unittest.TestCase):
             self.assertIsNotNone(title)
             self.assertEqual(root.get('role'), 'img')
             self.assertEqual(root.get('aria-labelledby'), title.get('id'))
-            self.assertEqual(title.text, 'Lunar Window')
+            self.assertEqual(title.text, 'Lunala')
 
     def test_voice_has_five_rules_and_preview_uses_product_name(self):
         rows = [line for line in (ROOT / 'VOICE.md').read_text().splitlines() if line.startswith('|')]

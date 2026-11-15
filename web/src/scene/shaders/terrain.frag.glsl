@@ -6,8 +6,10 @@ varying float vElevationM;
 varying vec2 vTerrainUv;
 uniform sampler2D uSlopeMap;
 uniform sampler2D uImage;
+uniform sampler2D uScalarMap;
 uniform vec4 uSlopeUv;
 uniform vec4 uImageUv;
+uniform vec4 uScalarUv;
 uniform int uLayer;
 uniform float uOverlayOpacity;
 
@@ -36,6 +38,7 @@ vec3 terrainColor() {
   float height = clamp((vElevationM - uElevationRangeM.x) / (uElevationRangeM.y - uElevationRangeM.x), 0.0, 1.0);
   vec3 base = uElevationEnabled ? cividisRamp(height) : mix(vec3(0.32, 0.34, 0.36), vec3(0.62, 0.63, 0.64), height);
   if (uLayer == 1) base = texture2D(uImage, uImageUv.xy + vTerrainUv * uImageUv.zw).rgb;
+  if (uLayer == 4) base = texture2D(uScalarMap, uScalarUv.xy + vTerrainUv * uScalarUv.zw).rgb;
   if (uLayer == 3) {
     vec2 gridUv = uSlopeUv.xy + vTerrainUv * uSlopeUv.zw;
     vec4 packed = texture2D(uSlopeMap, gridUv);

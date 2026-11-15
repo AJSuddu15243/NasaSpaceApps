@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { specimenGeometry, gridBounds, probeIndex, coveringRegion } from './specimen';
+import { specimenGeometry, specimenScalarGeometry, gridBounds, probeIndex, coveringRegion } from './specimen';
 import { parseGrid } from './grid';
 import { decodeTile } from '../../scene/tileLoader';
 const asset = (path: string) => readFileSync(new URL(`../../../public/data/${path}`, import.meta.url));
@@ -22,6 +22,18 @@ describe('specimen registration attacks', () => {
     const normals = geometry.getAttribute('normal');
     for (let i = 0; i < normals.count; i++) expect(normals.getY(i)).toBeGreaterThan(0);
     expect(geometry.getAttribute('elevationM').getX(187)).toBe(tile.elevationM[187]);
+    geometry.dispose();
+  });
+  it('uses one aligned coarse mesh for every scalar layer', () => {
+    const heights = Array.from(tile.elevationM);
+    const lo = Math.min(...heights), hi = Math.max(...heights);
+    const geometry = specimenScalarGeometry(grid, tile, 0.3, lo, hi);
+    const uv = geometry.getAttribute('uv'), position = geometry.getAttribute('position');
+    expect(position.count).toBe(grid.header.nx * grid.header.ny);
+    expect(position.count).toBeLessThan(tile.columns * tile.rows);
+    expect(uv.getX(0)).toBeCloseTo((grid.header.x0 - tile.x0M) / ((tile.columns - 1) * tile.cellM));
+    expect(position.getZ(0)).toBeCloseTo(1 - 2 * uv.getY(0));
+    expect(position.getY(0)).toBeGreaterThanOrEqual(0);
     geometry.dispose();
   });
   it('finds coverage by coordinate without changing the selected custom point', () => {

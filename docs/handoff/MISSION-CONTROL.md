@@ -1,4 +1,4 @@
-# Lunar Window mission control
+# Lunala mission control
 
 ## Run and explore
 

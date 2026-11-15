@@ -1,7 +1,7 @@
-# Lunar Window · Voice
+# Lunala · Voice
 
 Calm, precise and useful to someone making a comparison. Explain the observation first,
-then the implication. Use the name **Lunar Window** and the descriptor **Lunar Landing
+then the implication. Use the name **Lunala** and the descriptor **Lunar Landing
 Site Navigator** on first introduction. Tagline: **Compare sites. Find your window.**
 
 These are copy patterns, not measured results. Replace braces only with verified values;

@@ -53,6 +53,6 @@ function exportCsv(results: Partial<Record<GridRegion, RegionResult>>, scenario:
   for (const [region, r] of Object.entries(results)) r?.areas.forEach((a, i) => rows.push([region, String(i + 1), a.lat.toFixed(5), a.lon.toFixed(5), a.score.toFixed(4), a.factors.sun.toFixed(3), a.factors.earth.toFixed(3), a.factors.slope.toFixed(3), a.factors.crater.toFixed(3), Number.isFinite(a.iceKm) ? a.iceKm.toFixed(2) : '', String(scenario.slopeLimit), [scenario.weights.sun, scenario.weights.earth, scenario.weights.slope, scenario.weights.crater, scenario.weights.rock, scenario.ice].join(' ')]));
   const blob = new Blob([rows.map(r => r.join(',')).join('\n') + '\n'], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'lunar-window-ranked-areas.csv'; a.click();
+  const a = document.createElement('a'); a.href = url; a.download = 'lunala-ranked-areas.csv'; a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
