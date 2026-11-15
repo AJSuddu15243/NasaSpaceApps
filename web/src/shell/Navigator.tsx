@@ -49,6 +49,11 @@ export default function Navigator() {
   const [askOpen, setAskOpen] = useState(false);
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
+  useEffect(() => {
+    const open = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setAskOpen(true); } };
+    addEventListener('keydown', open);
+    return () => removeEventListener('keydown', open);
+  }, []);
 
   // The bare catalogue shows first; the demo load swaps in notes carrying the mask elevation.
   const catalogue: Site[] = useMemo(() => (mission.demo.data?.sites ?? mission.sites.data).map(site => site.category === 'demo' ? { ...site, name: `${site.name} (synthetic demo)` } : site), [mission.demo.data, mission.sites.data]);
@@ -203,7 +208,7 @@ export default function Navigator() {
     </nav>
 
     <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} /></div>
-    {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} />}
+    {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} onReplay={() => setTourReplay(n => n + 1)} />}
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}
     {!booted && <BootSequence lines={bootLines} onDone={finishBoot} onRetry={() => { mission.retry(); if (globeError) { setGlobeError(false); setGlobeAttempt(n => n + 1); } }} />}
