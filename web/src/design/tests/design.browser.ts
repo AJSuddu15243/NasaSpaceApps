@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+test.beforeEach(async ({ page }) => {
+  await page.goto('/design');
+  test.skip(await page.getByRole('heading', { name: 'Page not found', exact: true }).isVisible(), 'Design reference is a development-only route.');
+});
 test('components, keyboard navigation, token coverage and accessibility', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));

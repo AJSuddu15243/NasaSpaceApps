@@ -22,7 +22,7 @@
     "layers": {
       "description": "Layers present in the binary, in file order (no units). A layer without data is left out.",
       "type": "array",
-      "items": { "type": "string", "enum": ["mask", "slope_deg", "aspect_deg", "elev_m", "crater_depth_m", "roughness_deg", "rock"] },
+      "items": { "type": "string", "enum": ["mask", "slope_deg", "aspect_deg", "elev_m", "crater_depth_m", "roughness_deg", "rock", "sun_avg", "earth_avg", "psr", "ice_favorability"] },
       "minItems": 1,
       "uniqueItems": true
     },
@@ -43,6 +43,10 @@
         "elev_m": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "m" }, "components": { "const": 1 } } }] },
         "crater_depth_m": { "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "m" }, "components": { "const": 1 } } }] },
         "roughness_deg": { "description": "Standard deviation of slope (degrees) over a 5 x 5 window of 80 m cells; the rock-distribution proxy input (PIPE-6).", "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "deg" }, "components": { "const": 1 } } }] },
+        "sun_avg": {"description": "Long-term average fraction of time the Sun is visible above the terrain horizon, in [0, 1] (fraction), averaged over the 18.6-year lunar precession cycle (Mazarico et al. 2011, PGDA product 69). Not date-specific.", "allOf": [{"$ref": "#/$defs/layer"}, {"type": "object", "properties": {"units": {"const": "fraction"}, "components": {"const": 1}}}]},
+        "earth_avg": {"description": "Long-term average fraction of time the Earth is visible above the terrain horizon, in [0, 1] (fraction); a direct-to-Earth radio proxy (Mazarico et al. 2011, PGDA product 69). Not date-specific.", "allOf": [{"$ref": "#/$defs/layer"}, {"type": "object", "properties": {"units": {"const": "fraction"}, "components": {"const": 1}}}]},
+        "psr": {"description": "Fraction of the cell area that is permanently shadowed, in [0, 1] (fraction), from the LOLA PSR map (Mazarico et al. 2011). PSRs are cold traps where water ice can be stable.", "allOf": [{"$ref": "#/$defs/layer"}, {"type": "object", "properties": {"units": {"const": "fraction"}, "components": {"const": 1}}}]},
+        "ice_favorability": {"description": "Cannon & Britt 2020 ice favorability model, native 591 m. Model index, not measured ice abundance.", "allOf": [{"$ref": "#/$defs/layer"}, {"type": "object", "properties": {"units": {"const": "fraction"}, "components": {"const": 1}}}]},
         "rock": { "description": "Rock-distribution factor in [0, 1] (fraction; 0 = smooth, 1 = rough). Until a polar rock-abundance or boulder raster exists it is a DEM roughness proxy, flagged with proxy: true.", "allOf": [{ "$ref": "#/$defs/layer" }, { "type": "object", "properties": { "units": { "const": "fraction" }, "components": { "const": 1 } } }] }
       }
     }

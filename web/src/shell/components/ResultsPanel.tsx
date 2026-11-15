@@ -38,7 +38,8 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
     const mask = data.masks.get(id);
     const horizonDeg = mask ? mask.mask_deg.reduce((a, b) => a + b, 0) / mask.mask_deg.length : 0;
     const timeline = coords ? siteTimeline(data.table, coords.lat, coords.lon, scenario.date, scenario.hours, horizonDeg) : null;
-    if (!site) return { id, name, metrics: null, message: 'Custom coordinates are plotted in the view. Terrain metrics need a horizon mask, and none exists for this point yet.', timeline, readiness: null };
+    // Named regions without a horizon mask are treated like custom points: no metrics are invented for them.
+    if (!site || !mask) return { id, name, metrics: null, message: 'No horizon mask exists for this place yet, so engine metrics are unavailable. Its measured layers are in the science comparison.', timeline, readiness: null };
     try {
       const metrics = site_metrics(mask!, data.table, scenario.date, scenario.hours, MOCK_PARAMS);
       return { id, name, metrics, message: null, timeline, readiness: readinessScore(metrics, scenario.missionWeights, scenario.hours) };
@@ -61,7 +62,8 @@ export function ResultsPanel({ data, scenario, onCollapse, scrub }: { data: Demo
         <thead><tr><th scope="col">Metric</th>{results.map(result => <th key={result.id} scope="col" title={result.name}>{shortName(result.name)}</th>)}</tr></thead>
         <tbody>{rows.map(row => <tr key={row.key}><th scope="row"><TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><span className="rs-th-tip">{row.short}</span></TooltipTrigger><TooltipContent>{row.tip}</TooltipContent></Tooltip></TooltipProvider></th>{results.map(result => {
           const value = result.metrics ? metricValue(result.metrics, row.key) : null;
-          const isBest = value !== null && value === best[row.key];
+          // A single computed site gets no comparative "best" highlight.
+          const isBest = computed.length > 1 && value !== null && value === best[row.key];
           return <td key={result.id} className={isBest ? 'rs-best' : undefined}>{result.metrics ? row.text(result.metrics) : '—'}</td>;
         })}</tr>)}<tr><th scope="row">Temp range</th>{results.map(result => <td key={result.id}>{result.metrics ? `${result.metrics.t_min_k}–${result.metrics.t_max_k} K` : '—'}</td>)}</tr><tr><th scope="row"><TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><span className="rs-th-tip">Readiness</span></TooltipTrigger><TooltipContent>Weighted 0–100 heuristic from your mission priorities — not an engine score.</TooltipContent></Tooltip></TooltipProvider></th>{results.map(result => <td key={result.id} className={result.readiness !== null ? 'rs-best' : undefined}>{result.readiness !== null ? result.readiness : '—'}</td>)}</tr></tbody>
       </table></div>}

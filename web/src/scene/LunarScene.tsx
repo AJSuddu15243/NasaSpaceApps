@@ -34,7 +34,7 @@ export function LunarScene({ active: inView = true, tile, simulationRef, contour
   }, []);
   return <SceneBoundary><Canvas aria-label={label} className={className} dpr={[1, 1.5]}
     frameloop={visible && inView ? 'demand' : 'never'} shadows={{ type: PCFShadowMap }}
-    gl={{ antialias: true }} style={{ width: '100%', height: '100%', minHeight: 420 }}
+    gl={{ antialias: true }} style={{ width: '100%', height: '100%', minHeight: 'min(420px, 100%)' }}
     fallback={<p role="alert">WebGL is unavailable. Site comparisons remain available.</p>}>
     <color attach="background" args={['#080c12']} />
     <ambientLight intensity={0.65} />

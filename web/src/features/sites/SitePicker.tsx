@@ -1,15 +1,15 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { ChevronRight, Search } from 'lucide-react';
+import { ArrowUpRight, ChevronRight, Search } from 'lucide-react';
 import type { Site } from '../../contracts/sites';
-import { customSiteId, MAX_SELECTED_SITES, parseCustomSite, searchSites, validateCoordinates } from './sites';
+import { customSiteId, formatCoordinates, MAX_SELECTED_SITES, parseCustomSite, searchSites, validateCoordinates } from './sites';
 
 const categoryLabel: Record<Site['category'], string> = {
   artemis3: 'Artemis III candidates', clps: 'CLPS regions', intl: 'International missions', apollo: 'Apollo references',
 };
 
-const coordsText = (lat: number, lon: number) => `${Math.abs(lat).toFixed(2)}°${lat < 0 ? 'S' : 'N'} · ${Math.abs(lon).toFixed(2)}°${lon < 0 ? 'W' : 'E'}`;
+const coordsText = formatCoordinates;
 
-export function SitePicker({ sites, selected, onChange }: { sites: readonly Site[]; selected: readonly string[]; onChange: (ids: string[]) => void }) {
+export function SitePicker({ sites, selected, onChange, onInspect }: { sites: readonly Site[]; selected: readonly string[]; onChange: (ids: string[]) => void; onInspect?: (id: string) => void }) {
   const [query, setQuery] = useState('');
   const [customOpen, setCustomOpen] = useState(false);
   const [lat, setLat] = useState('');
@@ -46,7 +46,7 @@ export function SitePicker({ sites, selected, onChange }: { sites: readonly Site
   return <div className="sp">
     <div className="ws-scroll">
       {/** biome-ignore lint/a11y/useAriaPropsSupportedByRole: <explanation> */}
-      <div className="sp-selected" aria-label="Selected sites">
+      <div className="sp-selected" role="group" aria-label="Selected sites">
         {selected.length === 0
           ? <span className="sp-empty-chips">No sites selected</span>
           : selected.map((id, index) => <button type="button" key={id} className="sp-chip" onClick={() => toggle(id)} aria-label={`Remove ${selectedName(id)}`}>
@@ -71,14 +71,13 @@ export function SitePicker({ sites, selected, onChange }: { sites: readonly Site
             <p className="sp-group-label">{categoryLabel[category]}</p>
             {options.map(site => {
               const pressed = selectedSet.has(site.id);
-              return <button type="button" key={site.id} className="sp-row" aria-pressed={pressed} disabled={atLimit && !pressed} onClick={() => toggle(site.id)}>
+              return <div className="sp-row-wrap" key={site.id}><button type="button" className="sp-row" aria-pressed={pressed} disabled={atLimit && !pressed} onClick={() => toggle(site.id)} aria-label={`${pressed ? 'Remove' : 'Add'} ${site.name} ${pressed ? 'from' : 'to'} comparison`}>
                 <span className="sp-dot" aria-hidden="true" />
                 <span className="sp-row-text">
                   <span className="sp-row-name">{site.name}</span>
-                  {site.note && <span className="sp-note">{site.note}</span>}
+                  <span className="sp-row-coords">{coordsText(site.lat, site.lon)}</span>
                 </span>
-                <span className="sp-row-coords">{coordsText(site.lat, site.lon)}</span>
-              </button>;
+              </button>{onInspect && <button type="button" className="sp-inspect" onClick={() => onInspect(site.id)} aria-label={`Fly to and inspect ${site.name}`} title="Fly to and inspect"><ArrowUpRight size={15} aria-hidden="true" /></button>}</div>;
             })}
           </div>;
         })}
@@ -93,7 +92,7 @@ export function SitePicker({ sites, selected, onChange }: { sites: readonly Site
         </form>
       </details>
 
-      <p className="sp-feedback" role="status" aria-live="polite">{feedback || (atLimit ? 'Four-site comparison limit reached.' : 'South of 80°S only.')}</p>
+      <p className="sp-feedback" role="status" aria-live="polite">{feedback || (atLimit ? 'Four-site comparison limit reached.' : 'Tick to compare · ↗ to fly in and inspect. Custom points work anywhere on the Moon.')}</p>
     </div>
   </div>;
 }
