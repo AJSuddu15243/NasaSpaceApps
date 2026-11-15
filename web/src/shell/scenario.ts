@@ -6,10 +6,11 @@ export type Mode = 'planner' | 'explorer';
 export type AnalysisLayer = 'terrain' | 'heatmap' | 'horizon' | 'libration' | 'evidence';
 const LAYERS: AnalysisLayer[] = ['terrain', 'heatmap', 'horizon', 'libration', 'evidence'];
 export interface MissionWeights { lit: number; earth: number; dark: number; blackout: number }
-export interface Scenario { missionWeights: MissionWeights; focus?: string; layer?: AnalysisLayer; heat: HeatLayer; playhead?: number; delay?: number; sites: string[]; date: string; hours: number; weights: Weights; ice: number; slopeLimit: number; mode: Mode; view: View }
+export interface Scenario { missionWeights: MissionWeights; focus?: string; layer?: AnalysisLayer; heat: HeatLayer; playhead?: number; delay?: number; sites: string[]; date: string; hours: number; weights: Weights; ice: number; slopeLimit: number; survivalK: number; batteryH: number; mode: Mode; view: View }
 export const DEFAULT_SCENARIO: Scenario = {
-  sites: ['connecting-ridge', 'haworth', 'malapert-massif'], date: '2026-11-14T12:00:00.000Z', hours: 336, heat: 'score',
-  weights: { sun: 50, earth: 35, slope: 10, crater: 5, rock: 0, thermal: 0 }, missionWeights: { lit: 40, earth: 30, dark: 15, blackout: 15 }, ice: 0, slopeLimit: 10, mode: 'explorer', view: '3d',
+  sites: ['connecting-ridge', 'haworth', 'malapert-massif'], date: '2027-01-15T00:00:00.000Z', hours: 336, heat: 'score',
+  weights: { sun: 35, earth: 25, slope: 20, crater: 10, rock: 0, thermal: 10 }, missionWeights: { lit: 40, earth: 30, dark: 15, blackout: 15 }, ice: 0, slopeLimit: 10,
+  survivalK: 233, batteryH: 48, mode: 'explorer', view: '3d',
 };
 const keys = ['sun', 'earth', 'slope', 'crater'] as const;
 const keys5 = [...keys, 'rock'] as const;
@@ -26,7 +27,7 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
   if (search.length > 4096) return { scenario, warnings: ['The scenario link is too long. Defaults were restored.'] };
   const q = new URLSearchParams(search);
   if (q.has('v') && q.get('v') !== '1') return { scenario, warnings: ['This link uses an unsupported version. Defaults were restored.'] };
-  for (const key of ['sites', 'date', 'hours', 'weights', 'mw', 'mode', 'view', 'v', 'focus', 'layer', 'playhead', 'delay', 'heat', 'ice', 'sl']) {
+  for (const key of ['sites', 'date', 'hours', 'weights', 'mw', 'mode', 'view', 'v', 'focus', 'layer', 'playhead', 'delay', 'heat', 'ice', 'sl', 'surv', 'bat']) {
     if (q.getAll(key).length > 1) warnings.push(`Duplicate ${key} field: the first value was used.`);
   }
   if (q.has('sites')) {
@@ -92,6 +93,16 @@ export function readScenario(search: string): { scenario: Scenario; warnings: st
     if (/^\d+(\.\d)?$/.test(value) && Number(value) >= 1 && Number(value) <= 30) scenario.slopeLimit = Number(value);
     else warnings.push('Slope limit must be 1–30°. 10° was restored.');
   }
+  if (q.has('surv')) {
+    const value = q.get('surv')!;
+    if (/^\d+$/.test(value) && Number(value) >= 40 && Number(value) <= 400) scenario.survivalK = Number(value);
+    else warnings.push('Survival temperature must be 40–400 whole kelvin. 233 K was restored.');
+  }
+  if (q.has('bat')) {
+    const value = q.get('bat')!;
+    if (/^\d+$/.test(value) && Number(value) <= 720) scenario.batteryH = Number(value);
+    else warnings.push('Battery must be 0–720 whole hours. 48 h was restored.');
+  }
   for (const key of ['playhead', 'delay'] as const) {
     if (!q.has(key)) continue;
     const value = q.get(key)!;
@@ -108,6 +119,8 @@ export function writeScenario(scenario: Scenario): string {
   if (scenario.heat !== DEFAULT_SCENARIO.heat) q.set('heat', scenario.heat);
   if (scenario.ice !== DEFAULT_SCENARIO.ice) q.set('ice', String(scenario.ice));
   if (scenario.slopeLimit !== DEFAULT_SCENARIO.slopeLimit) q.set('sl', String(scenario.slopeLimit));
+  if (scenario.survivalK !== DEFAULT_SCENARIO.survivalK) q.set('surv', String(scenario.survivalK));
+  if (scenario.batteryH !== DEFAULT_SCENARIO.batteryH) q.set('bat', String(scenario.batteryH));
   for (const key of ['focus', 'layer', 'playhead', 'delay'] as const) {
     if (scenario[key] !== undefined) q.set(key, String(scenario[key]));
   }

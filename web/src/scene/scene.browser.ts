@@ -12,7 +12,7 @@ test('docking real terrain layers preserves the scene and mission time', async (
   await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'imagery');
   await expect(page).toHaveURL(/heat=imagery/);
   await page.getByRole('button', { name: '+7d', exact: true }).click();
-  await expect(page.locator('.timeline-label time')).toContainText('2026-11-21');
+  await expect(page.locator('.timeline-label time')).toContainText('2027-01-22');
   await page.getByRole('button', { name: 'Polar map', exact: true }).click();
   await expect(page.getByLabel('Interactive lunar terrain')).toBeVisible();
   await page.getByRole('button', { name: 'All layers', exact: true }).click();

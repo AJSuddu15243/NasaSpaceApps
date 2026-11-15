@@ -458,6 +458,7 @@
 .rs-table .rs-best { color: var(--shell-sun); font-weight: 600; }
 .rs-table .rs-best::after { content: ' ●'; font-size: 8px; vertical-align: 2px; }
 .rs-units { padding: 2px 14px 0; font-size: 10px; color: var(--shell-muted); }
+.rs-copy { font: inherit; color: var(--shell-text); background: none; border: 1px solid var(--shell-line); border-radius: 4px; padding: 0 6px; cursor: pointer; }
 
 .rs-sites { display: grid; gap: 10px; padding: 12px 14px 0; }
 .rs-card {
