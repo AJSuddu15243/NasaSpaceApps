@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { metricsHash, site_metrics, siteExtras, siteParams, MOCK_PARAMS, UnavailableScenario } from '../../engine';
+import { GRID_PARAMS, metricsHash, site_metrics, siteExtras, siteParams, MOCK_PARAMS, UnavailableScenario } from '../../engine';
 import { scenarioInstant } from '../../features/timeline/MissionTimeline';
 import type { DemoData } from '../data';
 import type { Scenario } from '../scenario';
@@ -45,14 +45,15 @@ const rows: { key: MetricKey; label: string; short: string; text: (m: Metrics) =
   { key: 'longestBlackoutHours', label: 'Longest blackout', short: 'Blackout', text: m => `${m.longest_blackout_h} h`, tip: 'Longest stretch without line of sight to Earth.' },
 ];
 
-type ResultInputs = Pick<Scenario, 'sites' | 'date' | 'delay' | 'hours' | 'survivalK' | 'batteryH' | 'slopeLimit' | 'missionWeights'>;
+type ResultInputs = Pick<Scenario, 'sites' | 'date' | 'delay' | 'hours' | 'survivalK' | 'batteryH' | 'missionWeights'>;
 
 /** Engine results per site. `scenario.date` is the on-time launch; this function alone applies the slip, so callers must not. */
 export function siteResults(data: DemoData, scenario: ResultInputs, regions?: Regions): { start: string; results: SiteResult[] } {
   // Cards score the arrival window: date + launch slip, never the playhead.
   const start = scenarioInstant({ date: scenario.date, delay: scenario.delay });
   const slipped = (scenario.delay ?? 0) > 0;
-  const params = siteParams(scenario);
+  // site_metrics/extras/track never read slope_limit_deg (only grid scoring does), so a slope drag must not rerun them.
+  const params = siteParams({ ...scenario, slopeLimit: GRID_PARAMS.slope_limit_deg });
   const results = scenario.sites.map((id): SiteResult => {
     const site = data.sites.find(item => item.id === id);
     const name = site?.name ?? customName(id);
@@ -102,10 +103,10 @@ export function ResultsPanel({ data, scenario, regions, onCollapse, scrub }: { d
   // Up to 4 engine calls per site; skip them on playhead/layer/view/weights changes. The store re-parses the URL on every set,
   // so arrays and `regions` are fresh objects each time: key on serialized values. Only the loaded grid set (stable Grid objects)
   // feeds the masks; readiness follows `regions` in the cheap pass below.
-  const { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights } = scenario;
+  const { sites, date, delay, hours, survivalK, batteryH, missionWeights } = scenario;
   const sitesKey = sites.join(','), mwKey = JSON.stringify(missionWeights), gridsKey = Object.keys(regions ?? {}).join(',');
   const params = siteParams(scenario);
-  const heavy = useMemo(() => siteResults(data, { sites, date, delay, hours, survivalK, batteryH, slopeLimit, missionWeights }, regions).results, [data, sitesKey, date, delay, hours, survivalK, batteryH, slopeLimit, mwKey, gridsKey]);
+  const heavy = useMemo(() => siteResults(data, { sites, date, delay, hours, survivalK, batteryH, missionWeights }, regions).results, [data, sitesKey, date, delay, hours, survivalK, batteryH, mwKey, gridsKey]);
   const results = useMemo(() => heavy.map(r => r.id.startsWith('demo-') ? r : { ...r, readiness: realReadiness(data, r.id, regions) }), [heavy, data, regions]);
   const computed = results.map(result => result.metrics).filter((metrics): metrics is Metrics => metrics !== null);
   const best = bestValues(computed);
@@ -152,7 +153,7 @@ export function ResultsPanel({ data, scenario, regions, onCollapse, scrub }: { d
             {result.baseline && <p className="rs-reason" role="status">Slip {scenario.delay} d: {slipDeltas(result.baseline, metrics)}</p>}
             {result.timeline && <TimelineBar timeline={result.timeline} note={result.timelineNote} scrubHour={scrub?.hour ?? null} />}
             <p className="rs-reason">{status.reason}</p>
-            {result.survivesNight !== null && <p className="rs-units">Survival {params.survival_temp_k} K · battery {params.battery_h} h ({result.survivesNight ? 'outlasts' : 'does not outlast'} the longest darkness) · antenna margin {params.antenna_margin_deg}°</p>}
+            {result.survivesNight !== null && <p className="rs-units">Survival {params.survival_temp_k} K · {batteryText(params.battery_h, result.survivesNight)} · antenna margin {params.antenna_margin_deg}°</p>}
           </div>;
         })}</div>}
       {hash && <HashLine hash={hash} />}
@@ -187,6 +188,11 @@ function TimelineBar({ timeline, note, scrubHour }: { timeline: Uint8Array; note
     </svg>
     <div className="rs-timeline-key"><span><i className="tl-key tl-sun"/>Sun</span><span><i className="tl-key tl-earth"/>Earth</span><span><i className="tl-key tl-both"/>Both</span><span><i className="tl-key tl-dark"/>Neither</span>{note && <span>· {note}</span>}</div>
   </div>;
+}
+
+/** battery_h 0 turns the engine's survives_night gate off (always true), so it is not a pass. */
+export function batteryText(batteryH: number, survivesNight: boolean): string {
+  return batteryH === 0 ? 'battery check off' : `battery ${batteryH} h (${survivesNight ? 'outlasts' : 'does not outlast'} the longest darkness)`;
 }
 
 /** demo-* sites run on synthetic fixtures, never the engine. */

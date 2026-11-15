@@ -2,9 +2,9 @@
 // scores, 64-bin grid masks for points inside a survey.
 import { readFileSync } from 'node:fs';
 import { beforeAll, expect, it } from 'vitest';
-import { GRID_PARAMS, gridFracs, initEngine, scoresFromFracs, site_metrics, siteParams } from '../../engine';
+import { GRID_PARAMS, gridFracs, initEngine, scoresFromFracs, site_metrics, siteExtras, siteParams } from '../../engine';
 import { trackFor } from '../../engine/track';
-import { siteResults } from '../../shell/components/ResultsPanel';
+import { batteryText, siteResults } from '../../shell/components/ResultsPanel';
 import type { DemoData } from '../../shell/data';
 import { DEFAULT_SCENARIO } from '../../shell/scenario';
 import { cellLatLon, parseGrid } from '../heatmap/grid';
@@ -90,4 +90,21 @@ it('drawer "now" rows: engine track for masked places, flat geometry for demo-* 
   expect(now).toEqual({ sunEl: t.sunEl[0], earthEl: t.earthEl[0], sunLit: t.sunLit[0], earthVis: t.earthVis[0], flat: false });
   expect(skyNow({ id: 'demo-ridge-a', name: 'Demo', lat: h.lat, lon: h.lon }, START, masks, table, params).flat).toBe(true);
   expect(skyNow({ id: 'custom:-86,60', name: 'P', lat: -86, lon: 60 }, START, masks, table, params).flat).toBe(true);
+});
+
+it('battery 0 h is the engine gate off (survives_night true), so the card says "battery check off", not a pass', () => {
+  const d = { sites: [], masks: new Map([['haworth', mask('haworth')]]), table } as unknown as DemoData;
+  const [off] = siteResults(d, { ...DEFAULT_SCENARIO, sites: ['haworth'], batteryH: 0 }).results;
+  expect(off.survivesNight).toBe(true);
+  expect(batteryText(0, off.survivesNight!)).toBe('battery check off');
+  const [on] = siteResults(d, { ...DEFAULT_SCENARIO, sites: ['haworth'], batteryH: 1 }).results;
+  expect(batteryText(1, on.survivesNight!)).toBe('battery 1 h (does not outlast the longest darkness)');
+});
+
+it('site metrics, extras and track ignore slope_limit_deg (so the cards memo skips slope drags)', () => {
+  const m = mask('haworth');
+  const p3 = { ...params, slope_limit_deg: 3 }, p20 = { ...params, slope_limit_deg: 20 };
+  expect(site_metrics(m, table, START, HOURS, p3)).toEqual(site_metrics(m, table, START, HOURS, p20));
+  expect(siteExtras(m, table, START, HOURS, p3)).toEqual(siteExtras(m, table, START, HOURS, p20));
+  expect(trackFor(m, table, START, HOURS, p3)).toEqual(trackFor(m, table, START, HOURS, p20));
 });
