@@ -35,7 +35,6 @@
 .lw-brand img{width:22px;height:22px}
 .lw-pill{display:flex;gap:2px;padding:4px;border:1px solid var(--line);border-radius:999px;background:rgba(14,14,15,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .lw-pill a{position:relative;padding:7px 14px;border-radius:999px;font:450 12px var(--display);color:var(--muted);transition:color .2s,background-color .2s}
-.lw-pill a sup{margin-left:3px;font:400 7px var(--mono);vertical-align:super;color:var(--faint)}
 .lw-pill a:hover{color:var(--paper)}
 .lw-pill a[aria-current]{color:var(--paper);background:rgba(236,232,225,.09)}
 .lw-cta-pill{justify-self:end;display:inline-flex;align-items:center;gap:14px;min-height:38px;padding:0 8px 0 16px;border:0;border-radius:999px;background:var(--paper);color:var(--ink);font:600 12px var(--display)}
@@ -131,11 +130,16 @@
 .fine.links a{color:var(--muted);border-bottom:1px solid var(--line)}
 .fine.links a:hover{color:var(--paper)}
 
-/* Dive into the navigator: copy and chrome clear first, the camera pushes in, then a veil hands off. */
+/* The Moon stays visible while navigator modules load; entry remains cancellable. */
 .lw-dive-veil{position:fixed;inset:0;z-index:40;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0,var(--ink) 70%);opacity:0}
 .lw.is-diving .chapter-copy,.lw.is-diving .lw-header,.lw.is-diving .lw-statusbar,.lw.is-diving .lw-rail,.lw.is-diving .lw-site-labels{opacity:0!important;transition:opacity .35s var(--ease-io)}
 .lw.is-diving .lw-dive-veil{animation:veil 1.25s var(--ease-io) forwards}
-@keyframes veil{0%,55%{opacity:0}100%{opacity:1;background:var(--ink)}}
+@keyframes veil{0%,55%{opacity:0}100%{opacity:.65}}
+.lw-entry-status{position:fixed;z-index:45;left:50%;bottom:72px;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 40px);padding:16px 24px;border:1px solid var(--line);border-radius:16px;background:rgba(9,9,10,.94);color:var(--paper);text-align:center;display:grid;justify-items:center;gap:10px;font:400 13px/1.5 var(--display)}
+.lw-entry-status:focus{outline:none}
+.lw-entry-status p{max-width:38ch}
+.lw.is-diving .lw-story,.lw.is-diving .lw-header{pointer-events:none}
+.lw.is-diving .lw-story *,.lw.is-diving .lw-header *{pointer-events:none}
 
 @media(max-width:860px){
   .lw-pill{display:none}
@@ -150,3 +154,4 @@
 @media(prefers-reduced-motion:reduce){
   .lw *,.lw *:before{transition:none!important;animation:none!important}
 }
+.lw-loader small{color:#b3a898}

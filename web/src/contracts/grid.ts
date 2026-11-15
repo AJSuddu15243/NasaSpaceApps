@@ -58,7 +58,19 @@ export interface GridHeader {
    *
    * @minItems 1
    */
-  layers: ("mask" | "slope_deg" | "aspect_deg" | "elev_m" | "crater_depth_m" | "roughness_deg" | "rock")[];
+  layers: (
+    | "mask"
+    | "slope_deg"
+    | "aspect_deg"
+    | "elev_m"
+    | "crater_depth_m"
+    | "roughness_deg"
+    | "rock"
+    | "sun_avg"
+    | "earth_avg"
+    | "psr"
+    | "ice_favorability"
+  )[];
   /**
    * Storage description of each layer, keyed by layer name; its keys equal `layers`.
    */
@@ -96,6 +108,34 @@ export interface GridHeader {
      */
     roughness_deg?: GridLayerInfo & {
       units?: "deg";
+      components?: 1;
+    };
+    /**
+     * Long-term average fraction of time the Sun is visible above the terrain horizon, in [0, 1] (fraction), averaged over the 18.6-year lunar precession cycle (Mazarico et al. 2011, PGDA product 69). Not date-specific.
+     */
+    sun_avg?: GridLayerInfo & {
+      units?: "fraction";
+      components?: 1;
+    };
+    /**
+     * Long-term average fraction of time the Earth is visible above the terrain horizon, in [0, 1] (fraction); a direct-to-Earth radio proxy (Mazarico et al. 2011, PGDA product 69). Not date-specific.
+     */
+    earth_avg?: GridLayerInfo & {
+      units?: "fraction";
+      components?: 1;
+    };
+    /**
+     * Fraction of the cell area that is permanently shadowed, in [0, 1] (fraction), from the LOLA PSR map (Mazarico et al. 2011). PSRs are cold traps where water ice can be stable.
+     */
+    psr?: GridLayerInfo & {
+      units?: "fraction";
+      components?: 1;
+    };
+    /**
+     * Cannon & Britt 2020 ice favorability model, native 591 m. Model index, not measured ice abundance.
+     */
+    ice_favorability?: GridLayerInfo & {
+      units?: "fraction";
       components?: 1;
     };
     /**

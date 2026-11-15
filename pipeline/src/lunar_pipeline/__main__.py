@@ -10,6 +10,7 @@ COMMANDS = {
     "terrain-fetch": ("terrain.trek", "Fetch terrain with PGDA fallback (PIPE-3)"),
     "tiles": ("terrain.tiles", "Crop and resample terrain tiles (PIPE-4)"),
     "layers": ("terrain.layers", "Build terrain and rock layers (PIPE-5, PIPE-6)"),
+    "science": ("terrain.science", "Append long-term illumination, PSR and ice favorability grids"),
     "masks": ("masks", "Build terrain horizon masks (PIPE-8)"),
     "validate": ("validate", "Validate against Horizons (PIPE-7)"),
     "imagery": ("terrain.imagery", "Prepare surface imagery (PIPE-10)"),

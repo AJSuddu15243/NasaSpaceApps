@@ -35,7 +35,7 @@ it('publishes state and restores it on browser navigation without duplicate list
   expect(listeners.size).toBe(1);
   store.set({ hours: 48 }); expect(store.getSnapshot().scenario.hours).toBe(48); expect(updates).toBe(1);
   store.set({ hours: 48 }); expect(updates).toBe(1);
-  store.set({ mode: 'explorer' }, true); expect(replaces).toBe(1);
+  store.set({ mode: 'planner' }, true); expect(replaces).toBe(1);
   store.navigate('/'); expect(store.getSnapshot().path).toBe('/');
   url.href = 'https://example.test/app?hours=72'; listeners.forEach(fn => fn()); expect(store.getSnapshot().scenario.hours).toBe(72);
   off1(); expect(listeners.size).toBe(1); off2(); expect(listeners.size).toBe(0);

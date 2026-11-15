@@ -14,6 +14,7 @@ IMPLEMENTED = {
     "tiles": "terrain.tiles",
     "layers": "terrain.layers",
     "masks": "masks",
+    "science": "terrain.science",
     "imagery": "terrain.imagery",
     "package": "package",
 }
@@ -91,6 +92,7 @@ def test_all_cannot_reorder_stages_or_omit_imagery(offline_stages, capsys):
         "terrain-fetch",
         "tiles",
         "layers",
+        "science",
         "masks",
         "validate",
         "imagery",

@@ -20,7 +20,11 @@
   "layers": [
     "mask",
     "slope_deg",
-    "elev_m"
+    "elev_m",
+    "sun_avg",
+    "earth_avg",
+    "psr",
+    "ice_favorability"
   ],
   "layer_info": {
     "mask": {
@@ -51,6 +55,46 @@
       "components": 1,
       "nodata": null,
       "byte_offset": 528,
+      "byte_length": 16
+    },
+    "sun_avg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 544,
+      "byte_length": 16
+    },
+    "earth_avg": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 560,
+      "byte_length": 16
+    },
+    "psr": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": null,
+      "byte_offset": 576,
+      "byte_length": 16
+    },
+    "ice_favorability": {
+      "dtype": "float32",
+      "scale": 1,
+      "offset": 0,
+      "units": "fraction",
+      "components": 1,
+      "nodata": -9999,
+      "byte_offset": 592,
       "byte_length": 16
     }
   }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-14T23:55:08Z",
+  "generated_at": "2026-11-15T03:37:10Z",
   "files": [
     {
       "path": "ephem.bin",
@@ -17,7 +17,7 @@
     {
       "path": "ephem.json",
       "bytes": 2214,
-      "sha256": "c0f6fc4d2a66523ce60668dee2b02efc2def35ed6f156f81e55260baeeeb7c89",
+      "sha256": "9213a7278adc3530981c76443a468920b86ba2e1ff8f81ee6f74fb2bc0e20c8e",
       "source_urls": [
         "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272026-01-01+00%3A00%27&STOP_TIME=%272026-12-31+23%3A00%27",
         "https://ssd.jpl.nasa.gov/api/horizons.api?format=text&COMMAND=%27301%27&OBJ_DATA=%27NO%27&MAKE_EPHEM=%27YES%27&EPHEM_TYPE=%27OBSERVER%27&CENTER=%27500%40399%27&STEP_SIZE=%271+h%27&QUANTITIES=%2714%2C15%2C19%2C20%27&CSV_FORMAT=%27YES%27&ANG_FORMAT=%27DEG%27&EXTRA_PREC=%27YES%27&TIME_DIGITS=%27MINUTES%27&START_TIME=%272027-01-01+00%3A00%27&STOP_TIME=%272027-12-31+23%3A00%27",
@@ -28,62 +28,92 @@
     },
     {
       "path": "grid/connecting-ridge.bin",
-      "bytes": 2375000,
-      "sha256": "8e27d5456e1434dc8ef5516ad53bfb8af37d36bba43bfcd83c8af70a0f68420c",
+      "bytes": 625000,
+      "sha256": "5eab335b3d1d23cd1156b4f699d96d1f1a310a66be32ff8245551a270832e58c",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://pgda.gsfc.nasa.gov/products/69",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+        "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
       ]
     },
     {
       "path": "grid/connecting-ridge.json",
-      "bytes": 2554,
-      "sha256": "94a864dc67711c876f29f29ef8c3389a239273b39e0516ea480614dc2f352011",
+      "bytes": 3983,
+      "sha256": "3b05931c554b71163acc92cafe2e8bf307ec3caa862265a0968dceb6eedd8c27",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://pgda.gsfc.nasa.gov/products/69",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+        "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
       ]
     },
     {
       "path": "grid/haworth.bin",
-      "bytes": 2375000,
-      "sha256": "922471b0d7f4a389f41e0b45041d287ff58175f3630d0704b31e68f8e6efdac7",
+      "bytes": 625000,
+      "sha256": "7a5b78a2f74f009ec0ec440a06b7dac891f181ebd04c12ba2041b678c1f7cddc",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://pgda.gsfc.nasa.gov/products/69",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+        "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
       ]
     },
     {
       "path": "grid/haworth.json",
-      "bytes": 2544,
-      "sha256": "d7290256ee1bef8282322647451ee01ee08262877395af4579767b3ee36a0996",
+      "bytes": 3973,
+      "sha256": "4e1b5070a6df2ead31fffcfa9fbcf1ed53a5738aa8388f7f38bee3d36024e7bd",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://pgda.gsfc.nasa.gov/products/69",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+        "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
       ]
     },
     {
       "path": "grid/malapert-massif.bin",
-      "bytes": 2375000,
-      "sha256": "2d0059e6ab1a5fb5ba3b998df4033d22dab177821175378a10583c68ab667c67",
+      "bytes": 625000,
+      "sha256": "bd327f13adcbabd9453c559387e5845a558ae4c9599e9d387efad438ba63bff2",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://pgda.gsfc.nasa.gov/products/69",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+        "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
       ]
     },
     {
       "path": "grid/malapert-massif.json",
-      "bytes": 2553,
-      "sha256": "d4c57248f3c46d7017dc929eec5e2b78acf3b51f451a73ac4ad9f57097808447",
+      "bytes": 3982,
+      "sha256": "b0e52018cb363f4b4a6f20ee5eafbab64eaf8842fe691ee9a9929acea0a79536",
       "source_urls": [
         "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
         "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
+        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf",
+        "https://pgda.gsfc.nasa.gov/products/69",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/AVGVISIB_85S_060M_201608_EARTH.TIF",
+        "https://pgda.gsfc.nasa.gov/data/MoonIllumination/LPSR_85S_060M_201608.TIF",
+        "https://planetarymaps.usgs.gov/mosaic/Lunar_Research/IceFavorabilityIndex/Moon_IceFavorabilityIndex_90S000E_591mp.tif"
       ]
     },
     {
@@ -144,36 +174,6 @@
         "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/default/default028mm/",
         "https://trek.nasa.gov/tiles/Moon/SP/LRO_NAC_AvgMosaic_SPole855_1mp/1.0.0/WMTSCapabilities.xml",
         "https://trek.nasa.gov/moon/TrekWS/rest/cat/metadata/fgdc/html?label=LRO_NAC_AvgMosaic_SPole855_1mp"
-      ]
-    },
-    {
-      "path": "masks/connecting-ridge.json",
-      "bytes": 4364,
-      "sha256": "b4b6a548939eec28e9f73c5b624ab6bb714b3d3e16e3bb594ef08c84c61002a0",
-      "source_urls": [
-        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
-        "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
-      ]
-    },
-    {
-      "path": "masks/haworth.json",
-      "bytes": 4209,
-      "sha256": "9d932e8e4001e433fbdf10110d8613d8d50aea9478b05b82aa0a21cab6c1f573",
-      "source_urls": [
-        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
-        "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
-      ]
-    },
-    {
-      "path": "masks/malapert-massif.json",
-      "bytes": 4342,
-      "sha256": "4ab53c4e0c10fcc9ae6fcba817a52808fddf855cae520b1538c0bcab289339e6",
-      "source_urls": [
-        "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
-        "https://pgda.gsfc.nasa.gov/products/90",
-        "https://ntrs.nasa.gov/api/citations/20250002845/downloads/M2M-30044%20Lunar%20Surface%20Data%20Book%20Baseline_Final.pdf"
       ]
     },
     {

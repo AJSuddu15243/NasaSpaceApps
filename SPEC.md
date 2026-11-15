@@ -1,5 +1,10 @@
 # SPEC: Lunar Landing Site Navigator
 
+Mission-control science extension: region grids may also contain `sun_avg`, `earth_avg`, `psr`,
+and `ice_favorability` float32 scalar fraction layers. The first three are long-term PGDA 69 products;
+IFI is the Cannon & Britt 2020 geologic model at native 591 m resolution, preserving nodata.
+These optional layers do not change the engine API. See [the handoff](docs/handoff/MISSION-CONTROL.md).
+
 > **Build spec for the team proposal in [`docs/PROPOSAL.md`](docs/PROPOSAL.md)** (the proposal wins if they
 > disagree). Builds on the draft [`.agent/PLAN.md`](.agent/PLAN.md) and follows the engineering guardrails in
 > [`.agent/STACK_REVIEW.md`](.agent/STACK_REVIEW.md). Official challenge text: [`docs/CHALLENGE.md`](docs/CHALLENGE.md).

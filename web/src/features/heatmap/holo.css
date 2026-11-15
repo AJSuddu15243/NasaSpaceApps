@@ -1,0 +1,66 @@
+/* Holographic survey: lifts off the Moon, slides to centre stage and rotates upright. */
+.holo-stage{position:absolute;inset:0;display:grid;grid-template-rows:auto 1fr auto;color:#faf1e4;pointer-events:none;transform-origin:50% 70%;
+  animation:holo-rise 1.05s .55s both cubic-bezier(.2,.8,.2,1)}
+.holo-stage>*{pointer-events:auto}
+.holo-frame{position:absolute;inset:6px;pointer-events:none}
+.holo-frame i{position:absolute;width:22px;height:22px;border:1px solid #e8cca8;opacity:.7}
+.holo-frame i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0}
+.holo-frame i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+.holo-frame i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0}
+.holo-frame i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0}
+.holo-title{padding:20px 26px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.holo-eyebrow{flex-basis:100%;font:9px var(--font-data);letter-spacing:.22em;color:#ceb28d}
+.holo-title h2{font-size:clamp(20px,2vw,30px);font-weight:420;letter-spacing:-.02em;text-shadow:0 0 24px #e3ac6355}
+.holo-status{font:9px var(--font-data);letter-spacing:.14em;padding:3px 7px;border:1px solid currentColor;border-radius:3px}
+.holo-status-real{color:#e8cca8}.holo-status-proxy{color:#e9d27a}.holo-status-preview{color:#8fd3ff}
+.holo-canvas{position:relative;min-height:0}
+.dot-field-canvas{position:absolute!important;inset:0}
+.holo-canvas::after{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#e8cca808 0 1px,transparent 1px 3px);mix-blend-mode:screen}
+.holo-loading{position:absolute;inset:0;display:grid;place-items:center;font:11px var(--font-data);color:#e8cca8;text-align:center;padding:24px}
+.holo-area-label{position:absolute;left:0;top:0;pointer-events:none;display:flex;align-items:center;gap:6px;margin:-34px 0 0 -14px;font:10px var(--font-data);color:#faf1e4;white-space:nowrap;text-shadow:0 0 8px #000}
+.holo-area-label b{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#e8cca8;color:#120d06;font-weight:600;box-shadow:0 0 14px #e8cca8}
+.holo-footer{padding:0 26px 18px;display:grid;gap:8px}
+.holo-legend{display:flex;align-items:center;gap:10px;font:10px var(--font-data);color:#e2d3c0;flex-wrap:wrap}
+.holo-legend>i{width:180px;height:6px;border-radius:3px;box-shadow:0 0 12px #e8cca833}
+.holo-legend em{font-style:normal;color:#a1998e;display:flex;align-items:center;gap:6px}
+.holo-excluded-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#322e2b}
+.holo-probe{min-height:20px;display:flex;flex-wrap:wrap;gap:4px 14px;font:10px var(--font-data);color:#b3a695}
+.holo-probe b{color:#fcf5ec;font-weight:500}
+.holo-probe span.is-active{color:#e8cca8}
+@keyframes holo-rise{
+  0%{opacity:0;transform:perspective(1100px) translate(-6%,18%) rotateX(72deg) scale(.42);filter:blur(6px) brightness(2)}
+  45%{opacity:1;filter:blur(1px) brightness(1.4)}
+  100%{opacity:1;transform:none;filter:none}}
+@media(prefers-reduced-motion:reduce){.holo-stage{animation:none}}
+@media(max-width:700px){.holo-title{padding:12px 14px 0}.holo-footer{padding:0 14px 10px}.holo-legend>i{width:110px}}
+/* The specimen stays readable while annotations use the mission palette. */
+.holo-stage{color:var(--mission-text);animation-delay:.25s;grid-template-rows:auto minmax(160px,1fr) auto}
+.holo-title{padding:16px 18px 6px;gap:5px 12px}
+.holo-title h2{font-size:clamp(18px,1.7vw,25px)}
+.holo-eyebrow{color:var(--mission-accent);font-size:9px;letter-spacing:.14em}
+.specimen-controls,.specimen-layer-list{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.specimen-controls{flex-basis:100%;margin-top:6px}
+.specimen-controls button,.specimen-layer-list button,.holo-loading button{border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);padding:6px 9px;border-radius:4px;font:10px var(--font-data);min-height:30px}
+.specimen-controls button[aria-pressed=true],.specimen-layer-list button[aria-pressed=true]{border-color:var(--mission-accent);color:var(--mission-accent);background:#37291c}
+.specimen-controls button:disabled,.specimen-layer-list button:disabled,.strata-labels button:disabled{opacity:.45;cursor:not-allowed}
+.specimen-controls label{display:flex;gap:5px;align-items:center;font:10px var(--font-data);color:var(--mission-muted)}
+.specimen-controls input{width:65px;accent-color:var(--mission-accent)}
+.strata-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.strata-labels button{position:absolute;left:0;top:0;pointer-events:auto;white-space:nowrap;opacity:0;transform:translate(-1000px,-1000px);background:#100e0bdb;border:1px solid var(--mission-line);border-left:2px solid var(--mission-accent);padding:5px 8px;font:10px var(--font-data);color:var(--mission-text);border-radius:2px}
+.strata-labels button span{color:var(--mission-accent);margin-right:7px}
+.holo-footer{padding:4px 18px 12px;gap:6px}
+.specimen-explain{font-size:11px;line-height:1.5;color:var(--mission-text)}
+.specimen-explain span,.specimen-caption{color:var(--mission-muted)}
+.specimen-caption{font:9px/1.5 var(--font-data)}
+.specimen-cell{display:flex;align-items:center;gap:8px;font:10px var(--font-data);color:var(--mission-muted)}
+.specimen-cell input{width:90px;background:#15120e;color:var(--mission-text);border:1px solid var(--mission-line);padding:3px 5px;border-radius:3px}
+.holo-loading{align-content:center;gap:12px;color:var(--mission-text)}
+.holo-canvas .lunar-scene{height:100%;min-height:0}
+@media(max-width:700px){
+ .holo-stage{grid-template-rows:auto minmax(140px,1fr) auto}
+ .holo-title{padding:8px 12px 4px}.holo-title h2{font-size:18px}.holo-status{font-size:8px}
+ .specimen-controls{gap:4px}.specimen-controls button{padding:4px 6px;font-size:9px}
+ .holo-footer{padding:4px 12px 6px}.specimen-layer-list{flex-wrap:nowrap;overflow:auto;scrollbar-width:thin}
+ .specimen-layer-list button{white-space:nowrap;flex-shrink:0}.specimen-explain{max-height:48px;overflow:auto;font-size:10px}
+ .specimen-caption{font-size:8px}.strata-labels{display:none}.holo-legend{font-size:9px}
+}

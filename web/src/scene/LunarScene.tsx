@@ -1,113 +1,47 @@
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactElement } from "react";
-import type { Group } from "three";
+import { Canvas, useThree } from '@react-three/fiber';
+import { Component, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import { PCFShadowMap } from 'three';
+import { createMockSouthPoleTile } from './mockTerrain';
+import { tileFrame } from './coordinates';
+import { SceneCamera } from './SceneCamera';
+import { SouthPolePatch } from './SouthPolePatch';
+import { SunLight } from './SunLight';
+import { SceneOverlays } from './SceneOverlays';
+import type { LunarSceneProps } from './types';
 
-import { createMockSouthPoleTile } from "./mockTerrain";
-import { MoonGlobe } from "./MoonGlobe";
-import { SceneCamera } from "./SceneCamera";
-import { SouthPolePatch } from "./SouthPolePatch";
-import type { CameraMode, LunarSceneProps, SceneSimulationRef } from "./types";
-
-const sceneStyle: CSSProperties = {
-  width: "100%",
-  minHeight: 480,
-  background: "#121212",
-};
-
-function usePageVisibility(): boolean {
-  const [visible, setVisible] = useState(true);
-
+class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <p role="alert">The terrain view could not start. Reload to retry, or use the site comparison.</p> : this.props.children; }
+}
+function Refresh({ timeKey, visible }: { timeKey?: string; visible: boolean }) {
+  const invalidate = useThree(state => state.invalidate);
+  useEffect(() => { invalidate(); }, [timeKey, visible, invalidate]);
+  return null;
+}
+export function LunarScene({ active: inView = true, tile, simulationRef, contoursEnabled = false, elevationEnabled = false,
+  assets, layer, overlayOpacity, onImageryError, exaggeration = 1, onSiteSelect, cameraMode = 'south-pole', view = '3d', sites = [], timeKey, resetKey = 0, className,
+  'aria-label': label = 'Interactive lunar terrain' }: LunarSceneProps) {
+  const fallback = useMemo(createMockSouthPoleTile, []);
+  const active = tile ?? fallback;
+  const frame = useMemo(() => tileFrame(active), [active]);
+  const [visible, setVisible] = useState(!document.hidden);
   useEffect(() => {
-    const updateVisibility = (): void => setVisible(!document.hidden);
-    updateVisibility();
-    document.addEventListener("visibilitychange", updateVisibility);
-    return () => document.removeEventListener("visibilitychange", updateVisibility);
+    const update = () => setVisible(!document.hidden);
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
   }, []);
-
-  return visible;
-}
-
-function SimulationBridge({ simulationRef }: { simulationRef?: SceneSimulationRef }): ReactElement {
-  const groupRef = useRef<Group | null>(null);
-
-  useFrame(() => {
-    if (groupRef.current && simulationRef) {
-      groupRef.current.userData.simulation = simulationRef.current;
-    }
-  });
-
-  return <group ref={groupRef} />;
-}
-
-function SceneContents({
-  mode,
-  simulationRef,
-  tile,
-  contoursEnabled,
-}: {
-  readonly mode: CameraMode;
-  readonly simulationRef?: SceneSimulationRef;
-  readonly tile: NonNullable<LunarSceneProps["tile"]>;
-  readonly contoursEnabled: boolean;
-}): ReactElement {
-  return (
-    <>
-      <color attach="background" args={["#121212"]} />
-      <fog attach="fog" args={["#121212", 2.6, 5.5]} />
-      <ambientLight intensity={0.72} />
-      {/* shortcut: static presentation light until SCN-3 uses the ephemeris Sun vector. */}
-      <directionalLight castShadow intensity={1.1} position={[3, 2, 4]} />
-      <MoonGlobe />
-      <SouthPolePatch tile={tile} contoursEnabled={contoursEnabled} />
-      <SceneCamera mode={mode} />
-      <SimulationBridge simulationRef={simulationRef} />
-    </>
-  );
-}
-
-export function LunarScene({
-  tile,
-  simulationRef,
-  contoursEnabled = false,
-  cameraMode,
-  onCameraModeChange,
-  className,
-  "aria-label": ariaLabel = "Interactive lunar south-pole terrain scene",
-}: LunarSceneProps): ReactElement {
-  const visible = usePageVisibility();
-  const mockTile = useMemo(() => createMockSouthPoleTile(), []);
-  const [uncontrolledCameraMode, setUncontrolledCameraMode] = useState<CameraMode>("orbit");
-  const activeTile = tile ?? mockTile;
-  const activeCameraMode = cameraMode ?? uncontrolledCameraMode;
-
-  const toggleCameraMode = (): void => {
-    const nextMode = activeCameraMode === "orbit" ? "south-pole" : "orbit";
-    if (cameraMode === undefined) {
-      setUncontrolledCameraMode(nextMode);
-    }
-    onCameraModeChange?.(nextMode);
-  };
-
-  return (
-    <Canvas
-      aria-label={ariaLabel}
-      className={className}
-      dpr={[1, 1.75]}
-      frameloop={visible ? "always" : "never"}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
-      shadows
-      style={sceneStyle}
-      tabIndex={0}
-      onDoubleClick={toggleCameraMode}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          toggleCameraMode();
-        }
-      }}
-    >
-      <SceneContents mode={activeCameraMode} simulationRef={simulationRef} tile={activeTile} contoursEnabled={contoursEnabled} />
-    </Canvas>
-  );
+  return <SceneBoundary><Canvas aria-label={label} className={className} dpr={[1, 1.5]}
+    frameloop={visible && inView ? 'demand' : 'never'} shadows={{ type: PCFShadowMap }}
+    gl={{ antialias: true }} style={{ width: '100%', height: '100%', minHeight: 'min(420px, 100%)' }}
+    fallback={<p role="alert">WebGL is unavailable. Site comparisons remain available.</p>}>
+    <color attach="background" args={['#080c12']} />
+    <ambientLight intensity={0.65} />
+    <SunLight simulationRef={simulationRef} span={frame.span} />
+    <SouthPolePatch tile={active} contoursEnabled={contoursEnabled} elevationEnabled={elevationEnabled} assets={assets} onImageryError={onImageryError} layer={layer} overlayOpacity={overlayOpacity} exaggeration={exaggeration} />
+    <SceneOverlays tile={active} frame={frame} sites={sites} map={view === 'map'} exaggeration={exaggeration} onSiteSelect={onSiteSelect} />
+    <SceneCamera frame={frame} view={view} mode={cameraMode} resetKey={resetKey} />
+    <Refresh timeKey={timeKey} visible={visible && inView} />
+  </Canvas></SceneBoundary>;
 }
