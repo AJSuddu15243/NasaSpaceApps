@@ -22,6 +22,7 @@ import { sunEarthAt } from '../ephem';
 import { useMediaQuery } from './useMediaQuery';
 import type { Site } from '../contracts/sites';
 import { syncRemoteScenarios } from '../scenarios/store';
+import { AskPanel } from '../ask/AskPanel';
 import './workspace.css';
 import './mission.css';
 
@@ -45,6 +46,7 @@ export default function Navigator() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [tourReplay, setTourReplay] = useState(0);
   const [feedback, setFeedback] = useState('');
+  const [askOpen, setAskOpen] = useState(false);
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
 
@@ -93,7 +95,7 @@ export default function Navigator() {
     setCompareOpen(false);
   };
   useEffect(() => {
-    const close = (event: KeyboardEvent) => { if (event.key === 'Escape' && booted) { closeAnalysis(); setCompareOpen(false); } };
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape' && booted) { closeAnalysis(); setCompareOpen(false); setAskOpen(false); } };
     addEventListener('keydown', close);
     return () => removeEventListener('keydown', close);
   }, [closeAnalysis, booted]);
@@ -111,6 +113,14 @@ export default function Navigator() {
   }, [focused, scenario.sites, resolve]);
   const comparePlaces = useMemo(() => scenario.sites.flatMap(id => { const p = resolve(id); return p ? [{ id, name: p.name, lat: p.lat, lon: p.lon, region: (() => { const r = coveringRegion(mission.grids.data, p); return r ? results[r] : undefined; })() }] : []; }), [scenario.sites, resolve, results, mission.grids.data]);
   const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id));
+  const askContext = useMemo(() => [
+    'Lunar Window — lunar landing site navigator (NASA Space Apps). The user is looking at the 3D Moon workspace.',
+    `Mode: ${scenario.mode} · View: ${scenario.view} · heat layer: ${scenario.heat ? LAYERS[scenario.heat].label : 'none'}`,
+    `Mission: landing ${scenario.date}${scenario.delay ? ` (+${scenario.delay}d launch delay)` : ''} for ${scenario.hours}h`,
+    `Playhead UTC: ${instant} · sub-solar ${telemetry.sun_lat.toFixed(2)}°,${telemetry.sun_lon.toFixed(1)}° · Earth ${telemetry.earth_lat.toFixed(2)}°,${telemetry.earth_lon.toFixed(2)}° @ ${Math.round(telemetry.earth_dist_km)} km`,
+    focused ? `Focused site: ${focused.name} (${focused.lat.toFixed(3)}°, ${focused.lon.toFixed(3)}°)${region ? ` · surveyed region ${covered ?? ''} loaded` : ' · no terrain survey loaded'}` : 'No site focused — globe overview of the south pole.',
+    comparePlaces.length ? `Comparing: ${comparePlaces.map(p => `${p.name} (${p.lat.toFixed(2)}°,${p.lon.toFixed(2)}°)`).join('; ')}` : '',
+  ].filter(Boolean).join('\n'), [scenario.mode, scenario.view, scenario.heat, scenario.date, scenario.delay, scenario.hours, instant, telemetry, focused, region, covered, comparePlaces]);
 
   const bootLines = [
     { label: 'Lunar globe · LRO imagery', detail: globeReady ? 'ONLINE' : '', status: globeReady ? 'ready' as const : globeError ? 'error' as const : 'loading' as const },
@@ -140,7 +150,10 @@ export default function Navigator() {
         <div className="t-earth"><dt>Earth wobble</dt><dd>{telemetry.earth_lat.toFixed(2)}°, {telemetry.earth_lon.toFixed(2)}°</dd></div>
         <div><dt>Earth range</dt><dd>{Math.round(telemetry.earth_dist_km).toLocaleString()} km</dd></div>
       </dl>
-      <button type="button" className="hud-link" onClick={() => setTourReplay(n => n + 1)}>Replay briefing</button>
+      <div style={{ display: 'flex', gap: 4 }}>
+        <button type="button" className="hud-link" onClick={() => setAskOpen(v => !v)} aria-expanded={askOpen}>Ask AI</button>
+        <button type="button" className="hud-link" onClick={() => setTourReplay(n => n + 1)}>Replay briefing</button>
+      </div>
     </header>
 
     {(leftOpen || !narrow) && <aside className="hud hud-left" data-tour="sites" aria-label="Sites and priorities">
@@ -190,6 +203,7 @@ export default function Navigator() {
     </nav>
 
     <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} /></div>
+    {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} />}
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}
     {!booted && <BootSequence lines={bootLines} onDone={finishBoot} onRetry={() => { mission.retry(); if (globeError) { setGlobeError(false); setGlobeAttempt(n => n + 1); } }} />}
