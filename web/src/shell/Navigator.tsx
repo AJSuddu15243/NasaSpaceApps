@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { BookOpenCheck, Columns3, MapPin, RotateCcw, ScanSearch, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { BookOpenCheck, ChevronDown, ChevronUp, ChevronLeft, Columns3, MapPin, RotateCcw, ScanSearch, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../design';
 import { useShell } from './store';
 import { MAX_SITES, type AnalysisLayer, type Scenario } from './scenario';
@@ -43,6 +43,7 @@ export default function Navigator() {
   const [globeAttempt, setGlobeAttempt] = useState(0);
   const [leftTab, setLeftTab] = useState<'sites' | 'priorities'>('sites');
   const [leftOpen, setLeftOpen] = useState(true);
+  const [bottomOpen, setBottomOpen] = useState(true);
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [tourReplay, setTourReplay] = useState(0);
@@ -166,18 +167,18 @@ export default function Navigator() {
       </TooltipProvider>
     </header>
 
-    {(leftOpen || !narrow) && <aside className="hud hud-left" data-tour="sites" aria-label="Sites and priorities">
+    {leftOpen && <aside className="hud hud-left" data-tour="sites" aria-label="Sites and priorities">
       <div className="hud-tabs" role="tablist" aria-label="Left panel">
         <button type="button" role="tab" aria-selected={leftTab === 'sites'} onClick={() => setLeftTab('sites')}>Sites <span>{scenario.sites.length}/{MAX_SITES}</span></button>
         <button type="button" role="tab" aria-selected={leftTab === 'priorities'} onClick={() => setLeftTab('priorities')}>Priorities</button>
-        {narrow && <button type="button" className="hud-close" aria-label="Close panel" onClick={() => setLeftOpen(false)}>×</button>}
+        <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min" aria-label="Minimize panel" onClick={() => setLeftOpen(false)}><ChevronLeft size={14} /></button></TooltipTrigger><TooltipContent>Minimize</TooltipContent></Tooltip></TooltipProvider>
       </div>
       <div className="hud-scroll" role="tabpanel">
         {leftTab === 'sites' ? <ScenarioPanel scenario={scenario} data={{ sites: catalogue }} change={change} onInspect={id => inspect(id)} />
           : <PrioritiesPanel scenario={scenario} change={change} results={results} />}
       </div>
     </aside>}
-    {narrow && !leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
+    {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
       <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
@@ -214,7 +215,11 @@ export default function Navigator() {
       </div>
     </nav>
 
-    <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} /></div>
+    {bottomOpen
+      ? <div className="hud hud-bottom"><MissionTimeline scenario={scenario} change={change} place={place} />
+          <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min hud-min-bottom" aria-label="Minimize timeline" onClick={() => setBottomOpen(false)}><ChevronDown size={14} /></button></TooltipTrigger><TooltipContent>Minimize timeline</TooltipContent></Tooltip></TooltipProvider>
+        </div>
+      : <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab hud-fab-bottom" aria-label="Show mission timeline" onClick={() => setBottomOpen(true)}><ChevronUp size={16} /></button></TooltipTrigger><TooltipContent>Mission timeline</TooltipContent></Tooltip></TooltipProvider>}
     {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} onReplay={() => setTourReplay(n => n + 1)} />}
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}
