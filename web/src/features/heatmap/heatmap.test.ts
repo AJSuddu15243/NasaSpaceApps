@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { distanceToPsr, gridFactors, scoreCells, topAreas, type PreviewWeights } from './score';
 import { parseGrid, xyToLatLon, type Grid } from './grid';
-import { displayRange, percentile } from './layers';
+import { displayRange, isHeatLayer, layerSpec, layerValues, percentile } from './layers';
+import { weightShares } from '../mission/PrioritiesPanel';
 
 // Fixtures copied from engine/src/score.rs tests (parity: the preview must match the engine).
 const W: PreviewWeights = { sun: 0.35, earth: 0.25, slope: 0.2, crater: 0.1, rock: 0, thermal: 0.1, ice: 0 };
@@ -96,5 +97,26 @@ describe('helpers', () => {
     const v = Float32Array.from([NaN, 0, 1, 2, 3, 100]);
     expect(displayRange(v)[0]).toBe(0);
     expect(percentile(v, 3)).toBe(60);
+  });
+});
+
+describe('window vs long-term layers', () => {
+  const g = flatGrid(4, 4); const n = 16;
+  const window = { sun_frac: new Float32Array(n).fill(0.7), earth_frac: new Float32Array(n).fill(0.4), cold_frac: new Float32Array(n), dark_h: new Float32Array(n) };
+  it('sun/earth read the engine window; sun_lt/earth_lt read the 18.6-yr grid layers', () => {
+    expect(layerValues(g, 'sun', undefined, window)?.[0]).toBeCloseTo(0.7);
+    expect(layerValues(g, 'earth', undefined, window)?.[0]).toBeCloseTo(0.4);
+    expect(layerValues(g, 'sun')).toBeUndefined();
+    expect(layerValues(g, 'sun_lt', undefined, window)?.[0]).toBeCloseTo(0.2);
+    expect(layerValues(g, 'earth_lt')?.[0]).toBeCloseTo(0.5);
+    expect(isHeatLayer('sun')).toBe(true); expect(isHeatLayer('sun_lt')).toBe(true);
+    expect(layerSpec('sun_lt', 'baked').label).toContain('18.6 yr');
+    expect(layerSpec('sun', 'baked').caveat).toContain('Precomputed');
+    expect(layerSpec('score', 'live').status).toBe('real');
+  });
+  it('weight shares count only the factors the shown score uses', () => {
+    const w = { sun: 35, earth: 25, slope: 20, crater: 10, rock: 0, thermal: 10 };
+    expect(weightShares(w, 40, true)).toMatchObject({ sun: 35, thermal: 10, ice: null });
+    expect(weightShares(w, 0, false)).toMatchObject({ sun: 39, thermal: null, ice: 0 });
   });
 });

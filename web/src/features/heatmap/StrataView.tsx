@@ -8,7 +8,7 @@ import type { TerrainAssets } from '../../scene/terrainAssets';
 import type { SouthPoleTile } from '../../scene/types';
 import type { Grid } from './grid';
 import { DotLayer, SPAN } from './DotField';
-import { LAYERS, STACK, SURFACE_LAYERS, layerValues, type HeatLayer } from './layers';
+import { LAYERS, STACK, SURFACE_LAYERS, layerValues, type HeatLayer, type WindowFracs } from './layers';
 
 export const RELIEF = 0.3;
 const GAP = 0.2;
@@ -25,6 +25,8 @@ export interface StrataProps {
   tile: SouthPoleTile;
   assets?: TerrainAssets;
   scores: Float32Array;
+  /** Engine window fractions for the sun/earth slabs; those slabs are absent until they arrive. */
+  window?: WindowFracs;
   marks: number[];
   ranges: Record<HeatLayer, [number, number]>;
   selected: HeatLayer | null;
@@ -217,7 +219,7 @@ function Skirt({ geometry, selected, reducedMotion }: { geometry: BufferGeometry
 }
 
 function Scene(props: StrataProps) {
-  const { grid, tile, assets, scores, marks, ranges, selected, onSelect, onProbe, sunDir, sunLit, reducedMotion, labelRefs, areaLabelRefs, resetKey, contours, exaggeration, overlayOpacity, onImageryError } = props;
+  const { grid, tile, assets, scores, window, marks, ranges, selected, onSelect, onProbe, sunDir, sunLit, reducedMotion, labelRefs, areaLabelRefs, resetKey, contours, exaggeration, overlayOpacity, onImageryError } = props;
   const live: LiveY = useRef({});
   const [lo, hi] = useMemo(() => { let a = Infinity; let b = -Infinity; for (let i = 0; i < tile.elevationM.length; i++) { a = Math.min(a, tile.elevationM[i]); b = Math.max(b, tile.elevationM[i]); } return [a, b]; }, [tile]);
   const surface = useMemo(() => specimenGeometry(tile, RELIEF * exaggeration), [tile, exaggeration]);
@@ -238,7 +240,7 @@ function Scene(props: StrataProps) {
         ? (key !== 'imagery' || assets?.imagery) && (key !== 'slope' || assets?.slope)
           ? <SurfaceSlab key={key} layer={key} index={i} geometry={surface} tile={tile} assets={assets} selected={selected} reducedMotion={reducedMotion} live={live} onSelect={onSelect} onProbe={onProbe} grid={grid} contours={contours} overlayOpacity={overlayOpacity} onImageryError={onImageryError} />
           : null
-        : (() => { const values = layerValues(grid, key, scores); return values ? <DotSlab key={key} layer={key} index={i} grid={grid} tile={tile} values={values} elevation01={elevation01} range={ranges[key]} marks={marks} selected={selected} reducedMotion={reducedMotion} live={live} onSelect={onSelect} onProbe={onProbe} areaLabelRefs={areaLabelRefs} /> : null; })())}
+        : (() => { const values = layerValues(grid, key, scores, window); return values ? <DotSlab key={key} layer={key} index={i} grid={grid} tile={tile} values={values} elevation01={elevation01} range={ranges[key]} marks={marks} selected={selected} reducedMotion={reducedMotion} live={live} onSelect={onSelect} onProbe={onProbe} areaLabelRefs={areaLabelRefs} /> : null; })())}
       <gridHelper args={[SPAN * 1.6, 32, '#66563f', '#211e19']} position-y={-BASE_DEPTH - 0.002} />
     </group>
   </>;

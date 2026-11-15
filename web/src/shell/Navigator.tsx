@@ -17,7 +17,6 @@ import { isGridRegion, siteMaskFor } from '../features/heatmap/grid';
 import { siteParams } from '../engine';
 import { tryTrack } from '../features/timeline/MissionTimeline';
 import { ScienceCompare } from '../features/compare/ScienceCompare';
-import { siteParams } from '../engine';
 import { BootSequence } from '../features/mission/BootSequence';
 import { PrioritiesPanel } from '../features/mission/PrioritiesPanel';
 import { useMissionData, useRegionResults } from '../features/mission/useMissionData';
@@ -174,7 +173,7 @@ export default function Navigator() {
     {narrow && !leftOpen && <button type="button" className="hud-fab" onClick={() => setLeftOpen(true)}><MapPin size={16} /> Sites & priorities</button>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={tryTrack(siteMaskFor(focused, mission.demo.data?.masks, mission.grids.data), mission.demo.data?.table, instant, 1, siteParams(scenario))?.sunLit[0]} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} scores={region.scores} areas={region.areas} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={tryTrack(siteMaskFor(focused, mission.demo.data?.masks, mission.grids.data), mission.demo.data?.table, instant, 1, siteParams(scenario))?.sunLit[0]} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
