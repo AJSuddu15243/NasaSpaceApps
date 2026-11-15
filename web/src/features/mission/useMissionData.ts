@@ -6,6 +6,7 @@ import { loadBakedFracs } from '../heatmap/baked';
 import type { ScoreSource } from '../heatmap/layers';
 import { GRID_PARAMS, scoresFromFracs, topAreas as engineTopAreas, windowCells, windowFactors } from '../../engine';
 import { createPool, type EnginePool } from '../../engine/pool';
+import { ref } from '../../engine/protocol';
 import { scenarioInstant } from '../timeline/MissionTimeline';
 import type { Scenario } from '../../shell/scenario';
 import type { Weights } from '../../contracts/engine-api';
@@ -54,6 +55,28 @@ function enginePool(): Promise<EnginePool> {
   return pool;
 }
 
+const sent = new WeakMap<EnginePool, Map<string, unknown>>();
+/** Caches `value` in every worker once per pool (not per call) and returns the ref the call args use. */
+function cached(p: EnginePool, key: string, value: unknown) {
+  const m = sent.get(p) ?? new Map<string, unknown>(); sent.set(p, m);
+  if (m.get(key) !== value) { p.set(key, value); m.set(key, value); }
+  return ref(key);
+}
+
+/** grid_fracs for one region's window: baked when that start was baked, else live on the worker pool. Null when the
+ * window is no longer wanted, a newer request superseded it, or there is no ephem table. */
+export async function regionFracs(region: GridRegion, grid: Grid, start: string, hours: number, table: DemoData['table'] | undefined,
+  wanted: () => boolean = () => true, getPool: () => Promise<EnginePool> = enginePool, request: typeof fetch = fetch): Promise<{ fracs: Float32Array; source: EngineSource } | null> {
+  const baked = await loadBakedFracs(region, start, hours, grid.header.nx * grid.header.ny, GRID_PARAMS, request).catch(() => null);
+  if (baked) return { fracs: baked, source: 'baked' };
+  if (!table || !grid.bytes || !wanted()) return null;
+  // shortcut: ~0.65 s per region per 336 h in a worker, linear in hours; cap or chunk long windows if 8760 h runs get used.
+  const t_start_h = (Date.parse(start) - Date.parse(table.header.t0_iso)) / 3_600_000;
+  const p = await getPool();
+  const fracs = await p.latest<Float32Array>(`fracs:${region}`, 'grid_fracs', [cached(p, `grid:${region}`, grid.bytes), grid.header, cached(p, 'ephem', table.rows), t_start_h, hours, GRID_PARAMS]);
+  return fracs && { fracs, source: 'live' };
+}
+
 /** Engine grid_fracs → the RegionResult shape the UI already draws (scores, top-3 areas as PreviewArea, factor layers).
  * Throws when the main-thread engine cannot score (caller falls back to the preview). */
 export function engineResult(grid: Grid, preview: Factors, fracs: Float32Array, weights: Weights, slopeLimit: number, source: EngineSource): RegionResult {
@@ -89,17 +112,9 @@ export function useRegionResults(grids: Partial<Record<GridRegion, Grid>>, scena
     for (const region of GRID_REGIONS) {
       const grid = grids[region];
       if (!grid?.bytes) continue;
-      void (async () => {
-        let fracs = await loadBakedFracs(region, start, hours, grid.header.nx * grid.header.ny, GRID_PARAMS).catch(() => null);
-        let source: EngineSource = 'baked';
-        if (!fracs && table && current) {
-          // shortcut: ~0.65 s per region per 336 h in a worker, linear in hours; cap or chunk long windows if 8760 h runs get used.
-          source = 'live';
-          const t_start_h = (Date.parse(start) - Date.parse(table.header.t0_iso)) / 3_600_000;
-          fracs = await (await enginePool()).latest<Float32Array>(`fracs:${region}`, 'grid_fracs', [grid.bytes, grid.header, table.rows, t_start_h, hours, GRID_PARAMS]);
-        }
-        if (current && fracs) setEngine(value => ({ ...value, [region]: { key: `${start}|${hours}`, fracs: fracs!, source } }));
-      })().catch((error: unknown) => console.warn(`engine heatmap for ${region} unavailable; showing the preview`, error));
+      regionFracs(region, grid, start, hours, table, () => current)
+        .then(r => { if (current && r) setEngine(value => ({ ...value, [region]: { key: `${start}|${hours}`, ...r } })); })
+        .catch((error: unknown) => console.warn(`engine heatmap for ${region} unavailable; showing the preview`, error));
     }
     return () => { current = false; };
   }, [grids, table, start, hours]);

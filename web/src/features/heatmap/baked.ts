@@ -70,6 +70,7 @@ let index: Promise<BakedIndex | null> | undefined;
 export async function loadBakedFracs(region: string, startIso: string, hours: number, n: number, params: BakedIndex['params'], request: typeof fetch = fetch): Promise<Float32Array | null> {
   index ??= request('/data/baked/index.json').then(r => r.ok ? r.json() as Promise<BakedIndex> : null).catch(() => null);
   const idx = await index;
+  if (!idx) index = undefined; // a failed or missing index is retried on the next window, not cached for the session
   const start = new Date(startIso).toISOString();
   if (idx?.format !== BAKED_FORMAT || idx.hours !== hours || !idx.regions.includes(region) || !idx.starts.includes(start)) return null;
   if ((Object.keys(idx.params) as (keyof BakedIndex['params'])[]).some(k => idx.params[k] !== params[k])) return null;

@@ -4,7 +4,11 @@ import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { GRID_PARAMS, initEngine, outputHash, scoresFromFracs } from '../../engine';
 import * as wasm from '../../engine/pkg/lunar_engine.js';
-import { engineResult } from '../mission/useMissionData';
+import { createPool, type WorkerLike } from '../../engine/pool';
+import type { WorkerRequest, WorkerResponse } from '../../engine/protocol';
+import { createHandler } from '../../engine/worker';
+import { parseEphem } from '../../shell/validation';
+import { engineResult, regionFracs } from '../mission/useMissionData';
 import { bakedFile, decodeFracs, encodeFracs, loadBakedFracs, type BakedIndex } from './baked';
 import { parseGrid } from './grid';
 import { gridFactors } from './score';
@@ -17,6 +21,23 @@ const bin = file('grid/haworth.bin');
 const grid = parseGrid(JSON.parse(file('grid/haworth.json').toString('utf8')), bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength), 'haworth');
 const n = grid.header.nx * grid.header.ny;
 const stored = new Uint8Array(file(`baked/${bakedFile('haworth', START)}`));
+const ephem = file('ephem.bin');
+const table = parseEphem(JSON.parse(file('ephem.json').toString('utf8')), ephem.buffer.slice(ephem.byteOffset, ephem.byteOffset + ephem.byteLength));
+const hoursSinceT0 = (iso: string) => (Date.parse(iso) - Date.parse(table.header.t0_iso)) / 3.6e6;
+/** Serves public/data, 404 for anything missing. */
+const request = (async (url: string) => {
+  try { return new Response(file(url.replace('/data/', ''))); } catch { return new Response(null, { status: 404 }); }
+}) as typeof fetch;
+
+/** The real worker handler (real WASM) behind an async message boundary; records the messages it gets. */
+class HandlerWorker implements WorkerLike {
+  onmessage: ((e: MessageEvent<WorkerResponse>) => void) | null = null;
+  onerror: ((e: ErrorEvent) => void) | null = null;
+  sent: WorkerRequest[] = [];
+  private handle = createHandler((m) => queueMicrotask(() => this.onmessage?.({ data: m } as MessageEvent<WorkerResponse>)));
+  postMessage(msg: WorkerRequest) { this.sent.push(msg); queueMicrotask(() => this.handle(msg)); }
+  terminate() {}
+}
 
 beforeAll(() => initEngine(wasmBytes));
 
@@ -31,9 +52,7 @@ describe('baked engine heatmap', () => {
     const baked = decodeFracs(stored, n);
     const decodeMs = performance.now() - t;
     t = performance.now();
-    const ephem = file('ephem.bin');
-    const rows = new Float32Array(ephem.buffer.slice(ephem.byteOffset, ephem.byteOffset + ephem.byteLength));
-    const live = wasm.grid_fracs(grid.bytes!, grid.header, rows, (Date.parse(START) - Date.parse('2026-01-01T00:00:00Z')) / 3.6e6, index.hours, GRID_PARAMS);
+    const live = wasm.grid_fracs(grid.bytes!, grid.header, table.rows, hoursSinceT0(START), index.hours, GRID_PARAMS);
     console.info(`haworth 336 h: decode baked ${decodeMs.toFixed(1)} ms, live grid_fracs ${(performance.now() - t).toFixed(0)} ms`);
     expect(index.params).toEqual({ battery_h: GRID_PARAMS.battery_h, survival_temp_k: GRID_PARAMS.survival_temp_k, antenna_margin_deg: GRID_PARAMS.antenna_margin_deg, step_hours: GRID_PARAMS.step_hours });
     for (let i = 0; i < live.length; i++) {
@@ -50,14 +69,27 @@ describe('baked engine heatmap', () => {
   });
 
   it('loads only baked windows with matching params', async () => {
-    const request = (async (url: string) => {
-      const path = url.replace('/data/', '');
-      try { return new Response(file(path)); } catch { return new Response(null, { status: 404 }); }
-    }) as typeof fetch;
     expect(await loadBakedFracs('haworth', START, 336, n, index.params, request)).toEqual(decodeFracs(stored, n));
     expect(await loadBakedFracs('haworth', '2027-01-15T12:00:00Z', 336, n, index.params, request)).toBeNull();
     expect(await loadBakedFracs('haworth', START, 24, n, index.params, request)).toBeNull();
     expect(await loadBakedFracs('haworth', START, 336, n, { ...index.params, survival_temp_k: 200 }, request)).toBeNull();
+  });
+
+  it('falls back to live grid_fracs on the worker pool when the window was not baked', async () => {
+    const workers: HandlerWorker[] = [];
+    const pool = createPool({ module: new WebAssembly.Module(wasmBytes), size: 1, makeWorker: () => { const w = new HandlerWorker(); workers.push(w); return w; } });
+    const unbaked = '2026-11-14T12:00:00.000Z'; // the app's default date
+    const notFound = (async () => new Response(null, { status: 404 })) as unknown as typeof fetch;
+    expect(await regionFracs('haworth', grid, START, 336, table, () => true, () => pool, request)).toMatchObject({ source: 'baked' });
+    const live = await regionFracs('haworth', grid, unbaked, 336, table, () => true, () => pool, notFound);
+    expect(live?.source).toBe('live');
+    expect(live?.fracs).toEqual(wasm.grid_fracs(grid.bytes!, grid.header, table.rows, hoursSinceT0(unbaked), 336, GRID_PARAMS));
+    expect(await regionFracs('haworth', grid, unbaked, 24, table, () => true, () => pool, notFound)).toMatchObject({ source: 'live' });
+    // The ephem table and grid bytes cross to the worker once per pool, not once per call.
+    expect(workers[0].sent.flatMap(m => m.type === 'set' ? [m.key] : [])).toEqual(['grid:haworth', 'ephem']);
+    expect(await regionFracs('haworth', grid, unbaked, 336, table, () => false, () => pool, notFound)).toBeNull();
+    expect(await regionFracs('haworth', grid, unbaked, 336, undefined, () => true, () => pool, notFound)).toBeNull();
+    (await pool).terminate();
   });
 
   it('maps engine areas to the PreviewArea shape', () => {

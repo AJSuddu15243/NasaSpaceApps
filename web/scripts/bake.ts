@@ -1,4 +1,5 @@
 // Bake engine grid_fracs for the demo windows (plan step 8) + a daily site_metrics table, with the shipped WASM.
+// Needs Node >= 23.6 (runs .ts by native type stripping; 22.6+ with --experimental-strip-types).
 // Usage (from web/): pnpm bake   → web/public/data/baked/. Re-run after every wasm rebuild (bake.test.ts guards it).
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,7 +26,7 @@ const REGIONS = ['connecting-ridge', 'haworth', 'malapert-massif'];
 const STARTS = Array.from({ length: 15 }, (_, d) => new Date(Date.parse('2027-01-15T00:00:00Z') + d * DAY).toISOString());
 // Default site-card params (plan step 5): 233 K survival, 48 h battery.
 const SITE = { battery_h: 48, survival_temp_k: 233, antenna_margin_deg: 2, slope_limit_deg: 10, step_hours: 1 };
-const DAILY_FIRST = '2026-11-15T00:00:00.000Z';
+const DAILY_FIRST = new Date(t0).toISOString();
 
 const out = new URL('public/data/baked/', web);
 mkdirSync(out, { recursive: true });

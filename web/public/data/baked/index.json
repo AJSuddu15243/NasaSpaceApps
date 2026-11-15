@@ -80,9 +80,9 @@
   },
   "site_daily": {
     "file": "site-daily.json",
-    "hash": "c7dc1e593ff1ccaf",
-    "first": "2026-11-15T00:00:00.000Z",
-    "days": 1494,
+    "hash": "baff98a638148b63",
+    "first": "2026-01-01T00:00:00.000Z",
+    "days": 1812,
     "hours": 336,
     "params": {
       "battery_h": 48,
