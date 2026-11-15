@@ -28,7 +28,7 @@ const HOURS = 336;
 const GOLDEN_METRICS = 'a9b0d0b052c007c6';
 const GOLDEN_TRACKS = 'd9a03fb45a7268e5';
 // haworth scores at T_START over 24 h with GRID_PARAMS (outputHash is canonical for NaN = excluded cells).
-const GOLDEN_GRID_SCORES = 'c79b76023adf2c25';
+const GOLDEN_GRID_SCORES = '561e62ad50eb711f'; // c79b76023adf2c25 before the far tiles widened to +-165 km (PIPE-8)
 const GOLDEN_HAWORTH_PSR = 33; // 34 before the PSR threshold used the table's max |sun_lat| 1.588 deg
 const GOLDEN_HAWORTH_EXTRAS = { pct_sun_and_earth: 4.166666666666667, survives_night: false, sun_el_at_start_deg: 3.900215572312648, earth_visible_at_start: true };
 

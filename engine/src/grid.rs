@@ -151,6 +151,8 @@ mod tests {
         let (mut h, mut bin) = load("grid/haworth");
         let slope = decode_layer(&h, &bin, GridLayer::SlopeDeg).unwrap();
         let n = (h.nx * h.ny) as usize;
+        // Float32 layers other than the mask (terrain + science).
+        let floats = h.layers.iter().filter(|l| **l != GridLayer::Mask).count();
         let info = GridLayerInfo {
             dtype: Dtype::Int16,
             scale: 0.01,
@@ -170,7 +172,7 @@ mod tests {
         };
         write_layer(&mut h, &mut bin, GridLayer::Mask, info.clone(), &enc(100)).unwrap();
         write_layer(&mut h, &mut bin, GridLayer::Mask, info.clone(), &enc(-50)).unwrap();
-        assert_eq!(bin.len(), n * 6 * 4 + n * 64 * 2);
+        assert_eq!(bin.len(), n * floats * 4 + n * 64 * 2);
         assert_eq!(h.layers.last(), Some(&GridLayer::Mask));
         assert_eq!(
             h.layers.iter().filter(|l| **l == GridLayer::Mask).count(),
@@ -184,7 +186,7 @@ mod tests {
         let back: GridHeader = serde_json::from_str(&serde_json::to_string(&h).unwrap()).unwrap();
         assert_eq!(
             back.layer_info[&GridLayer::Mask].byte_offset,
-            (n * 6 * 4) as u64
+            (n * floats * 4) as u64
         );
     }
 }
