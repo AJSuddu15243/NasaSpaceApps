@@ -10,12 +10,13 @@ export interface TerrainShaderMaterialProps {
   readonly tile?: SouthPoleTile;
   readonly assets?: LunarSceneProps['assets'];
   readonly layer?: LunarSceneProps['layer'];
+  readonly scalarMap?: Texture;
   readonly overlayOpacity?: number;
   readonly onImageryError?: () => void;
 }
 /** Keep Three's shadow pipeline; draw only supplied elevation/slope data. */
 export function TerrainShaderMaterial({ config = DEFAULT_TERRAIN_SHADER_CONFIG, elevationEnabled = false,
-  tile, assets, onImageryError, layer = 'relief', overlayOpacity = 0.85 }: TerrainShaderMaterialProps) {
+  tile, assets, onImageryError, layer = 'relief', scalarMap, overlayOpacity = 0.85 }: TerrainShaderMaterialProps) {
   const [image, setImage] = useState<Texture | null>(null);
   useEffect(() => {
     if (!assets?.imagery) { setImage(null); return; }
@@ -35,10 +36,11 @@ export function TerrainShaderMaterial({ config = DEFAULT_TERRAIN_SHADER_CONFIG, 
     const imageUv = tile && h ? [(tile.x0M - h.x_min) / (h.x_max - h.x_min), (tile.y0M - h.y_min) / (h.y_max - h.y_min),
       (tile.columns - 1) * tile.cellM / (h.x_max - h.x_min), (tile.rows - 1) * tile.cellM / (h.y_max - h.y_min)] : [0, 0, 1, 1];
     const uniforms = { ...createTerrainShaderUniforms(config), uElevationEnabled: { value: elevationEnabled || layer === 'elevation' },
-      uSlopeMap: { value: slope }, uImage: { value: image ?? slope },
+      uSlopeMap: { value: slope }, uImage: { value: image ?? slope }, uScalarMap: { value: scalarMap ?? slope },
       uSlopeUv: { value: new Vector4(...(tile && assets?.slope ? slopeUv(tile, assets.slope) : [0, 0, 1, 1] as const)) },
       uImageUv: { value: new Vector4(...imageUv as [number, number, number, number]) },
-      uLayer: { value: layer === 'slope' && assets?.slope ? 3 : layer === 'imagery' && image ? 1 : 0 },
+      uScalarUv: { value: new Vector4(scalarMap?.offset.x ?? 0, scalarMap?.offset.y ?? 0, scalarMap?.repeat.x ?? 1, scalarMap?.repeat.y ?? 1) },
+      uLayer: { value: scalarMap ? 4 : layer === 'slope' && assets?.slope ? 3 : layer === 'imagery' && image ? 1 : 0 },
       uOverlayOpacity: { value: overlayOpacity } };
     result.onBeforeCompile = shader => {
       Object.assign(shader.uniforms, uniforms);
@@ -47,9 +49,9 @@ export function TerrainShaderMaterial({ config = DEFAULT_TERRAIN_SHADER_CONFIG, 
       shader.fragmentShader = terrainFragmentShader + '\n' + shader.fragmentShader;
       shader.fragmentShader = shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb *= terrainColor();');
     };
-    result.customProgramCacheKey = () => 'lunar-terrain-v3';
+    result.customProgramCacheKey = () => 'lunar-terrain-v4';
     return result;
-  }, [config, elevationEnabled, tile, assets, layer, overlayOpacity, slope, image]);
+  }, [config, elevationEnabled, tile, assets, layer, scalarMap, overlayOpacity, slope, image]);
   useEffect(() => () => material.dispose(), [material]);
   return <primitive object={material} attach="material" />;
 }

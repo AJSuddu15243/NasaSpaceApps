@@ -2,7 +2,7 @@
 @import '@fontsource/geist-mono/latin-400.css';
 @import '@fontsource/geist-mono/latin-500.css';
 
-/* Lunar Window landing — one fixed WebGL stage, scroll scrubs the camera, copy floats over it.
+/* Lunala landing — one fixed WebGL stage, scroll scrubs the camera, copy floats over it.
    Restrained system: Inter for text, Geist Mono for data labels, one warm accent. */
 .lw{
   --ink:#0a0a0b;--paper:#ece8e1;--muted:rgba(236,232,225,.68);--faint:rgba(236,232,225,.45);--line:rgba(236,232,225,.14);

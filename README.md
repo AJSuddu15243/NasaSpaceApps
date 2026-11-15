@@ -1,4 +1,4 @@
-# Lunar Window — Lunar Landing Site Navigator
+# Lunala — Lunar Landing Site Navigator
 
 A NASA Space Apps project: compare south-polar lunar landing sites and dates by
 Sun and Earth geometry against the real terrain horizon — solar power, thermal

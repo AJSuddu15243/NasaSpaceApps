@@ -1,5 +1,6 @@
 import type { TerrainAssets } from './terrainAssets';
 import type { MutableRefObject } from "react";
+import type { Texture } from 'three';
 
 /** A Moon-fixed vector in the R3F scene coordinate system. */
 export type SceneVector = readonly [number, number, number];
@@ -44,6 +45,7 @@ export interface LunarSceneProps {
   readonly view?: '3d' | 'map';
   readonly assets?: TerrainAssets;
   readonly layer?: 'relief' | 'imagery' | 'elevation' | 'slope';
+  readonly scalarMap?: Texture;
   readonly overlayOpacity?: number;
   readonly exaggeration?: 1 | 2;
   readonly onSiteSelect?: (id: string) => void;

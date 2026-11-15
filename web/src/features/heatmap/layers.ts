@@ -1,11 +1,11 @@
 import type { Grid, LayerName } from './grid';
 
 export type HeatLayer = 'score' | 'sun' | 'earth' | 'ice' | 'imagery' | 'elevation' | 'slope' | 'relief' | 'crater' | 'roughness' | 'favorability';
-/** Dock order (most mission-relevant first). */
-export const HEAT_LAYERS: HeatLayer[] = ['score', 'sun', 'earth', 'ice', 'favorability', 'imagery', 'elevation', 'slope', 'relief', 'crater', 'roughness'];
 /** Anatomy stack, bottom → top: the ground first, then what it looks like, its shape, and what it means. */
 export const STACK: HeatLayer[] = ['relief', 'imagery', 'elevation', 'slope', 'crater', 'roughness', 'ice', 'favorability', 'earth', 'sun', 'score'];
-/** Layers drawn as draped terrain surfaces (PR #118 shader); the rest are dot matrices. */
+/** Keep the workspace dock in the same order as the specimen controls. */
+export const HEAT_LAYERS: HeatLayer[] = STACK;
+/** Layers using the source imagery, elevation, or slope terrain shader; other layers use opaque scalar textures. */
 export const SURFACE_LAYERS: HeatLayer[] = ['relief', 'imagery', 'elevation', 'slope'];
 
 /** Data provenance shown on every layer; never implies more than the source supports. */
@@ -35,23 +35,23 @@ const MAZARICO = 'Mazarico et al. 2011 · LOLA · PGDA product 69';
 const LOLA = 'LOLA 80 m DEM (PGDA product 90) → 160 m cells';
 
 export const LAYERS: Record<HeatLayer, LayerSpec> = {
-  score: { key: 'score', label: 'Landing suitability', short: 'Suitability', units: '0–1', status: 'preview', ramp: ['#292115', '#b68142', '#fff0cc'], format: v => v.toFixed(2), better: 'high',
-    explain: 'Your priorities combined into one score per 160 m cell. Steeper than the slope limit = excluded (dim dots).',
+  score: { key: 'score', label: 'Landing suitability', short: 'Suitability', units: '0–1', status: 'preview', ramp: ['#614724', '#b68142', '#fff0cc'], format: v => v.toFixed(2), better: 'high',
+    explain: 'Your priorities combined into one score per 160 m cell. Steeper than the slope limit = excluded (grey cells).',
     caveat: 'Preview computed in the browser with the engine\'s formula on long-term averages. The Rust engine\'s date-specific grid_scores will replace it.',
     citation: 'Formula: engine/src/score.rs · inputs below' },
-  sun: { key: 'sun', label: 'Sunlight (solar power)', short: 'Sunlight', source: 'sun_avg', units: '% of time', status: 'real', ramp: ['#2a1a05', '#d98a1c', '#ffe1a3'], format: pct, better: 'high',
+  sun: { key: 'sun', label: 'Sunlight (solar power)', short: 'Sunlight', source: 'sun_avg', units: '% of time', status: 'real', ramp: ['#744314', '#d98a1c', '#ffe1a3'], format: pct, better: 'high',
     explain: 'How often the Sun is above the local terrain horizon. More sunlight means more solar power and shorter cold nights.',
     caveat: 'Average over the 18.6-year lunar cycle, not your launch date. Move the timeline for date-specific Sun position.',
     citation: MAZARICO },
-  earth: { key: 'earth', label: 'Earth visibility (radio contact)', short: 'Radio', source: 'earth_avg', units: '% of time', status: 'real', ramp: ['#071a2e', '#2f7fd9', '#bfe0ff'], format: pct, better: 'high',
+  earth: { key: 'earth', label: 'Earth visibility (radio contact)', short: 'Radio', source: 'earth_avg', units: '% of time', status: 'real', ramp: ['#24496a', '#2f7fd9', '#bfe0ff'], format: pct, better: 'high',
     explain: 'How often Earth is above the horizon, so a lander can talk directly to the Deep Space Network without a relay.',
     caveat: 'Line-of-sight only: no antenna link budget, no relay satellites. Long-term average; Earth bobs with libration.',
     citation: MAZARICO },
-  ice: { key: 'ice', label: 'Permanent shadow (water-ice traps)', short: 'Ice traps', source: 'psr', units: '% of cell', status: 'real', ramp: ['#04161c', '#1aa6b8', '#b8f6ff'], format: pct, better: 'neither',
+  ice: { key: 'ice', label: 'Permanent shadow (water-ice traps)', short: 'Ice traps', source: 'psr', units: '% of cell', status: 'real', ramp: ['#1c6670', '#1aa6b8', '#b8f6ff'], format: pct, better: 'neither',
     explain: 'Ground that never sees the Sun. Some permanently shadowed cold traps can preserve water ice. This layer measures shadow, not temperature or ice abundance.',
     caveat: 'Shadow is necessary, not proof: ice presence needs neutron/UV/radar data. This map alone cannot establish landing safety or resource accessibility.',
     citation: MAZARICO },
-  favorability: { key: 'favorability', label: 'Ice favorability model', short: 'Ice model', source: 'ice_favorability', units: 'index', status: 'preview', ramp: ['#101d27', '#509bb9', '#e1f5ff'], format: v => v.toFixed(3), better: 'neither',
+  favorability: { key: 'favorability', label: 'Ice favorability model', short: 'Ice model', source: 'ice_favorability', units: 'index', status: 'preview', ramp: ['#375c71', '#509bb9', '#e1f5ff'], format: v => v.toFixed(3), better: 'neither',
     explain: 'A geologic model of where conditions favor ice deposits. Higher index means more favorable in this model.',
     caveat: 'Native resolution 591 m, displayed with nearest-neighbour sampling. Not measured ice presence, concentration, or a date-specific prediction.',
     citation: 'Cannon & Britt 2020 · USGS Ice Favorability Index south pole' },
@@ -71,11 +71,11 @@ export const LAYERS: Record<HeatLayer, LayerSpec> = {
     explain: 'How steep the ground is. Landers tip over on steep ground, so cells over the slope limit are ruled out.',
     caveat: 'Worst 80 m slope inside each 160 m cell (conservative).',
     citation: LOLA },
-  crater: { key: 'crater', label: 'Crater depth', short: 'Craters', source: 'crater_depth_m', units: 'm', status: 'real', ramp: ['#171612', '#948675', '#fff1db'], format: v => `${Math.round(v)} m`, better: 'low',
+  crater: { key: 'crater', label: 'Crater depth', short: 'Craters', source: 'crater_depth_m', units: 'm', status: 'real', ramp: ['#59534b', '#948675', '#fff1db'], format: v => `${Math.round(v)} m`, better: 'low',
     explain: 'Local relief within 500 m after removing the regional tilt. Deep pits hide the horizon and trap cold.',
     caveat: 'Detrended relief, not individual crater rims.',
     citation: LOLA },
-  roughness: { key: 'roughness', label: 'Roughness (rock proxy)', short: 'Roughness', source: 'roughness_deg', units: '°', status: 'proxy', ramp: ['#211a10', '#a78b56', '#fff0cc'], format: v => `${v.toFixed(1)}°`, better: 'low',
+  roughness: { key: 'roughness', label: 'Roughness (rock proxy)', short: 'Roughness', source: 'roughness_deg', units: '°', status: 'proxy', ramp: ['#5a482d', '#a78b56', '#fff0cc'], format: v => `${v.toFixed(1)}°`, better: 'low',
     explain: 'How bumpy the ground is. We use it as a stand-in for rocks because no rock map covers 85–90° S.',
     caveat: 'Proxy, not measured rocks.',
     citation: LOLA },
