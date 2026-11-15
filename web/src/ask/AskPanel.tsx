@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { BookOpen, RotateCcw, Sparkles, X } from 'lucide-react';
 import ActionSearchBar, { type CommandItem } from '../components/kokonutui/action-search-bar';
 import { askLunarAI, AskError } from './ask';
@@ -73,7 +74,7 @@ export function AskPanel({ context, onClose, onReplay }: { context: string; onCl
     />
     {(answer || error) && <div className="ask-answer" role="status" aria-live="polite">
       {error && <p className="ask-error">{error}</p>}
-      {answer && <p className="ask-text">{answer}</p>}
+      {answer && <div className="ask-text"><ReactMarkdown>{answer}</ReactMarkdown></div>}
     </div>}
   </section>;
 }
