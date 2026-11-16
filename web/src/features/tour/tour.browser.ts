@@ -19,28 +19,38 @@ test('skipping onboarding cannot mutate the shared scenario or trap focus', asyn
   await expect(tour).toHaveCount(0);
 });
 
-test('replayed guidance resets its step and restores focus to the replay control', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('lunar-window-tour-v2', 'done'));
+test('Moon and survey guides hand off, replay by view, and restore all layers', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lunar-window-tour-globe-v3', 'done'));
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/app');
   await page.getByRole('button', { name: 'Continue to workspace' }).click({ timeout: 15000 }).catch(() => {});
   await expect(page.locator('.boot')).toHaveCount(0);
-  const replay = page.getByRole('button', { name: 'Replay mission briefing' });
-  await replay.click();
   const tour = page.getByTestId('navigator-tour');
-  await expect(tour.getByRole('heading', { name: 'Choose a place' })).toBeVisible();
+  await page.getByRole('button', { name: 'Replay mission briefing' }).click();
+  for (const heading of ['Choose a place', 'Read the heatmaps', 'Move the date', 'Set your priorities', 'Compare and check the evidence', 'Continue into the survey']) {
+    await expect(tour.getByRole('heading', { name: heading })).toBeVisible();
+    if (heading !== 'Continue into the survey') await tour.getByRole('button', { name: 'Next' }).click();
+  }
+  const moonUrl = page.url();
+  await tour.getByRole('button', { name: 'Explore on my own' }).click();
+  expect(page.url()).toBe(moonUrl);
+  await expect(page.getByRole('button', { name: /Survey Connecting Ridge/ })).toBeVisible();
+  await page.getByRole('button', { name: /Survey Connecting Ridge/ }).click();
+  await expect(tour.getByRole('heading', { name: 'Navigate the survey' })).toBeVisible();
+  for (const heading of ['Inspect elevation', 'Read a cell', 'Understand this site']) {
+    await tour.getByRole('button', { name: 'Next' }).click();
+    await expect(tour.getByRole('heading', { name: heading })).toBeVisible();
+  }
+  await expect(page.getByRole('button', { name: 'Elevation' })).toBeVisible();
+  await tour.getByRole('button', { name: 'Explore all layers' }).click();
+  await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'stack');
+  await page.getByRole('button', { name: 'Replay survey guide' }).click();
+  await expect(tour.getByRole('heading', { name: 'Navigate the survey' })).toBeVisible();
   await tour.getByRole('button', { name: 'Next' }).click();
-  await expect(tour.getByRole('heading', { name: 'Read the heatmaps' })).toBeVisible();
-  await tour.getByRole('button', { name: 'Back' }).click();
-  await expect(tour.getByRole('heading', { name: 'Choose a place' })).toBeVisible();
-  for (let i = 0; i < 4; i++) await tour.getByRole('button', { name: 'Next' }).click();
-  const scenario = page.url();
-  await expect(tour).toContainText('Next: choose a place in Sites');
-  await tour.getByRole('button', { name: 'Start exploring' }).click();
-  await expect(page.getByRole('complementary', { name: 'Sites and priorities' })).toBeVisible();
-  expect(page.url()).toBe(scenario);
-  await expect(replay).toBeFocused();
-  await replay.click();
+  await tour.getByRole('button', { name: 'Skip tour' }).click();
+  await expect(page.locator('.holo-stage')).toHaveAttribute('data-layer', 'stack');
+  await page.getByRole('button', { name: 'Return to globe' }).click();
+  await page.getByRole('button', { name: 'Replay mission briefing' }).click();
   await expect(tour.getByRole('heading', { name: 'Choose a place' })).toBeVisible();
 });
 
