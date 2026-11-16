@@ -1,4 +1,4 @@
-import { Component, lazy, StrictMode, Suspense, useEffect, useState, type ComponentType, type ReactNode } from 'react';
+import { Component, lazy, StrictMode, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useShell } from './shell/store';
 import { writeScenario } from './shell/scenario';
@@ -12,24 +12,21 @@ import.meta.glob('./design/styles.css', { eager: true });
 import './shell/theme.css';
 const Navigator = lazy(() => import('./shell/Navigator'));
 const DocsPage = lazy(() => import('./docs/DocsPage').then(m => ({ default: m.DocsPage })));
-const designModules = import.meta.env.DEV ? import.meta.glob<{ DesignPage: ComponentType }>('./design/DesignPage.tsx') : {};
-const designLoader = Object.values(designModules)[0];
-const Design = designLoader ? lazy(async () => ({ default: (await designLoader()).DesignPage })) : null;
 function App() {
   const { path, scenario, navigate } = useShell();
   const [share, setShare] = useState('');
   const [shareUrl, setShareUrl] = useState('');
   useEffect(() => { if (path.startsWith('/app')) preloadTerrain(); }, [path]);
-  useEffect(() => { document.title = `${path.startsWith('/app') ? 'Workspace' : path === '/design' ? 'Design reference' : path === '/docs' ? 'Documentation' : 'Lunar Landing Site Navigator'} · Lunala`; }, [path]);
+  useEffect(() => { document.title = `${path.startsWith('/app') ? 'Workspace' : path === '/docs' ? 'Documentation' : 'Lunar Landing Site Navigator'} · Lunala`; }, [path]);
   async function copyLink() {
     const url = `${location.origin}/app${writeScenario(scenario)}`;
     try { await navigator.clipboard.writeText(url); setShare('Scenario link copied.'); setShareUrl(''); }
     catch { setShare('Copy this scenario link:'); setShareUrl(url); }
   }
   if (path === '/') return <><a className="skip-link" href="#main">Skip to content</a><LandingPage onOpen={() => navigate('/app')}/></>;
-  return <><a className="skip-link" href="#main">Skip to content</a><header className="app-header"><a className="wordmark" href="/" onClick={e => { e.preventDefault(); navigate('/'); }}><img src={mark} alt=""/><span><b>Lunala</b><small>LUNAR LANDING SITE NAVIGATOR</small></span></a><nav aria-label="Main navigation"><a href="/app" aria-current={path === '/app' || path === '/app/' ? 'page' : undefined} onClick={e => { if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate('/app'); } }}>Workspace</a><a href="/docs" aria-current={path === '/docs' || path === '/docs/' ? 'page' : undefined} onClick={e => { if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate('/docs'); } }}>Docs</a>{Design && <a href="/design">Design</a>}<Button variant="outline" onClick={copyLink}>Share</Button></nav></header>
+  return <><a className="skip-link" href="#main">Skip to content</a><header className="app-header"><a className="wordmark" href="/" onClick={e => { e.preventDefault(); navigate('/'); }}><img src={mark} alt=""/><span><b>Lunala</b><small>LUNAR LANDING SITE NAVIGATOR</small></span></a><nav aria-label="Main navigation"><a href="/app" aria-current={path === '/app' || path === '/app/' ? 'page' : undefined} onClick={e => { if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate('/app'); } }}>Workspace</a><a href="/docs" aria-current={path === '/docs' || path === '/docs/' ? 'page' : undefined} onClick={e => { if (e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey) { e.preventDefault(); navigate('/docs'); } }}>Docs</a><Button variant="outline" onClick={copyLink}>Share</Button></nav></header>
     {share && <div className="share-notice"><p role="status">{share}</p>{shareUrl && <input aria-label="Scenario link" value={shareUrl} readOnly onFocus={event => event.target.select()}/>}<Button variant="ghost" onClick={() => { setShare(''); setShareUrl(''); }}>Dismiss</Button></div>}
-    <Suspense fallback={<main id="main" className="workspace" role="status">Loading workspace…</main>}>{path === '/design' && Design ? <Suspense fallback={<main id="main" className="workspace" role="status">Loading design reference…</main>}><Design/></Suspense> : path === '/docs' || path === '/docs/' ? <DocsPage/> : path === '/app' || path === '/app/' ? <Navigator/> : <main id="main" className="workspace"><h1>Page not found</h1><p>This address is not part of the navigator.</p><Button onClick={() => navigate('/app')}>Open workspace</Button></main>}</Suspense>
+    <Suspense fallback={<main id="main" className="workspace" role="status">Loading workspace…</main>}>{path === '/docs' || path === '/docs/' ? <DocsPage/> : path === '/app' || path === '/app/' ? <Navigator/> : <main id="main" className="workspace"><h1>Page not found</h1><p>This address is not part of the navigator.</p><Button onClick={() => navigate('/app')}>Open workspace</Button></main>}</Suspense>
     <footer className="app-footer"><span>NASA Space Apps project · independent team prototype</span><span>UTC throughout · LOLA terrain · JPL Horizons · Rust/WASM engine</span></footer>
   </>;
 }
