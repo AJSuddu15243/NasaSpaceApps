@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 test('docking real terrain layers preserves the scene and mission time', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('lunar-window-tour-v2', 'done'));
+  await page.addInitScript(() => { localStorage.setItem('lunar-window-tour-globe-v3', 'done'); localStorage.setItem('lunar-window-tour-layers-v3', 'done'); });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await page.goto('/app?focus=malapert-massif');

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('lunar-window-tour-v2', 'done'));
+  await page.addInitScript(() => { localStorage.setItem('lunar-window-tour-globe-v3', 'done'); localStorage.setItem('lunar-window-tour-layers-v3', 'done'); });
   await page.emulateMedia({ reducedMotion: 'reduce' });
 });
 async function enter(page: import('@playwright/test').Page, url = '/app') {

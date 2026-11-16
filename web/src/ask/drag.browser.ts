@@ -3,7 +3,8 @@ import { expect, test, type Page } from '@playwright/test';
 async function openAssistant(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.addInitScript(() => {
-    localStorage.setItem('lunar-window-tour-v2', 'done');
+    localStorage.setItem('lunar-window-tour-globe-v3', 'done');
+    localStorage.setItem('lunar-window-tour-layers-v3', 'done');
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof original>) {
       return String(args[0]).includes('webgl') ? null : original.apply(this, args);
