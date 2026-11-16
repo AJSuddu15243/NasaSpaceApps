@@ -7,7 +7,6 @@ import type { SiteMask } from '../contracts/site-mask';
 import { DARK_RANGE, FACTS, SUN_PEAK_RANGE } from './facts';
 import { earthMoonComparison, explainers } from './explainers';
 import glossary from './glossary.json';
-import { sample } from '../design/preview/mock';
 
 const data = (p: string) => new URL(`../../public/data/${p}`, import.meta.url);
 const buf = (p: string) => { const b = readFileSync(data(p)); return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength); };
@@ -51,10 +50,4 @@ it('the copy quotes the pinned numbers', () => {
   expect(terms['sub-solar']).toContain(`±${FACTS.subSolarLatDeg}°`);
   expect(terms['sub-earth']).toContain(`±${FACTS.earthLatDeg}° latitude and ±${FACTS.earthLonDeg}° longitude`);
   expect(terms['solar-elevation']).toContain(SUN_PEAK_RANGE);
-});
-
-it('the design-page sample is the default-window engine result for Connecting ridge', () => {
-  const mask = JSON.parse(readFileSync(data('masks/connecting-ridge.json'), 'utf8')) as SiteMask;
-  const m = site_metrics(mask, table, '2027-01-15T00:00:00.000Z', Number(sample.windowHours), PARAMS);
-  expect([m.pct_lit.toFixed(1), m.pct_earth_visible.toFixed(1)]).toEqual([sample.sunlight, sample.contact]);
 });

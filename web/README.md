@@ -45,8 +45,8 @@ replace the mock without changing UI callers.
 
 ## Integration boundaries
 
-- WEB-2 is optional at build time. When `src/design/` exists, its stylesheet,
-  components, Tailwind preset, and development-only `/design` page are used.
+- The shared `src/design/` components, tokens, stylesheet and Tailwind preset
+  support the workspace and documentation. There is no `/design` page.
 - LND-1 assets remain in their own PR. The shell uses its approved name and copy;
   the favicon/mark can be imported after that PR merges.
 - Scene and feature owners mount their work in the labelled centre and side panels.
