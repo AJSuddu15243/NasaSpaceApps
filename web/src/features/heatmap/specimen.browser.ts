@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test.beforeEach(async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.addInitScript(() => {
-    localStorage.setItem('lunar-window-tour-v2', 'done');
+    localStorage.setItem('lunar-window-tour-globe-v3', 'done');
+    localStorage.setItem('lunar-window-tour-layers-v3', 'done');
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof original>) {
       if (String(args[0]).includes('webgl')) return null;
