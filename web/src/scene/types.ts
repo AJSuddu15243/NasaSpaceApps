@@ -40,6 +40,7 @@ export interface SceneSiteMarker {
 }
 
 export interface LunarSceneProps {
+  readonly onProbe?: (u: number, v: number) => void;
   readonly onImageryError?: () => void;
   readonly active?: boolean;
   readonly view?: '3d' | 'map';
