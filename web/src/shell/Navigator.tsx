@@ -49,6 +49,7 @@ export default function Navigator() {
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [tourReplay, setTourReplay] = useState(0);
+  const [tourReset, setTourReset] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [askOpen, setAskOpen] = useState(false);
   const [solgCast, setSolgCast] = useState(false);
@@ -154,13 +155,22 @@ export default function Navigator() {
   ];
   // Bump only when the stage shows another layer: a bump per slider tick would clear the probe on every step.
   const change = useCallback((patch: Partial<Scenario>, replace?: boolean) => { if ('heat' in patch && patch.heat !== shownHeat) setHeatPick(n => n + 1); setScenario(patch, replace); }, [setScenario, shownHeat]);
-  const tourStep = useCallback((anchor: string) => { setLeftOpen(anchor === 'sites'); if (anchor === 'sites') setLeftTab('sites'); }, []);
+  const tourStep = useCallback((anchor: string) => {
+    if (anchor === 'sites' || anchor === 'priorities') { setLeftOpen(true); setLeftTab(anchor); }
+    if (anchor === 'terrain-sublayers') { setHeatPick(n => n + 1); setScenario({ heat: 'elevation' }, true); }
+    if (anchor === 'timeline') setBottomOpen(true);
+  }, [setScenario]);
+  const dismissTour = useCallback(() => {
+    setCompareOpen(false);
+    setScenario({ view: '3d' }, true);
+    setTourReset(n => n + 1);
+  }, [setScenario]);
   const finishBoot = useCallback(() => setBooted(true), []);
   const globeOnline = useCallback(() => setGlobeReady(true), []);
 
   return <main id="main" className={`mission ${focused ? 'mission-focused' : ''} ${region ? 'mission-holo' : ''} ${booted ? 'mission-booted' : ''}`} tabIndex={-1}>
     <div className="mission-stars" aria-hidden="true" />
-    <div className="mission-globe"><MoonGlobeView footprint={footprint} active={!region} key={globeAttempt} onError={() => setGlobeError(true)} markers={markers} overview={POLE_VIEW} focus={focused} focusAltitude={region ? 0.3 : 0.8} onReady={globeOnline} controlsHidden={!!region} onInspect={point => inspect(point.id ?? customSiteId(point.lat, point.lon))} /></div>
+    <div className="mission-globe" data-tour="globe"><MoonGlobeView footprint={footprint} active={!region} key={globeAttempt} onError={() => setGlobeError(true)} markers={markers} overview={POLE_VIEW} focus={focused} focusAltitude={region ? 0.3 : 0.8} onReady={globeOnline} controlsHidden={!!region} onInspect={point => inspect(point.id ?? customSiteId(point.lat, point.lon))} /></div>
     <div className="mission-vignette" aria-hidden="true" />
 
     <header className="hud hud-top">
@@ -178,7 +188,7 @@ export default function Navigator() {
         <div className="hud-actions">
           <Tooltip><TooltipTrigger asChild><button type="button" className={`hud-icon solg-btn${solgCast ? ' is-casting' : ''}`} aria-label="Ask Solgaleo, the lunar copilot" aria-expanded={askOpen}
             onClick={() => { setSolgCast(true); setTimeout(() => setSolgCast(false), 750); setAskOpen(v => !v); }}><Sparkles size={15} /></button></TooltipTrigger><TooltipContent>Solgaleo · ask about what you see</TooltipContent></Tooltip>
-          <Tooltip><TooltipTrigger asChild><button type="button" className="hud-icon" aria-label="Replay mission briefing" onClick={() => setTourReplay(n => n + 1)}><RotateCcw size={15} /></button></TooltipTrigger><TooltipContent>Replay the mission briefing tour</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" className="hud-icon" aria-label={region && focused ? 'Replay survey guide' : 'Replay mission briefing'} onClick={() => setTourReplay(n => n + 1)}><RotateCcw size={15} /></button></TooltipTrigger><TooltipContent>{region && focused ? 'Replay the survey guide' : 'Replay the mission briefing tour'}</TooltipContent></Tooltip>
         </div>
       </TooltipProvider>
     </header>
@@ -187,7 +197,7 @@ export default function Navigator() {
       <div className="hud-tabs">
         <div className="hud-tab-buttons" role="tablist" aria-label="Left panel">
           <button type="button" role="tab" aria-selected={leftTab === 'sites'} onClick={() => setLeftTab('sites')}>Sites <span>{scenario.sites.length}/{MAX_SITES}</span></button>
-          <button type="button" role="tab" aria-selected={leftTab === 'priorities'} onClick={() => setLeftTab('priorities')}>Priorities</button>
+          <button type="button" role="tab" data-tour="priorities" aria-selected={leftTab === 'priorities'} onClick={() => setLeftTab('priorities')}>Priorities</button>
         </div>
         <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min" aria-label="Minimize panel" onClick={() => setLeftOpen(false)}><ChevronLeft size={14} /></button></TooltipTrigger><TooltipContent>Minimize</TooltipContent></Tooltip></TooltipProvider>
       </div>
@@ -199,10 +209,10 @@ export default function Navigator() {
     {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} tourResetKey={tourReset} />
     </div>}
 
-    {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
+    {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" data-tour="survey-analysis" key={`a-${focused.id}`}>
       <AnalysisPanel location={focused} date={instant} layer={scenario.layer ?? 'terrain'} mode={scenario.mode} region={region} slopeLimit={scenario.slopeLimit}
         mask={focusedMask} table={table} params={engineParams}
         onLayerChange={layer => setScenario({ layer }, true)} onClose={closeAnalysis} onAdd={addFocused} canAdd={scenario.sites.length < MAX_SITES && !scenario.sites.includes(focused.id)} feedback={feedback} />
@@ -217,7 +227,7 @@ export default function Navigator() {
       <p className="eyebrow">LUNAR SOUTH POLE · ARTEMIS III REGIONS</p>
       <h1>Find your<br /><em>window.</em></h1>
       <p>Where should we land, and when? Sunlight for power, a line of sight to Earth for radio, safe ground, and water ice nearby, all moving with the date.</p>
-      <button type="button" onClick={() => inspect('connecting-ridge', 'terrain')}>Survey Connecting Ridge <span aria-hidden="true">↗</span></button>
+      <button type="button" data-tour="survey" onClick={() => inspect('connecting-ridge', 'terrain')}>Survey Connecting Ridge <span aria-hidden="true">↗</span></button>
       <small>or click a pulsing region on the Moon</small>
     </section>}
 
@@ -226,10 +236,10 @@ export default function Navigator() {
         {dockLayers(scenario.weights, scenario.ice).map(dock => { const key = dock === 'terrain' ? (TERRAIN_LAYERS.includes(scenario.heat) ? scenario.heat : 'slope') : dock;
           return <button type="button" key={dock} aria-pressed={!!region && (dock === 'terrain' ? !!shownHeat && TERRAIN_LAYERS.includes(shownHeat) : shownHeat === key)} onClick={() => chooseHeat(key)} title={dock === 'terrain' ? 'Terrain: slope, elevation and relief' : LAYERS[key].label}><i style={{ background: LAYERS[key].ramp[2] }} />{dock === 'terrain' ? 'Terrain' : LAYERS[key].short}</button>; })}
       </div>
-      <div className="dock-tools" data-tour="evidence">
+      <div className="dock-tools">
         <TooltipProvider delayDuration={200}>
-          <Tooltip><TooltipTrigger asChild><button type="button" aria-expanded={compareOpen} onClick={() => setCompareOpen(v => !v)} aria-label={`Compare sites (${scenario.sites.length})`}><Columns3 size={15} /><span className="dock-count">{scenario.sites.length}</span></button></TooltipTrigger><TooltipContent>Compare sites ({scenario.sites.length}/{MAX_SITES})</TooltipContent></Tooltip>
-          <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => { inspect(focused?.id ?? 'connecting-ridge', 'evidence'); setAnalysisOpen(true); }} aria-label="Evidence"><BookOpenCheck size={15} /></button></TooltipTrigger><TooltipContent>Evidence &amp; sources</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" aria-expanded={compareOpen} onClick={() => setCompareOpen(v => !v)} data-tour="compare" aria-label={`Compare sites (${scenario.sites.length})`}><Columns3 size={15} /><span className="dock-count">{scenario.sites.length}</span></button></TooltipTrigger><TooltipContent>Compare sites ({scenario.sites.length}/{MAX_SITES})</TooltipContent></Tooltip>
+          <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => { inspect(focused?.id ?? 'connecting-ridge', 'evidence'); setAnalysisOpen(true); }} data-tour="evidence" aria-label="Evidence"><BookOpenCheck size={15} /></button></TooltipTrigger><TooltipContent>Evidence &amp; sources</TooltipContent></Tooltip>
           <Tooltip><TooltipTrigger asChild><button type="button" className="dock-priorities" onClick={() => { setLeftTab('priorities'); setLeftOpen(true); }} aria-label="Mission priorities"><SlidersHorizontal size={15} /></button></TooltipTrigger><TooltipContent>Mission priorities</TooltipContent></Tooltip>
         </TooltipProvider>
       </div>
@@ -244,6 +254,6 @@ export default function Navigator() {
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}
     {!booted && <BootSequence lines={bootLines} onDone={finishBoot} onRetry={() => { mission.retry(); if (globeError) { setGlobeError(false); setGlobeAttempt(n => n + 1); } }} />}
-    <NavigatorTour enabled={booted} replayKey={tourReplay} onStep={tourStep} />
+    <NavigatorTour key={region && focused ? 'layers' : 'globe'} kind={region && focused ? 'layers' : 'globe'} enabled={booted} replayKey={tourReplay} onStep={tourStep} onDismiss={dismissTour} />
   </main>;
 }

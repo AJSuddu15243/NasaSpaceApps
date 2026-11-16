@@ -29,14 +29,14 @@ export function shownLayer(prev: HeatRequest, next: HeatRequest, current: HeatLa
 }
 
 /** Real terrain is the persistent specimen; scientific overlays expand above it and dock on selection. */
-export function HoloStage({ name, grid, heat, heatPick = 0, onShown, scores, source = 'preview', window, computing = false, slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose }: {
+export function HoloStage({ name, grid, heat, heatPick = 0, onShown, scores, source = 'preview', window, computing = false, slopeLimit, reducedMotion, date, sunLit, view, onView, onHeat, onClose, tourResetKey = 0 }: {
   name: string; grid: Grid; heat: HeatLayer;
   /** Bumped by the parent on every explicit heat request; a pick made before this stage mounted opens on that layer. */
   heatPick?: number; onShown?: (layer: HeatLayer | null) => void; scores: Float32Array; source?: ScoreSource; window?: WindowFracs; computing?: boolean; slopeLimit: number; reducedMotion: boolean; date: string;
   /** Engine sun_lit (0..1, visible solar disk over the terrain horizon) at the focused place and playhead; undefined = plane test only. */
   sunLit?: number;
   view: import('../../shell/scenario').View; onView: (view: 'map' | '3d') => void; onClose: () => void;
-  onHeat: (layer: HeatLayer) => void;
+  onHeat: (layer: HeatLayer) => void; tourResetKey?: number;
 }) {
   const [selected, setSelected] = useState<HeatLayer | null>(() => new URLSearchParams(location.search).has('heat') ? heat : null);
   const [probe, setProbe] = useState<number | null>(null);
@@ -45,6 +45,12 @@ export function HoloStage({ name, grid, heat, heatPick = 0, onShown, scores, sou
   const [exaggeration, setExaggeration] = useState<1 | 2>(1);
   const [opacity, setOpacity] = useState(0.9);
   const [stackCount, setStackCount] = useState(1);
+  const previousTourReset = useRef(tourResetKey);
+  useEffect(() => {
+    if (previousTourReset.current === tourResetKey) return;
+    previousTourReset.current = tourResetKey;
+    setSelected(null); setStackCount(1); setProbe(null);
+  }, [tourResetKey]);
   const map = view === 'map';
   const [failedImage, setFailedImage] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -107,7 +113,7 @@ export function HoloStage({ name, grid, heat, heatPick = 0, onShown, scores, sou
       <span className="holo-eyebrow">LUNAR SPECIMEN / {name.toUpperCase()}</span>
       <h2>{selected ? spec.label : 'Anatomy of a landing site'}</h2>
       <span className={`holo-status holo-status-${spec.status}`}>{windowLayer(selected) ? (source === 'preview' ? (computing ? 'PREVIEW · ENGINE COMPUTING' : 'PREVIEW · ENGINE UNAVAILABLE') : `RUST/WASM ENGINE · ${source.toUpperCase()}`) : spec.status === 'proxy' ? 'PROXY' : selected === 'favorability' ? 'USGS GEOLOGIC MODEL' : 'NASA SOURCE DATA'}</span>
-      <TooltipProvider delayDuration={200}><div className="specimen-controls" role="toolbar" aria-label="Terrain controls">
+      <TooltipProvider delayDuration={200}><div className="specimen-controls" data-tour="terrain-controls" role="toolbar" aria-label="Terrain controls">
         <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => { setStackCount(1); setSelected(null); onView('3d'); setProbe(null); }} aria-pressed={selected === null && !map} aria-label="All layers"><Layers size={14} /><span>All layers</span></button></TooltipTrigger><TooltipContent>Show every heatmap layer stacked in 3D</TooltipContent></Tooltip>
         <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => onView(map ? '3d' : 'map')} aria-pressed={map} aria-label={map ? 'Switch to 3D view' : 'Polar map'}>{map ? <Mountain size={14} /> : <MapIcon size={14} />}<span>{map ? 'Terrain 3D' : 'Polar map'}</span></button></TooltipTrigger><TooltipContent>{map ? 'Back to the 3D terrain' : 'Flat top-down polar map of this region'}</TooltipContent></Tooltip>
         <Tooltip><TooltipTrigger asChild><button type="button" onClick={() => setReset(n => n + 1)} aria-label="Reset view"><RotateCcw size={14} /><span>Reset view</span></button></TooltipTrigger><TooltipContent>Reset camera</TooltipContent></Tooltip>
@@ -135,9 +141,9 @@ export function HoloStage({ name, grid, heat, heatPick = 0, onShown, scores, sou
       {!map && selected === null && terrain.ready && gl && <div className="strata-labels" aria-label="Exploded terrain layers">{STACK.map((key, i) => <button key={key} ref={el => { labels.current[i] = el; }} disabled={!available(key)} onClick={() => select(key)}><span>{String(i + 1).padStart(2, '0')}</span>{LAYERS[key].short}{!available(key) && pending(key)}</button>)}</div>}
     </div>
     <footer className="holo-footer">
-      {selected && TERRAIN_LAYERS.includes(selected) && <div className="terrain-switch" role="group" aria-label="Terrain layer">{TERRAIN_LAYERS.map(key => <button type="button" key={key} disabled={!available(key)} aria-pressed={selected === key} onClick={() => select(key)}>{LAYERS[key].short}</button>)}</div>}
+      {selected && TERRAIN_LAYERS.includes(selected) && <div className="terrain-switch" data-tour="terrain-sublayers" role="group" aria-label="Terrain layer">{TERRAIN_LAYERS.map(key => <button type="button" key={key} disabled={!available(key)} aria-pressed={selected === key} onClick={() => select(key)}>{LAYERS[key].short}</button>)}</div>}
       {selected && <>{!['imagery', 'relief'].includes(selected) && <div className="holo-legend"><span>{spec.format(ranges[selected][0])}</span><i style={{ background: `linear-gradient(90deg, ${legendRamp.join(',')})` }}/><span>{spec.format(ranges[selected][1])}{selected === "slope" ? "+" : ""}</span>{selected === 'slope' && <span>White contour: 10° reference · mission limit: {slopeLimit}°</span>}</div>}<p className="specimen-explain">{spec.explain} <span>{spec.caveat}</span></p></>}
-      <p className="holo-probe" role="status">{cell ? <><b>{formatCoordinates(cell.lat, cell.lon)}</b><span>{cell.value !== undefined && Number.isFinite(cell.value) ? spec.format(cell.value) : 'No scalar value for this layer'}</span></> : <span>{selected ? 'Drag to orbit · scroll/pinch to zoom · hover to probe' : 'Choose a floating layer to settle it onto the ground'}</span>}</p>
+      <p className="holo-probe" data-tour="survey-readout" role="status">{cell ? <><b>{formatCoordinates(cell.lat, cell.lon)}</b><span>{cell.value !== undefined && Number.isFinite(cell.value) ? spec.format(cell.value) : 'No scalar value for this layer'}</span></> : <span>{selected ? 'Drag to orbit · scroll/pinch to zoom · hover to probe' : 'Choose a floating layer to settle it onto the ground'}</span>}</p>
       <label className="specimen-cell">Inspect cell <input aria-label="Inspect grid cell" type="number" min={0} max={grid.header.nx * grid.header.ny - 1} value={probe ?? ''} placeholder={`0–${grid.header.nx * grid.header.ny - 1}`} onChange={e => { const n = e.target.valueAsNumber; setProbe(Number.isInteger(n) && n >= 0 && n < grid.header.nx * grid.header.ny ? n : null); }}/></label>
       <p className="specimen-caption">LOLA 80 m terrain · science cells 160 m · relief normalized for display, ×{exaggeration} · cutaway depth illustrative, no subsurface measurements.</p>
       {terrain.assets?.notices.map(note => <p className="specimen-caption" key={note}>{note}</p>)}
