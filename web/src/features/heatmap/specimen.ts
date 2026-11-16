@@ -53,7 +53,7 @@ export function specimenGeometry(tile: SouthPoleTile, relief: number): BufferGeo
 /** A shared 160 m surface for the scalar layers, sampled from the 80 m relief at each science-cell centre. */
 export function specimenScalarGeometry(grid: Grid, tile: SouthPoleTile, relief: number, lo: number, hi: number): BufferGeometry {
   const { nx, ny, x0, y0, cell_m } = grid.header;
-  const pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2);
+  const pos = new Float32Array(nx * ny * 3), uv = new Float32Array(nx * ny * 2), elev = new Float32Array(nx * ny);
   const width = (tile.columns - 1) * tile.cellM, height = (tile.rows - 1) * tile.cellM;
   for (let row = 0; row < ny; row++) for (let col = 0; col < nx; col++) {
     const i = row * nx + col;
@@ -66,6 +66,7 @@ export function specimenScalarGeometry(grid: Grid, tile: SouthPoleTile, relief: 
     const low = tile.elevationM[a] * (1 - tx) + tile.elevationM[a + 1] * tx;
     const high = tile.elevationM[a + tile.columns] * (1 - tx) + tile.elevationM[a + tile.columns + 1] * tx;
     const elevation = low * (1 - ty) + high * ty;
+    elev[i] = elevation;
     pos.set([(x0 + col * cell_m - tile.x0M) / width * 2 - 1, (elevation - lo) / Math.max(1, hi - lo) * relief, -((y0 + row * cell_m - tile.y0M) / height * 2 - 1)], i * 3);
     uv.set([(x0 + col * cell_m - tile.x0M) / width, (y0 + row * cell_m - tile.y0M) / height], i * 2);
   }
@@ -78,6 +79,7 @@ export function specimenScalarGeometry(grid: Grid, tile: SouthPoleTile, relief: 
   const geometry = new BufferGeometry();
   geometry.setAttribute('position', new BufferAttribute(pos, 3));
   geometry.setAttribute('uv', new BufferAttribute(uv, 2));
+  geometry.setAttribute('elevationM', new BufferAttribute(elev, 1)); // drives the 100 m contours
   geometry.setIndex(new BufferAttribute(indices, 1));
   return geometry;
 }

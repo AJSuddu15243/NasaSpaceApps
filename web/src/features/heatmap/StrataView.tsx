@@ -1,6 +1,6 @@
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
-import { BufferAttribute, BufferGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, PerspectiveCamera, ShaderMaterial, Vector3, type Material } from 'three';
+import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, Mesh, MeshBasicMaterial, PerspectiveCamera, ShaderMaterial, Vector3, type Material } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { specimenGeometry, specimenScalarGeometry, probeIndex } from './specimen';
 import { TerrainShaderMaterial } from '../../scene/shaders';
@@ -129,10 +129,32 @@ function SurfaceSlab({ layer, index, geometry, tile, assets, selected, reducedMo
   </mesh>;
 }
 
-function ScalarSlab({ layer, index, geometry, grid, tile, values, range, selected, live, onSelect, onProbe }: { layer: HeatLayer; index: number; geometry: BufferGeometry; grid: Grid; tile: SouthPoleTile; values: Float32Array; range: [number, number]; selected: HeatLayer | null; live: LiveY; onSelect: (l: HeatLayer) => void; onProbe: (i: number | null) => void }) {
+/** Unlit scalar colours plus the same 100 m elevation contours the terrain shader draws. */
+function contourMaterial(map: DataTexture): MeshBasicMaterial {
+  const material = new MeshBasicMaterial({ map, side: DoubleSide });
+  const showContours = { value: false };
+  material.userData.showContours = showContours;
+  material.onBeforeCompile = shader => {
+    shader.uniforms.uShowContours = showContours;
+    shader.vertexShader = 'attribute float elevationM; varying float vElevationM;\n' + shader.vertexShader
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvElevationM = elevationM;');
+    shader.fragmentShader = 'uniform bool uShowContours; varying float vElevationM;\n' + shader.fragmentShader
+      .replace('#include <map_fragment>', `#include <map_fragment>
+  if (uShowContours) {
+    float phase = mod(vElevationM, 100.0);
+    float line = 1.0 - smoothstep(0.0, max(fwidth(vElevationM), 0.4), min(phase, 100.0 - phase));
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.04), line * 0.75);
+  }`);
+  };
+  material.customProgramCacheKey = () => 'scalar-contours-v1';
+  return material;
+}
+
+function ScalarSlab({ layer, index, geometry, grid, tile, values, range, selected, live, onSelect, onProbe, contours }: { layer: HeatLayer; index: number; geometry: BufferGeometry; grid: Grid; tile: SouthPoleTile; values: Float32Array; range: [number, number]; selected: HeatLayer | null; live: LiveY; onSelect: (l: HeatLayer) => void; onProbe: (i: number | null) => void; contours: boolean }) {
   const texture = useMemo(() => scalarTexture(grid, tile, values, range, LAYERS[layer].ramp), [grid, tile, values, range[0], range[1], layer]);
-  const material = useMemo(() => new MeshBasicMaterial({ map: texture, side: DoubleSide }), [texture]);
+  const material = useMemo(() => contourMaterial(texture), [texture]);
   useEffect(() => () => { material.dispose(); texture.dispose(); }, [material, texture]);
+  useEffect(() => { (material.userData.showContours as { value: boolean }).value = contours; }, [material, contours]);
   const y = selected === null ? index * GAP : 0.006;
   useEffect(() => {
     live.current[layer] = { y, o: 1 };
@@ -229,7 +251,7 @@ function Scene(props: StrataProps) {
         ? (key !== 'imagery' || assets?.imagery) && (key !== 'slope' || assets?.slope)
           ? <SurfaceSlab key={key} layer={key} index={i} geometry={surface} tile={tile} assets={assets} selected={selected} reducedMotion={reducedMotion} live={live} onSelect={onSelect} onProbe={onProbe} grid={grid} contours={contours} overlayOpacity={overlayOpacity} onImageryError={onImageryError} />
           : null
-        : (() => { const values = layerValues(grid, key, scores, window); return values ? <ScalarSlab key={key} layer={key} index={i} geometry={scalarSurface} grid={grid} tile={tile} values={values} range={ranges[key]} selected={selected} live={live} onSelect={onSelect} onProbe={onProbe} /> : null; })()))}
+        : (() => { const values = layerValues(grid, key, scores, window); return values ? <ScalarSlab key={key} layer={key} index={i} geometry={scalarSurface} grid={grid} tile={tile} values={values} range={ranges[key]} selected={selected} live={live} onSelect={onSelect} onProbe={onProbe} contours={contours} /> : null; })()))}
       <gridHelper args={[SPAN * 1.6, 32, '#66563f', '#211e19']} position-y={-BASE_DEPTH - 0.002} />
     </group>
   </>;
