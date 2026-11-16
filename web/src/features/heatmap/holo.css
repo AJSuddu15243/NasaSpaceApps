@@ -43,8 +43,8 @@
 .specimen-controls button,.terrain-switch button,.holo-loading button{border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);padding:6px 9px;border-radius:4px;font:10px var(--font-data);min-height:30px}
 .specimen-controls button[aria-pressed=true],.terrain-switch button[aria-pressed=true]{border-color:var(--mission-accent);color:var(--mission-accent);background:#37291c}
 .specimen-controls button:disabled,.terrain-switch button:disabled,.strata-labels button:disabled{opacity:.45;cursor:not-allowed}
-.specimen-controls>button{display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:6px}
-.specimen-controls summary{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);border-radius:6px;cursor:pointer;list-style:none}
+.specimen-controls button{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border-radius:6px}
+.specimen-controls summary{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 9px;border:1px solid var(--mission-line);background:#11100ce6;color:var(--mission-text);border-radius:6px;cursor:pointer;list-style:none;font:10px var(--font-data)}
 .specimen-controls summary::-webkit-details-marker{display:none}
 .specimen-controls summary:hover,.specimen-controls>button:hover{border-color:var(--mission-accent)}
 .display-menu{position:relative}
@@ -67,7 +67,7 @@
 @media(max-width:700px){
  .holo-stage{grid-template-rows:auto minmax(140px,1fr) auto}
  .holo-title{padding:8px 12px 4px}.holo-title h2{font-size:18px}.holo-status{font-size:8px}
- .specimen-controls{gap:4px}.specimen-controls>button,.specimen-controls summary{width:26px;height:26px}.display-pop{min-width:150px}
+ .specimen-controls{gap:4px}.specimen-controls button,.specimen-controls summary{min-height:28px;padding:4px 6px}.display-pop{min-width:150px}
  .holo-footer{padding:4px 12px 6px}.terrain-switch{flex-wrap:nowrap;overflow:auto;scrollbar-width:thin}
  .terrain-switch button{white-space:nowrap;flex-shrink:0}.specimen-explain{max-height:48px;overflow:auto;font-size:10px}
  .specimen-caption{font-size:8px}.strata-labels{display:none}.holo-legend{font-size:9px}

@@ -199,7 +199,7 @@ export default function Navigator() {
     {!leftOpen && <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab" aria-label="Open sites and priorities" onClick={() => setLeftOpen(true)}><MapPin size={16} /></button></TooltipTrigger><TooltipContent>Sites &amp; priorities</TooltipContent></Tooltip></TooltipProvider>}
 
     {region && focused && <div className="mission-holo-wrap" key={focused.id}>
-      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} />
+      <HoloStage name={focused.name} grid={region.grid} heat={scenario.heat} heatPick={heatPick} onShown={setShownHeat} scores={region.scores} source={region.source} window={region.window} computing={region.computing} slopeLimit={scenario.slopeLimit} reducedMotion={reducedMotion} date={instant} sunLit={focusedSunLit} view={scenario.view} onView={view => setScenario({ view }, true)} onHeat={heat => setScenario({ heat }, true)} onClose={closeAnalysis} />
     </div>}
 
     {focused && !compareOpen && (!narrow || analysisOpen) && <div className="hud hud-right mission-analysis" key={`a-${focused.id}`}>
