@@ -58,6 +58,7 @@ export function MissionTimeline({ scenario, change, place, mask, table, params }
   return <section className="mission-timeline" data-tour="timeline" aria-label="Arrival timeline">
     <div className="timeline-row">
       <div className="timeline-label"><span className="eyebrow">WHEN</span><time>{fmt(scenarioInstant({ ...scenario, playhead: hour }))} UTC</time></div>
+      {delay > 0 && baseline && arrival && <p className="timeline-delta" role="status" title={`Slip ${delay} days: Sun ${baseline.sun.el.toFixed(1)}° to ${arrival.sun.el.toFixed(1)}°, Earth ${baseline.earth.el.toFixed(1)}° to ${arrival.earth.el.toFixed(1)}° at ${place!.name}`}>Slip {delay} d · Sun {baseline.sun.el.toFixed(1)}° → {arrival.sun.el.toFixed(1)}° · Earth {baseline.earth.el.toFixed(1)}° → {arrival.earth.el.toFixed(1)}° at touchdown</p>}
       <div className="delay-controls" role="group" aria-label="Launch delay"><span>Launch slip</span>{[0, 1, 3, 7, 14].map(days => <button type="button" key={days} aria-pressed={delay === days} onClick={() => change({ delay: days })}>{days === 0 ? 'On time' : `+${days}d`}</button>)}
         <label>Custom <input aria-label="Custom launch delay (days)" type="number" min="0" max="365" step="1" value={delay} onChange={event => { const n = event.target.valueAsNumber; if (Number.isInteger(n) && n >= 0 && n <= 365) change({ delay: n }, true); }} /> d</label></div>
     </div>
@@ -77,6 +78,5 @@ export function MissionTimeline({ scenario, change, place, mask, table, params }
       {place && lanes ? <span className="timeline-legend"><i className="dot-sun"/>Sun {track ? 'lit' : 'up'} {upShare('sun')}% <i className="dot-earth"/>Earth {track ? 'in view' : 'up'} {upShare('earth')}% <em>· {place.name} · {span[0].toFixed(1)}° to {span[1].toFixed(1)}° · {horizon}</em></span> : <span className="timeline-legend"><em>Select a place to see its Sun and Earth lanes</em></span>}
       <span>+{scenario.hours} h</span>
     </div>
-    {delay > 0 && baseline && arrival && <p className="timeline-delta" role="status">Slip {delay} d: at touchdown the Sun moves from {baseline.sun.el.toFixed(1)}°{track ? ` (${baseline.sun.up ? 'lit' : 'hidden'})` : ''} to <b>{arrival.sun.el.toFixed(1)}°{track ? ` (${arrival.sun.up ? 'lit' : 'hidden'})` : ''}</b> and Earth from {baseline.earth.el.toFixed(1)}°{track ? ` (${baseline.earth.up ? 'in view' : 'hidden'})` : ''} to <b>{arrival.earth.el.toFixed(1)}°{track ? ` (${arrival.earth.up ? 'in view' : 'hidden'})` : ''}</b> at {place!.name} ({track ? 'terrain horizon from the engine' : 'flat horizon'}).</p>}
   </section>;
 }

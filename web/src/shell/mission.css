@@ -154,7 +154,7 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 .hud-bottom{left:16px;right:16px;bottom:12px;padding:10px 16px 10px}
 .mission-timeline{display:grid;gap:6px}
 .timeline-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.timeline-label{display:flex;align-items:baseline;gap:12px}
+.timeline-label{display:flex;align-items:baseline;gap:12px;flex:none}
 .timeline-label time{font:500 13px var(--font-data);font-variant-numeric:tabular-nums;color:#fdf8f2}
 .delay-controls{display:flex;align-items:center;gap:5px;font-size:11px;flex-wrap:wrap}
 .delay-controls>span{margin-right:6px;color:#9a9184;font:9px var(--font-data);letter-spacing:.14em;text-transform:uppercase}
@@ -176,7 +176,7 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 .timeline-legend{display:flex;align-items:center;gap:6px;color:#bab1a4}
 .timeline-legend i{display:inline-block;width:8px;height:2px}.dot-sun{background:var(--sun)}.dot-earth{background:var(--earth);margin-left:8px}
 .timeline-legend em{font-style:normal;color:#8a8174}
-.timeline-delta{font-size:11px;color:#cfc6ba}.timeline-delta b{color:#fdf8f2;font-weight:500}
+.timeline-delta{flex:1;min-width:0;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:#cfc6ba}.timeline-delta b{color:#fdf8f2;font-weight:500}
 
 .mission-notice{position:absolute;z-index:20;left:50%;top:70px;transform:translateX(-50%);max-width:520px}
 
