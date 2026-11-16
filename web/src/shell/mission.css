@@ -201,8 +201,6 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 @keyframes boot-line{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 @keyframes blink{50%{opacity:0}}
 
-/* Light theme keeps the dark mission stage (it is a viewport onto space) but lifts text contrast in panels. */
-
 @media(max-width:1280px){.hud-telemetry div:nth-child(4){display:none}.hud-mode p{display:none}.hud-left{width:270px}.mission-holo-wrap{left:300px}}
 @media(max-width:1020px){
   .hud-telemetry{gap:12px}.hud-telemetry div:nth-child(2){display:none}
@@ -278,78 +276,11 @@ body:has(.mission) .share-notice{position:fixed;top:60px;right:20px;z-index:60;m
 .mission .sp{flex-shrink:0}.mission .ws-scroll{max-height:none;overflow:visible}
 @media(max-width:640px){.mission .specimen-controls button,.mission .terrain-switch button{font-size:9px;min-height:32px}.holo-status{display:none}.specimen-controls label{display:none}}
 
-/* Light theme: warm paper stage, dark ink text, light glass HUD. The Moon viewport and boot stay dark. */
-:root[data-theme='light'] .mission{
-  color-scheme:light;
-  --holo-dim:#8a7a58;--glass:#fdfbf4e0;--edge:#0000001f;--sun:#c47b22;--earth:#2f6fc4;--ice:#17879a;
-  color:#2a241c;
-  background:radial-gradient(ellipse at 50% 55%,#f0ebdf 0%,#ddd5c4 70%);
-  --shell-bg:#f4f0e6;--shell-card:#fffdf8;--shell-text:#2a241c;--shell-muted:#6e665a;--shell-line:#c9c0ae;--shell-field:#d8cfbc;
-  --background:40 30% 93%;--card:45 40% 97%;--foreground:30 20% 14%;--muted-foreground:35 10% 42%;--input:40 15% 80%;--accent:36 25% 90%;--secondary:40 15% 90%;--border:40 12% 80%;
-}
-:root[data-theme='light'] .mission-stars{display:none}
-:root[data-theme='light'] .mission-vignette{background:radial-gradient(ellipse at 50% 50%,transparent 50%,#b9b09b30 100%),linear-gradient(#0000 72%,#d9d1bd80)}
-:root[data-theme='light'] .mission-globe .globe-hint{color:#6e665a}
-:root[data-theme='light'] .mission-globe .globe-controls button{background:#fffffff0;border-color:#0000001f;color:#2a241c}
-:root[data-theme='light'] .hud{box-shadow:0 20px 60px #1f1a120f,inset 0 1px 0 #ffffff80}
-:root[data-theme='light'] .hud-top{background:#fffffff2}
-:root[data-theme='light'] .hud-mode>div button{color:#6e665a}
-:root[data-theme='light'] .hud-mode>div button[aria-pressed=true]{color:#2a241c}
-:root[data-theme='light'] .hud-mode p{color:#7d7466}
-:root[data-theme='light'] .hud-telemetry dt{color:#8f8674}
-:root[data-theme='light'] .hud-telemetry dd{color:#2a241c}
-:root[data-theme='light'] .hud-telemetry .t-sun dd{color:#a05e14}
-:root[data-theme='light'] .hud-telemetry .t-earth dd{color:#2f6fc4}
-:root[data-theme='light'] .hud-link{color:#6e665a}
-:root[data-theme='light'] .hud-tabs button[role=tab]{color:#7d7466}
-:root[data-theme='light'] .hud-tabs button[aria-selected=true]{color:#2a241c}
-:root[data-theme='light'] .hud-scroll{scrollbar-color:#00000033 transparent}
-:root[data-theme='light'] .mission .site-catalogue legend{color:#7d7466}
-:root[data-theme='light'] .mission .site-feedback,.mission .hint{color:#7d7466}
-:root[data-theme='light'] .mission .ui-input{background:#fffdf8}
-:root[data-theme='light'] .hud-lede{color:#5c554a}
-:root[data-theme='light'] .hud-note{color:#7d7466}
-:root[data-theme='light'] .hud-warning{color:#9a5b16}
-:root[data-theme='light'] .preset-list button{background:#7a5c2e10}
-:root[data-theme='light'] .preset-list button span{color:#7d7466}
-:root[data-theme='light'] .preset-list button:hover{border-color:#00000055}
-:root[data-theme='light'] .preset-list button[aria-checked=true]{background:#9a5b1624;box-shadow:inset 0 0 0 1px #9a5b1640}
-:root[data-theme='light'] .weight-row i{color:#8f8674}
-:root[data-theme='light'] .hud-button{background:#9a5b1620}
-:root[data-theme='light'] .hud-button:hover{background:#9a5b1638}
-:root[data-theme='light'] .demo-results{color:#7d7466}
-:root[data-theme='light'] .mission-intro{color:#2a241c}
-:root[data-theme='light'] .mission-intro h1 em{text-shadow:none}
-:root[data-theme='light'] .mission-intro>p:not(.eyebrow){color:#5c554a}
-:root[data-theme='light'] .mission-intro button{color:#fdf6ea;box-shadow:0 0 26px #9a5b1633}
-:root[data-theme='light'] .mission-intro small{color:#7d7466}
-:root[data-theme='light'] .hud-dock button{color:#4a443a}
-:root[data-theme='light'] .hud-dock button:hover{background:#00000012;color:#2a241c}
-:root[data-theme='light'] .hud-dock button[aria-pressed=true],:root[data-theme='light'] .hud-dock button[aria-expanded=true]{background:#00000014;color:#2a241c;box-shadow:inset 0 0 0 1px #00000033}
-:root[data-theme='light'] .timeline-label time{color:#2a241c}
-:root[data-theme='light'] .delay-controls>span{color:#7d7466}
-:root[data-theme='light'] .delay-controls button{color:#4a443a}
-:root[data-theme='light'] .delay-controls button[aria-pressed=true]{color:#fdf6ea}
-:root[data-theme='light'] .delay-controls label{color:#7d7466}
-:root[data-theme='light'] .delay-controls input{background:#fffdf8;color:#2a241c}
-:root[data-theme='light'] .lane-zero{stroke:#00000030}
-:root[data-theme='light'] .timeline-track input::-webkit-slider-thumb{box-shadow:0 0 10px var(--holo),0 0 0 4px #00000014}
-:root[data-theme='light'] .timeline-foot{color:#8f8674}
-:root[data-theme='light'] .timeline-legend{color:#6e665a}
-:root[data-theme='light'] .timeline-legend em{color:#8f8674}
-:root[data-theme='light'] .timeline-delta{color:#5c554a}
-:root[data-theme='light'] .timeline-delta b{color:#2a241c}
-:root[data-theme='light'] .mission .sp-inspect{background:#fffdf8}
-:root[data-theme='light'] .mission .sc-row input{color-scheme:light}
-:root[data-theme='light'] .mission .globe-marker--region em{color:#f6f3ef}
-@media(max-width:1020px){:root[data-theme='light'] .hud-right{background:#fffffff5}}
-:root[data-theme='light'] .hud-dock button[aria-pressed=true],:root[data-theme='light'] .hud-dock button[aria-expanded=true]{background:#0000000d}
+.mission .hint{color:#7d7466}
+
 .hud-min{margin-left:auto;display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:6px;background:none;color:var(--shell-muted);transition:background .15s,color .15s;flex:none}
 .hud-min:hover{background:#e8cca81f;color:var(--shell-text)}
 .hud-min-bottom{position:absolute;top:6px;right:8px;z-index:3}
 /* top:auto beats .hud-fab's top at every breakpoint, so the restore button sits bottom-centre below the dock. */
 .mission .hud-fab-bottom{top:auto;left:50%;transform:translateX(-50%);bottom:14px;display:grid}
-:root[data-theme='light'] .hud-min:hover{background:#0000000f}
-:root[data-theme='light'] .hud-icon:hover,:root[data-theme='light'] .hud-fab:hover{background:#0000000f}
-:root[data-theme='light'] .hud-icon{color:#6e665a}
-:root[data-theme='light'] .hud-fab{color:#2a241c}
+
