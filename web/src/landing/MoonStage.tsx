@@ -1,3 +1,4 @@
+import { useGraphics } from '../lib/graphics';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import {
@@ -216,11 +217,12 @@ export default function MoonStage({ state, textures, onSiteHover, labels }: {
   onSiteHover: (id: string | null) => void;
   labels: MutableRefObject<(HTMLElement | null)[]>;
 }) {
+  const graphics = useGraphics();
   return <Canvas
     className="moon-stage"
     aria-hidden="true"
     camera={{ fov: 30, near: 0.01, far: 300, position: [0, 0, 5.2] }}
-    dpr={[1, 1.75]}
+    dpr={graphics.dpr}
     gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
     onCreated={({ gl }) => gl.setClearColor('#09090a')}
   >

@@ -1,3 +1,4 @@
+import { useGraphics } from '../../lib/graphics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Crosshair, Loader2, MapPin, Orbit, RotateCcw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../design';
@@ -23,6 +24,7 @@ interface GlobeControls {
 }
 
 interface GlobeInstance {
+  renderer: () => { setPixelRatio: (ratio: number) => void };
   pathsData: (paths: { points: number[][] }[]) => GlobeInstance;
   pathPoints: (key: string) => GlobeInstance;
   pathPointLat: (fn: (point: number[]) => number) => GlobeInstance;
@@ -64,6 +66,7 @@ interface Selection {
 }
 
 export function MoonGlobeView({ markers, timeLabel, focus, focusAltitude = 0.8, overview = OVERVIEW, onInspect, onReady, onError, footprint, active = true, controlsHidden = false }: { markers: GlobeMarker[]; timeLabel?: string; focus?: { lat: number; lon: number }; focusAltitude?: number; overview?: { lat: number; lng: number; altitude: number }; onInspect?: (point: { id?: string; name: string; lat: number; lon: number }) => void; onReady?: () => void; onError?: () => void; footprint?: number[][]; active?: boolean; controlsHidden?: boolean }) {
+  const graphics = useGraphics();
   const errorRef = useRef(onError); errorRef.current = onError;
   const readyRef = useRef(onReady);
   const overviewRef = useRef(overview);
@@ -157,6 +160,8 @@ export function MoonGlobeView({ markers, timeLabel, focus, focusAltitude = 0.8, 
     };
   }, []);
 
+
+  useEffect(() => { if (ready) globeRef.current?.renderer().setPixelRatio(graphics.dpr); }, [ready, graphics.dpr]);
 
   useEffect(() => {
     const update = () => { if (active && !document.hidden) globeRef.current?.resumeAnimation(); else globeRef.current?.pauseAnimation(); };

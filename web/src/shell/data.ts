@@ -1,3 +1,4 @@
+import { fetchAsset } from '../lib/assetCache';
 import { parseSites, parseMask, parseEphem, parseManifest } from './validation';
 import type { SiteMask } from '../contracts/site-mask';
 async function resource(path: string, signal: AbortSignal, request: typeof fetch) {
@@ -6,14 +7,14 @@ async function resource(path: string, signal: AbortSignal, request: typeof fetch
   return response;
 }
 /** Real catalogue (sites.json) + synthetic demo-* fixtures, loaded on their own so the picker never waits on ephem or masks. */
-export async function loadSites(signal: AbortSignal, request: typeof fetch = fetch) {
+export async function loadSites(signal: AbortSignal, request: typeof fetch = fetchAsset) {
   const [realData, demoData] = await Promise.all(['sites.json', 'mock/sites.json'].map(path => resource(path, signal, request).then(r => r.json())));
   const real = parseSites(realData);
   const sites = parseSites([...real, ...parseSites(demoData)]); // second pass rejects ids shared by both files
   return { sites, realIds: new Set(real.map(site => site.id)) };
 }
 /** Catalogue + JPL Horizons ephemeris + PIPE-8 horizon masks (INT-1); demo-* fixtures keep their mock masks. */
-export async function loadDemoData(signal: AbortSignal, request: typeof fetch = fetch, catalogue = loadSites(signal, request)) {
+export async function loadDemoData(signal: AbortSignal, request: typeof fetch = fetchAsset, catalogue = loadSites(signal, request)) {
   const get = (path: string) => resource(path, signal, request);
   const [{ sites: all, realIds }, manifest, header, bytes] = await Promise.all([
     catalogue, get('manifest.json').then(r => r.json()).then(parseManifest), get('ephem.json').then(r => r.json()), get('ephem.bin').then(r => r.arrayBuffer()),

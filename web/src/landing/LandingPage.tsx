@@ -1,3 +1,4 @@
+import { GraphicsControl, useGraphics } from '../lib/graphics';
 import Lenis from 'lenis';
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import mark from '../brand/assets/mark.svg';
@@ -15,11 +16,11 @@ const CHAPTERS = [
   { id: 'sites', label: 'Sites', hint: 'Hover a site to illuminate it' },
   { id: 'earth', label: 'Earth', hint: 'Earth sits on the horizon' },
   { id: 'method', label: 'Method', hint: 'Data in, one answer out' },
-  { id: 'team', label: 'Team', hint: 'Five people, one scenario' },
+  { id: 'team', label: 'Learn', hint: 'Predict, compare, explain' },
   { id: 'enter', label: 'Enter', hint: 'Select to enter the navigator' },
 ] as const;
 
-const NAV = [['pole', 'Story'], ['sites', 'Sites'], ['method', 'Method'], ['team', 'Team']] as const;
+const NAV = [['pole', 'Story'], ['sites', 'Sites'], ['method', 'Method'], ['team', 'Learn']] as const;
 
 const TEAM = [
   ['Anirvin Potaraju', 'Data pipeline', 'LOLA terrain and JPL Horizons ephemeris, checked against physics.'],
@@ -64,6 +65,7 @@ function Chapter({ index, id, className = '', children, copyRefs }: { index: num
 }
 
 export function LandingPage({ onOpen }: { onOpen: () => void }) {
+  const graphics = useGraphics();
   const state = useRef<StageState>({ chapter: 0, stepped: false, diveStart: null, hovered: null });
   const copyRefs = useRef<(HTMLElement | null)[]>([]);
   const labelRefs = useRef<(HTMLElement | null)[]>([]);
@@ -90,13 +92,14 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     state.current.stepped = reduced;
-    if (!canRender3D()) { setWebgl(false); setLoaded(true); return; }
+    if (graphics.lite || !canRender3D()) { setWebgl(false); setLoaded(true); return; }
+    setWebgl(true);
     const controller = new AbortController();
     loadMoonTextures(setProgress, controller.signal)
       .then(result => { setTextures(result); setCredit(result.credit); })
       .catch(() => { if (!controller.signal.aborted) { setWebgl(false); setLoaded(true); } });
     return () => controller.abort();
-  }, []);
+  }, [graphics.lite]);
 
   useEffect(() => {
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -200,15 +203,16 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       <nav className="lw-pill" aria-label="Story chapters">
         {NAV.map(([id, label]) => <a key={id} href={`#${id}`} aria-current={CHAPTERS[active].id === id ? 'true' : undefined} onClick={e => { e.preventDefault(); scrollTo(id); }}>{label}</a>)}
       </nav>
+      <GraphicsControl/>
       <button type="button" className="lw-cta" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Open navigator <span aria-hidden="true">↗</span></button>
     </header>
 
     <main id="main" className="lw-story" tabIndex={-1} inert={diving}>
       <Chapter index={0} id="top" copyRefs={copyRefs}>
-        <p className="micro">Lunar south pole · landing window planner</p>
-        <h1 id="top-title">Land where<br />the <em>light</em> stays.</h1>
+        <p className="micro">Real NASA data · an interactive learning lab</p>
+        <h1 id="top-title">Explore the Moon.<br /><em>Learn</em> by doing.</h1>
         <div className="hero-foot">
-          <p>Compare Artemis south-pole sites by sunlight, Earth contact and terrain. Then move the arrival date and watch the window change.</p>
+          <p>Why does a ridge change a landing window? Move the date, explore real terrain, and discover how sunlight and a view of Earth shape lunar exploration. For students, teachers, and curious explorers.</p>
           <div className="hero-actions">
             <button type="button" className="btn-solid" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Open the navigator <span aria-hidden="true">↗</span></button>
             <button type="button" className="btn-text" onClick={() => scrollTo('pole')}>Scroll to descend <span aria-hidden="true">↓</span></button>
@@ -217,8 +221,10 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={1} id="pole" copyRefs={copyRefs}>
-        <h2 id="pole-title">At the pole, the Sun <em>skims</em> the horizon.</h2>
-        <p className="body">From 2026 to 2030 the Sun never strays more than 1.59° from the lunar equator. Stand at the pole and it circles just above the ground, so a 1 km ridge 30 km away is enough to put a lander in shadow.</p>
+        <p className="micro">Why we built Lunala</p>
+        <h2 id="pole-title">Make the invisible <em>visible.</em></h2>
+        <p className="body">A map alone cannot show when a ridge blocks sunlight or hides Earth. We built Lunala to connect terrain, time, and a place in the sky: change one thing, see what happens, and ask why.</p>
+        <p className="body">At the south pole, the Sun skims the horizon. During our 2026–2030 reference period its latitude stays within ±1.59° of the lunar equator. A small change in terrain can make a large difference to illumination.</p>
         <dl className="stats">
           <div><dt>Sun latitude range</dt><dd>±1.59°</dd></div>
           <div><dt>Hourly Sun/Earth rows</dt><dd>43,824</dd></div>
@@ -237,7 +243,7 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={3} id="sites" className="align-right" copyRefs={copyRefs}>
-        <h2 id="sites-title">Three Artemis regions. <em>One</em> comparison.</h2>
+        <h2 id="sites-title">Three places. <em>Different</em> trade-offs.</h2>
         <ol className="site-list">
           {SITES.map((site, i) => <li key={site.id} className={hovered === site.id ? 'is-hot' : ''} onMouseEnter={() => onSiteHover(site.id)} onMouseLeave={() => onSiteHover(null)}>
             <span className="micro">{String(i + 1).padStart(2, '0')}</span>
@@ -271,22 +277,28 @@ export function LandingPage({ onOpen }: { onOpen: () => void }) {
       </Chapter>
 
       <Chapter index={6} id="team" className="align-right" copyRefs={copyRefs}>
-        <h2 id="team-title">Five people. <em>One</em> scenario.</h2>
+        <h2 id="team-title">Ask a question.<br /><em>Test</em> an idea.</h2>
         <ul className="team">
-          {TEAM.map(([name, role, line]) => <li key={name}><strong>{name}</strong><span className="micro">{role}</span><p>{line}</p></li>)}
+          <li><strong>Students &amp; curious explorers</strong><span className="micro">Predict</span><p>Which side of a crater receives more sunlight? Choose a layer, inspect a cell, and explain your prediction using the evidence.</p></li>
+          <li><strong>Teachers &amp; learning groups</strong><span className="micro">Compare</span><p>Keep the location fixed and move arrival by seven days. Compare the sunlight and Earth-contact windows, then share the scenario with your class.</p></li>
+          <li><strong>Developers &amp; data learners</strong><span className="micro">Reproduce</span><p>Follow the public code from NASA data through Python processing, Rust/WebAssembly simulation, and interactive 3D rendering.</p></li>
         </ul>
+        <a className="learning-link" href="/docs#activities">Start a guided learning activity ↗</a>
       </Chapter>
 
       <Chapter index={7} id="enter" className="align-center" copyRefs={copyRefs}>
         <h2 id="enter-title">Pick a site. Move the date.<br /><em>Read the horizon.</em></h2>
         <button type="button" className="btn-solid btn-large" onPointerEnter={warmNavigator} onFocus={warmNavigator} onClick={enter}>Enter the navigator <span aria-hidden="true">↗</span></button>
-        <p className="fine">NASA Space Apps 2026 · independent team prototype, not a mission recommendation.</p>
-        <nav className="source-links" aria-label="Data sources">
+        <p className="fine">MIT open source · real NASA data · educational estimates, not a mission recommendation.</p>
+        <nav className="source-links" aria-label="Learning resources and data sources">
+          <a href="/docs#activities">Learning activities ↗</a>
+          <a href="https://github.com/AJSuddu15243/NasaSpaceApps" target="_blank" rel="noreferrer">Explore the code ↗</a>
           <a href="https://quickmap.lroc.asu.edu/" target="_blank" rel="noreferrer">LROC QuickMap ↗</a>
           <a href="https://trek.nasa.gov/moon/" target="_blank" rel="noreferrer">NASA Moon Trek ↗</a>
           <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noreferrer">JPL Horizons ↗</a>
           <a href="https://pgda.gsfc.nasa.gov/products/90" target="_blank" rel="noreferrer">PGDA LOLA ↗</a>
         </nav>
+        <details className="project-credits"><summary>Built by the Lunala team</summary><ul>{TEAM.map(([name, role, line]) => <li key={name}><strong>{name}</strong> · {role}<p>{line}</p></li>)}</ul></details>
         {credit && <p className="fine credit">{credit.replace(/ Run scripts\S* [^.]*\./, '')}</p>}
       </Chapter>
     </main>

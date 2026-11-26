@@ -1,3 +1,4 @@
+import { fetchAsset } from '../lib/assetCache';
 import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import common from '../../../contracts/schemas/common.schema.json';
@@ -31,7 +32,7 @@ const headers = new Map<string, Promise<TileHeader | null>>();
 const tiles = new Map<string, Promise<SouthPoleTile>>();
 /** Validated 80 m tile header for a region, or null when that region is not shipped. */
 const tileHeader = (region: string) => cached(headers, region, async () => {
-  const response = await fetch(`/data/tiles/${region}_80m.json`);
+  const response = await fetchAsset(`/data/tiles/${region}_80m.json`);
   if (response.status === 404 || response.headers.get('content-type')?.includes('text/html')) return null;
   if (!response.ok) throw new Error('Terrain catalogue could not load.');
   const header: unknown = await response.json();
@@ -43,7 +44,7 @@ export async function loadRegionTile(region: string, signal?: AbortSignal): Prom
   const header = await untilAborted(tileHeader(region), signal);
   if (!header) return null;
   return untilAborted(cached(tiles, region, async () => {
-    const binary = await fetch(`/data/tiles/${region}_80m.bin`);
+    const binary = await fetchAsset(`/data/tiles/${region}_80m.bin`);
     if (!binary.ok) throw new Error('Terrain elevations could not load.');
     return decodeTile(header, await binary.arrayBuffer());
   }), signal);

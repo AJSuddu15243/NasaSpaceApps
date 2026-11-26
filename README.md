@@ -1,6 +1,6 @@
 # Lunala — Lunar Landing Site Navigator
 
-A NASA Space Apps project: compare south-polar lunar landing sites and dates by
+An open-source educational lunar exploration lab for students, teachers and curious explorers. Compare south-polar lunar landing sites and dates by
 Sun and Earth geometry against the real terrain horizon — solar power, thermal
 exposure and direct-to-Earth communications — with a deterministic Rust/WASM
 engine and a React/Three.js front end.
@@ -9,11 +9,16 @@ engine and a React/Three.js front end.
 - **Demo surface:** the landing page and interactive mission workspace.
 - **Build spec:** [SPEC.md](SPEC.md) · **Team proposal:** [docs/PROPOSAL.md](docs/PROPOSAL.md)
 - **Methods, data sources, assumptions, validation status:** [docs/METHODS.md](docs/METHODS.md)
-- **Official challenge:** [docs/CHALLENGE.md](docs/CHALLENGE.md)
 
 > Demo status: the 3 surveyed regions (Connecting Ridge, Haworth, Malapert Massif)
 > run the real WASM engine on real LOLA masks and the JPL Horizons table. Only the
 > `demo-*` sites use clearly labelled synthetic data (`web/public/data/mock/`).
+
+Start with [learning activities](https://lunar-window-smoky.vercel.app/docs#activities): predict how terrain affects sunlight, compare arrival dates, and explain why changing priorities changes a ranking. The public code spans Python data processing, typed data contracts, a deterministic Rust/WASM engine, worker orchestration, and React/Three.js rendering. Team contributions remain credited in the application.
+
+Public data files are cached in the browser by their build-time SHA-256 hashes; a new data revision replaces the cache. Failed, corrupt, private and API responses are excluded. Storage failures fall back to the network. Auto graphics renders settled terrain on demand; Lite lowers pixel density, disables terrain shadows and uses a static landing Moon. These settings affect presentation, not scientific values.
+
+**Licensing:** original project code is available under the [MIT License](LICENSE), with contributor approval. NASA datasets and third-party dependencies retain their own terms and attribution; see [methods and attribution](docs/METHODS.md#license-and-attribution).
 
 Full local setup (prerequisites, scenario database, pipeline): [docs/LOCAL-DEV.md](docs/LOCAL-DEV.md).
 
@@ -119,7 +124,7 @@ NASA sources ──► pipeline ──► web/public/data/* ──► web app (R
 ```
 
 The same Rust crate produces the offline horizon masks (native bin, run by the
-pipeline) and the in-browser scoring WASM, so the numbers a judge sees in the UI
+pipeline) and the in-browser scoring WASM, so the numbers a learner sees in the UI
 come from the same deterministic code that validated the masks.
 
 ## License and attribution
