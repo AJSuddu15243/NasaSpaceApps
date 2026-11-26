@@ -58,6 +58,10 @@ export async function handleAsk(request: Request): Promise<Response> {
     return json(400, { error: 'Use a question up to 2,000 characters and context up to 14,000 characters.' });
   }
 
+  if (process.env.VITE_AI_ENABLED === 'false') {
+    return json(503, { error: 'Solgaleo is turned off. The learning tools work without AI.' });
+  }
+
   const key = process.env.ASK_API_KEY?.trim();
   const model = process.env.ASK_MODEL?.trim();
   let endpoint: URL;

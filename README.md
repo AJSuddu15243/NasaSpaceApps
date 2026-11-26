@@ -41,6 +41,7 @@ Full local setup (prerequisites, scenario database, pipeline): [docs/LOCAL-DEV.m
 ```sh
 cd web
 pnpm install
+cp .env.example .env.local  # optional AI stays off by default
 pnpm dev        # http://127.0.0.1:4173  (landing at /, workspace at /app)
 pnpm typecheck && pnpm lint && pnpm test   # the CI gates
 pnpm build      # typecheck + production build → web/dist
@@ -105,6 +106,8 @@ vercel --prod --yes --build-env VERCEL_GIT_COMMIT_SHA="$(git rev-parse HEAD)"
 
 The explicit public SHA is needed because CLI builds have no Git checkout. Main
 pushes alone will not deploy until the project has a Git integration.
+
+Solgaleo is optional. Set the public UI flag `VITE_AI_ENABLED=false` to hide its entry and keyboard shortcut. The educational site works without it. For an AI-off production build, run browser checks with `TEST_AI_DISABLED=1 pnpm test:browser`; the assistant interaction cases are skipped and the disabled-control contract is tested instead. To enable it later, set `VITE_AI_ENABLED=true`, configure the server settings below, and redeploy. Never put a secret in a `VITE_` variable.
 
 Solgaleo needs Production-only `ASK_API_KEY` (sensitive), `ASK_BASE_URL` and
 `ASK_MODEL`, plus one published SDK firewall rule `solgaleo-ip`: 10 requests/minute in a
