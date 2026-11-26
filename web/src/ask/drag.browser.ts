@@ -1,5 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
+// AI-off releases exercise the disabled-control contract in header.browser.ts instead.
+test.skip(process.env.TEST_AI_DISABLED === '1', 'Optional assistant is disabled in this build.');
+
 async function openAssistant(page: Page) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.addInitScript(() => {
