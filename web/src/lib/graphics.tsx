@@ -24,7 +24,7 @@ export function useGraphics() {
 }
 export function GraphicsControl() {
   const { mode: value } = useGraphics();
-  return <label className="graphics-control">Graphics <select aria-label="Graphics quality" value={value} onChange={event => {
+  return <label className="graphics-control"><span>Graphics</span><select aria-label="Graphics quality" value={value} onChange={event => {
     session = event.target.value as GraphicsMode;
     try { localStorage.setItem(KEY, session); } catch { /* Session setting works without storage. */ }
     listeners.forEach(listener => listener());

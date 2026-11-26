@@ -28,11 +28,11 @@
 .lw.is-ready .lw-loader{opacity:0;visibility:hidden}
 
 /* Chrome — plain top bar, no pill chrome */
-.lw-header{position:fixed;z-index:10;top:0;left:0;right:0;display:grid;grid-template-columns:1fr auto auto auto;gap:20px;align-items:center;padding:20px var(--edge);pointer-events:none}
+.lw-header{position:fixed;z-index:10;top:0;left:0;right:0;display:grid;grid-template-columns:1fr auto auto auto;gap:32px;align-items:center;padding:20px var(--edge);pointer-events:none}
 .lw-header>*{pointer-events:auto}
 .lw-brand{display:flex;align-items:center;gap:10px;font:600 15px var(--display);letter-spacing:-.01em;justify-self:start}
 .lw-brand img{width:22px;height:22px}
-.lw-pill{display:flex;gap:22px;justify-self:center}
+.lw-pill{display:flex;gap:28px;justify-self:center}
 .lw-pill a{font:450 13px var(--display);color:var(--muted);padding:4px 0;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
 .lw-pill a:hover{color:var(--paper)}
 .lw-pill a[aria-current]{color:var(--paper);border-bottom-color:var(--paper)}

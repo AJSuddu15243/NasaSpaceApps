@@ -29,6 +29,7 @@ import { AskPanel } from '../ask/AskPanel';
 import './workspace.css';
 import './mission.css';
 
+const aiEnabled = import.meta.env.VITE_AI_ENABLED !== 'false';
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)';
 /** Tilted toward the south pole so the Artemis III regions are in view from the start. */
 const POLE_VIEW = { lat: -62, lng: -20, altitude: 1.9 };
@@ -59,6 +60,7 @@ export default function Navigator() {
   useEffect(() => { if (narrow) setLeftOpen(false); }, [narrow]);
   useEffect(() => { void syncRemoteScenarios(); }, []);
   useEffect(() => {
+    if (!aiEnabled) return;
     const open = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setAskOpen(true); } };
     addEventListener('keydown', open);
     return () => removeEventListener('keydown', open);
@@ -186,8 +188,8 @@ export default function Navigator() {
       </dl>
       <TooltipProvider delayDuration={200}>
         <div className="hud-actions">
-          <Tooltip><TooltipTrigger asChild><button type="button" className={`hud-icon solg-btn${solgCast ? ' is-casting' : ''}`} aria-label="Ask Solgaleo, the lunar copilot" aria-expanded={askOpen}
-            onClick={() => { setSolgCast(true); setTimeout(() => setSolgCast(false), 750); setAskOpen(v => !v); }}><Sparkles size={15} /></button></TooltipTrigger><TooltipContent>Solgaleo · ask about what you see</TooltipContent></Tooltip>
+          {aiEnabled && <Tooltip><TooltipTrigger asChild><button type="button" className={`hud-icon solg-btn${solgCast ? ' is-casting' : ''}`} aria-label="Ask Solgaleo, the lunar copilot" aria-expanded={askOpen}
+            onClick={() => { setSolgCast(true); setTimeout(() => setSolgCast(false), 750); setAskOpen(v => !v); }}><Sparkles size={15} /></button></TooltipTrigger><TooltipContent>Solgaleo · ask about what you see</TooltipContent></Tooltip>}
           <Tooltip><TooltipTrigger asChild><button type="button" className="hud-icon" aria-label={region && focused ? 'Replay survey guide' : 'Replay mission briefing'} onClick={() => setTourReplay(n => n + 1)}><RotateCcw size={15} /></button></TooltipTrigger><TooltipContent>{region && focused ? 'Replay the survey guide' : 'Replay the mission briefing tour'}</TooltipContent></Tooltip>
         </div>
       </TooltipProvider>
@@ -250,7 +252,7 @@ export default function Navigator() {
           <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-min hud-min-bottom" aria-label="Minimize timeline" onClick={() => setBottomOpen(false)}><ChevronDown size={14} /></button></TooltipTrigger><TooltipContent>Minimize timeline</TooltipContent></Tooltip></TooltipProvider>
         </div>
       : <TooltipProvider delayDuration={200}><Tooltip><TooltipTrigger asChild><button type="button" className="hud-fab hud-fab-bottom" aria-label="Show mission timeline" onClick={() => setBottomOpen(true)}><ChevronUp size={16} /></button></TooltipTrigger><TooltipContent>Mission timeline</TooltipContent></Tooltip></TooltipProvider>}
-    {askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} onReplay={() => setTourReplay(n => n + 1)} />}
+    {aiEnabled && askOpen && <AskPanel context={askContext} onClose={() => setAskOpen(false)} onReplay={() => setTourReplay(n => n + 1)} />}
 
     {(warnings.length > 0 || (scenario.focus && !focused) || mission.grids.error) && <div className="notice mission-notice" role="alert">{mission.grids.error && <p>Some science grids could not load: {mission.grids.error} <button onClick={mission.retry}>Retry science grids</button></p>}{warnings.map(warning => <p key={warning}>{warning}</p>)}{scenario.focus && !focused && <p>This focused location is unavailable. Choose a region or click the Moon.</p>}</div>}
     {!booted && <BootSequence lines={bootLines} onDone={finishBoot} onRetry={() => { mission.retry(); if (globeError) { setGlobeError(false); setGlobeAttempt(n => n + 1); } }} />}

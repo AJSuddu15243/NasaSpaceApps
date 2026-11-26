@@ -111,6 +111,12 @@ describe('Solgaleo server boundary', () => {
     expect(checkRateLimit).not.toHaveBeenCalled();
     expect(upstream).not.toHaveBeenCalled();
   });
+  it('cannot call the provider when AI is explicitly turned off, even with a configured key', async () => {
+    vi.stubEnv('VITE_AI_ENABLED', 'false');
+    expect((await handleAsk(request())).status).toBe(503);
+    expect(upstream).not.toHaveBeenCalled();
+    expect(checkRateLimit).not.toHaveBeenCalled();
+  });
   it('only permits unmetered development on loopback URLs', async () => {
     vi.stubEnv('VERCEL', '');
     expect((await handleAsk(request())).status).toBe(503);
