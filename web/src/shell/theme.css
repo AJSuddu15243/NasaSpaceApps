@@ -40,3 +40,8 @@ h1,h2,h3{letter-spacing:-.025em}
 .site-catalogue .site-row{grid-template-columns:.5rem minmax(0,1fr)}
 
 @media(prefers-reduced-motion:reduce){.workspace{animation:none}}
+
+.graphics-control{display:flex;align-items:center;gap:6px;font:10px var(--font-data);color:var(--mission-muted);white-space:nowrap}
+.graphics-control select{color:var(--mission-text);background:var(--mission-background);border:1px solid var(--mission-line);border-radius:6px;padding:6px;font:inherit}
+.graphics-control select:focus-visible{outline:2px solid var(--mission-accent);outline-offset:2px}
+@media(max-width:450px){.app-header nav{flex-wrap:wrap}.graphics-control{font-size:9px}}

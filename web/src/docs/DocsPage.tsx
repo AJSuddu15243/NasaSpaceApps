@@ -7,6 +7,7 @@ import './docs.css';
 
 const nav = [
   { id: 'start', label: 'Getting started' },
+  { id: 'activities', label: 'Learning activities' },
   { id: 'concepts', label: 'Core concepts' },
   { id: 'workflow', label: 'Mission workflow' },
   { id: 'views', label: 'Views & sharing' },
@@ -87,12 +88,13 @@ export function DocsPage() {
       <main id="main" className="docs-main">
         <div className="docs-hero">
           <h1>How the navigator works.</h1>
-          <p>Concepts, mission workflow, data sources and the glossary — written for teammates, judges and students. Everything here describes the real system; synthetic demo data is labelled wherever it appears.</p>
+          <p>Concepts, mission workflow, data sources and the glossary — written for students, teachers and curious explorers. Everything here describes the real system; synthetic demo data is labelled wherever it appears.</p>
         </div>
 
         <section id="start" className="docs-section">
           <h2>Getting started</h2>
-          <p>Three workstreams, three toolchains. The web app consumes the data contracts the pipeline writes and the engine scores.</p>
+          <p>Open the workspace, choose Explorer, and follow the Moon briefing. Select Survey Connecting Ridge to reveal terrain and its scientific layers. No account or API key is needed to explore the data.</p>
+          <p>For contributors: the web app consumes validated data from the Python pipeline and calculations from the Rust/WebAssembly engine. Run these commands to explore the implementation locally.</p>
           <div className="docs-cmd-list">
             {commands.map(item => <div key={item.area} className="docs-cmd">
               <span className="docs-cmd-area">{item.area}</span>
@@ -100,6 +102,18 @@ export function DocsPage() {
               <span className="docs-cmd-note">{item.note}</span>
             </div>)}
           </div>
+        </section>
+
+        <section id="activities" className="docs-section">
+          <h2>Learning activities</h2>
+          <p>Try these individually or as a 15–20 minute classroom investigation. Before changing a control, write a prediction. Record the location, UTC date, window length, and data source so someone else can repeat your comparison.</p>
+          <div className="docs-cards">
+            <article className="docs-card"><h3>1. Does higher always mean sunnier?</h3><p>Open Connecting Ridge. Compare Elevation with Sunlight, then inspect two cells. Does the higher cell receive more sunlight during this window? Use the terrain horizon to explain why elevation alone is not enough.</p><a href="/app?focus=connecting-ridge&heat=elevation">Investigate terrain and sunlight</a></article>
+            <article className="docs-card"><h3>2. Same place, different arrival</h3><p>Choose Haworth and note the sunlight and Earth-in-view percentages. Add seven days of launch delay without changing the window length or place. What changed? Share both scenario links and explain how a ridge can affect power and radio contact differently.</p><a href="/app?focus=haworth&heat=sun">Compare arrival windows</a></article>
+            <article className="docs-card"><h3>3. A ranking depends on a question</h3><p>In Planner, compare a sunlight-focused ranking with an Earth-contact-focused ranking. Hold the date and slope limit fixed. Explain why the top area can change even though the terrain has not moved. Export the ranked areas as CSV to compare your evidence.</p><a href="/app?focus=connecting-ridge&mode=planner">Explore mission trade-offs</a></article>
+          </div>
+          <h3>For teachers</h3><p>Ask learners to distinguish a measured elevation, a simulated window, a long-term average, and a missing value. Permanent shadow can suggest a cold trap; it is not proof of ice. Assess the reasoning and reproducibility of the comparison, rather than a single “best” landing site.</p>
+          <h3>On a slower computer</h3><p>Choose Graphics → Lite to reduce pixel density and shadows and use a static Moon on the title page. Auto pauses settled terrain animation; Cinematic keeps decorative motion. Polar map and cell inspection remain available. Public science files are verified and saved in this browser after the first visit; storage restrictions fall back to downloading them normally. The first visit still needs a connection, and AI answers always require one.</p>
         </section>
 
         <section id="concepts" className="docs-section">

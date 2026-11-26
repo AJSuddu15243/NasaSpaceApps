@@ -1,3 +1,4 @@
+import { fetchAsset } from '../../lib/assetCache';
 import { useEffect, useMemo, useState } from 'react';
 import { loadDemoData, loadSites, type DemoData } from '../../shell/data';
 import type { Site } from '../../contracts/sites';
@@ -34,7 +35,7 @@ export function useMissionData(): MissionData {
     const catalogue = loadSites(controller.signal);
     catalogue.then(({ sites }) => { if (!controller.signal.aborted) setSites({ status: 'ready', data: sites }); })
       .catch((error: unknown) => { if (!controller.signal.aborted) setSites({ status: 'error', data: [], error: error instanceof Error ? error.message : 'Catalogue could not load.' }); });
-    loadDemoData(controller.signal, fetch, catalogue).then(data => { if (!controller.signal.aborted) setDemo({ status: 'ready', data }); })
+    loadDemoData(controller.signal, fetchAsset, catalogue).then(data => { if (!controller.signal.aborted) setDemo({ status: 'ready', data }); })
       .catch((error: unknown) => { if (!controller.signal.aborted) setDemo({ status: 'error', error: error instanceof Error ? error.message : 'Catalogue could not load.' }); });
     setGrids(value => value.status === 'ready' ? value : { status: 'loading', data: {} });
     Promise.allSettled(GRID_REGIONS.map(async region => [region, await loadGrid(region)] as const))
@@ -78,7 +79,7 @@ function cached(p: EnginePool, key: string, value: unknown) {
 /** grid_fracs for one region's window: baked when that start was baked, else live on the worker pool. Null when the
  * window is no longer wanted, a newer request superseded it, or there is no ephem table. */
 export async function regionFracs(region: GridRegion, grid: Grid, start: string, hours: number, table: DemoData['table'] | undefined, survivalK: number,
-  wanted: () => boolean = () => true, getPool: () => Promise<EnginePool> = enginePool, request: typeof fetch = fetch): Promise<{ fracs: Float32Array; source: EngineSource } | null> {
+  wanted: () => boolean = () => true, getPool: () => Promise<EnginePool> = enginePool, request: typeof fetch = fetchAsset): Promise<{ fracs: Float32Array; source: EngineSource } | null> {
   // cold_frac depends on the survival temperature; loadBakedFracs returns null unless it matches the bake (233 K).
   const params = { ...GRID_PARAMS, survival_temp_k: survivalK };
   const baked = await loadBakedFracs(region, start, hours, grid.header.nx * grid.header.ny, params, request).catch(() => null);

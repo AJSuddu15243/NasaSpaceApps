@@ -1,3 +1,4 @@
+import { fetchAsset } from '../../lib/assetCache';
 import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import common from '../../../../contracts/schemas/common.schema.json';
@@ -55,7 +56,7 @@ export function parseGrid(value: unknown, bytes: ArrayBuffer, region: string): G
 
 const cache = new Map<string, Promise<Grid>>();
 /** Cached per region; a failed load is evicted so Retry works. */
-export function loadGrid(region: GridRegion, request: typeof fetch = fetch): Promise<Grid> {
+export function loadGrid(region: GridRegion, request: typeof fetch = fetchAsset): Promise<Grid> {
   let pending = cache.get(region);
   if (!pending) {
     pending = (async () => {

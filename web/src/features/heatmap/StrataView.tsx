@@ -1,3 +1,4 @@
+import { useGraphics } from '../../lib/graphics';
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { BufferAttribute, BufferGeometry, Color, DataTexture, DoubleSide, Mesh, MeshBasicMaterial, PerspectiveCamera, ShaderMaterial, Vector3, type Material } from 'three';
@@ -87,6 +88,7 @@ type LiveY = MutableRefObject<Partial<Record<HeatLayer, { y: number; o: number }
 
 /** Damped per-layer position/opacity. Every layer writes its live height so the HTML labels can follow it. */
 function useSlab(key: HeatLayer, index: number, selected: HeatLayer | null, reducedMotion: boolean, live: LiveY) {
+  const invalidate = useThree(state => state.invalidate);
   const state = useRef({ y: 0, o: 0, t0: -1 });
   const focused = selected !== null;
   const isSel = selected === key;
@@ -98,6 +100,7 @@ function useSlab(key: HeatLayer, index: number, selected: HeatLayer | null, redu
     const started = reducedMotion || clock - s.t0 > 0.35 + index * 0.09; // staggered "opening up"
     const k = reducedMotion ? 1 : 1 - Math.exp(-delta * (focused ? 10 : 6));
     if (started) { s.y += (targetY - s.y) * k; s.o += (targetO - s.o) * k; }
+    if (!started || Math.abs(targetY - s.y) > 0.0001 || Math.abs(targetO - s.o) > 0.0001) invalidate();
     live.current[key] = { y: s.y, o: s.o };
     return s;
   };
@@ -242,7 +245,7 @@ function Scene(props: StrataProps) {
   return <>
     <ambientLight intensity={0.55} color={new Color('#eee2ce')} />
     <hemisphereLight args={['#eee2ce', '#141210', 0.35]} />
-    <directionalLight castShadow shadow-mapSize={[2048, 2048]} shadow-camera-left={-3} shadow-camera-right={3} shadow-camera-top={3} shadow-camera-bottom={-3} shadow-bias={-0.0001} position={sun} intensity={sunLit !== undefined ? 0.2 + 2.2 * sunLit : sunDir[1] > -0.05 ? 2.4 : 0.2} color="#fff3dc" />
+    <directionalLight castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-3} shadow-camera-right={3} shadow-camera-top={3} shadow-camera-bottom={-3} shadow-bias={-0.0001} position={sun} intensity={sunLit !== undefined ? 0.2 + 2.2 * sunLit : sunDir[1] > -0.05 ? 2.4 : 0.2} color="#fff3dc" />
     <Rig selected={selected} height={height} reducedMotion={reducedMotion} resetKey={resetKey} />
     <Labels live={live} labelRefs={labelRefs} />
     <group>
@@ -259,7 +262,8 @@ function Scene(props: StrataProps) {
 
 /** The anatomy view: real terrain at the bottom, every data layer floating above it; click one to dive in. */
 export function StrataView(props: StrataProps) {
-  return <Canvas className="dot-field-canvas" resize={{ offsetSize: true }} shadows frameloop={props.active ? (props.reducedMotion ? 'demand' : 'always') : 'never'} dpr={[1, 1.5]} gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+  const graphics = useGraphics();
+  return <Canvas className="dot-field-canvas" resize={{ offsetSize: true }} shadows={!graphics.lite} frameloop={props.active ? (graphics.continuous && !props.reducedMotion ? 'always' : 'demand') : 'never'} dpr={graphics.dpr} gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
     camera={{ position: [3.4, 3.2, 3.6], fov: 38, near: 0.05, far: 40 }} onPointerMissed={() => props.onProbe(null)}>
     <Scene {...props} />
   </Canvas>;

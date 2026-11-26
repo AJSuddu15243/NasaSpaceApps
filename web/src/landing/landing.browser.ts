@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 test('hero is immediately useful and hands off to the workspace', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Land where the light stays.' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Explore the Moon. Learn by doing.' })).toBeVisible();
   await expect(page.locator('.lw.is-ready')).toHaveCount(1, { timeout: 10_000 });
   await expect(page.locator('.lw-loader')).toBeHidden();
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);

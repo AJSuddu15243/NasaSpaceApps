@@ -137,7 +137,7 @@ export default function Navigator() {
   // Curated masks, or any place inside a grid (its cell's 64-bin mask feeds the engine).
   const engineInShortlist = scenario.sites.some(id => mission.demo.data?.masks.has(id)) || comparePlaces.some(p => p.region);
   const askContext = useMemo(() => [
-    'Lunar Window — lunar landing site navigator (NASA Space Apps). The user is looking at the 3D Moon workspace.',
+    'Lunala — an educational lunar exploration lab. The user is looking at the 3D Moon workspace.',
     `Mode: ${scenario.mode} · View: ${scenario.view} · heat layer: ${scenario.heat ? LAYERS[scenario.heat].label : 'none'}`,
     `Mission: landing ${scenario.date}${scenario.delay ? ` (+${scenario.delay}d launch delay)` : ''} for ${scenario.hours}h`,
     `Playhead UTC: ${instant} · sub-solar ${telemetry.sun_lat.toFixed(2)}°,${telemetry.sun_lon.toFixed(1)}° · Earth ${telemetry.earth_lat.toFixed(2)}°,${telemetry.earth_lon.toFixed(2)}° @ ${Math.round(telemetry.earth_dist_km)} km`,

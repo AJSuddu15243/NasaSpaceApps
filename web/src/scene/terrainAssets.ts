@@ -1,3 +1,4 @@
+import { fetchAsset } from '../lib/assetCache';
 import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import common from '../../../contracts/schemas/common.schema.json';
@@ -26,7 +27,7 @@ export async function loadTerrainAssets(tile: SouthPoleTile, signal?: AbortSigna
       return decodeSlope(grid.header, grid.bytes.buffer as ArrayBuffer, tile.id);
     }), signal).catch(() => { notices.push('Slope data unavailable for this region.'); return undefined; }),
     untilAborted(cached(imageryHeaders, tile.id, async () => {
-      const res = await fetch(`/data/imagery/${tile.id}.json`);
+      const res = await fetchAsset(`/data/imagery/${tile.id}.json`);
       if (!res.ok) throw new Error('ImageryHeader unavailable.');
       const header: unknown = await res.json();
       if (!validImagery(header) || header.region !== tile.id) throw new Error('Invalid imagery header.');

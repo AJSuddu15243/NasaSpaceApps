@@ -1,3 +1,4 @@
+import { useGraphics } from '../lib/graphics';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Component, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -23,6 +24,7 @@ function Refresh({ timeKey, visible }: { timeKey?: string; visible: boolean }) {
 export function LunarScene({ active: inView = true, tile, simulationRef, contoursEnabled = false, elevationEnabled = false,
   assets, layer, scalarMap, overlayOpacity, onImageryError, onProbe, exaggeration = 1, onSiteSelect, cameraMode = 'south-pole', view = '3d', sites = [], timeKey, resetKey = 0, className,
   'aria-label': label = 'Interactive lunar terrain' }: LunarSceneProps) {
+  const graphics = useGraphics();
   const fallback = useMemo(createMockSouthPoleTile, []);
   const active = tile ?? fallback;
   const frame = useMemo(() => tileFrame(active), [active]);
@@ -32,8 +34,8 @@ export function LunarScene({ active: inView = true, tile, simulationRef, contour
     document.addEventListener('visibilitychange', update);
     return () => document.removeEventListener('visibilitychange', update);
   }, []);
-  return <SceneBoundary><Canvas aria-label={label} className={className} dpr={[1, 1.5]}
-    frameloop={visible && inView ? 'demand' : 'never'} shadows={{ type: PCFShadowMap }}
+  return <SceneBoundary><Canvas aria-label={label} className={className} dpr={graphics.dpr}
+    frameloop={visible && inView ? 'demand' : 'never'} shadows={graphics.lite ? false : { type: PCFShadowMap }}
     gl={{ antialias: true }} style={{ width: '100%', height: '100%', minHeight: 'min(420px, 100%)' }}
     fallback={<p role="alert">WebGL is unavailable. Site comparisons remain available.</p>}>
     <color attach="background" args={['#080c12']} />
